@@ -1,0 +1,13 @@
+{
+	"name": "pith-webui",
+	"version": "0.0.1",
+	"dependencies": {
+		"angular": "latest",
+		"angular-route": "latest",
+        "bootstrap": "latest",
+        "sprintf": "latest",
+        "angular-bootstrap": "latest",
+        "veinjs": "latest",
+        "dnode": "latest"
+	}
+}

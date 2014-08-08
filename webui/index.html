@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html ng-app="PithApp">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <title>Pith Media Server</title>
+
+        <script src="lib/jquery/dist/jquery.min.js"></script>
+        <script src="lib/angular/angular.js" lang="javascript"></script>
+        <script src="lib/sprintf/dist/sprintf.min.js"></script>
+
+        <link rel="stylesheet" href="lib/bootstrap/dist/css/bootstrap.min.css" />
+        <link rel="stylesheet" href="lib/bootstrap/dist/css/bootstrap-theme.min.css" />
+        <script src="lib/bootstrap/dist/js/bootstrap.min.js"></script>
+        <script src="lib/angular-bootstrap/ui-bootstrap.min.js"></script>
+        <script src="lib/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
+
+        <link href="css/main.css" rel="stylesheet" />
+
+        <script src="js/filters.js"></script>
+        <script src="js/controllers.js"></script>
+        
+        <script src="lib/veinjs/vein.min.js"></script>
+        <script src="js/extracss.js"></script>
+    </head>
+
+    <body ng-controller="MainController as main">
+        <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+            <div class="container">
+                <!-- Brand and toggle get grouped for better mobile display -->
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="#"><img src="static/pith.svg" /></a>
+                    <ul class="nav navbar-nav">
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown"><span class="glyphicon glyphicon-list"></span> <span class="caret"></span></a>
+                            <ul class="dropdown-menu" role="menu">
+                                <li><a href="#">Files</a></li>
+                                <li><a href="#">Movies</a></li>
+                                <li><a href="#">TV Shows</a></li>
+                                <li><a href="#">Music</a></li>
+                                <li><a href="#">Spotify</a></li>
+                                <li class="divider"></li>
+                                <li><a href="#">Play Queue</a></li>
+                                <li class="divider"></li>
+                                <li><a href="#">Settings</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Collect the nav links, forms, and other content for toggling -->
+                <div class="collapse navbar-box">
+                    <ul class="nav navbar-nav">
+                        <li>
+                            <a href="#" class="navbar-link"><span class="glyphicon glyphicon-play"></span></a>
+                        </li>
+                        <li>
+                            <a href="#" class="navbar-link"><span class="glyphicon glyphicon-fast-forward"></span></a></li>
+                    </ul>
+                    <div class="nav navbar-nav playback-info navbar-flex">
+                        <span class="playback-title">Transcendence (2004)</span>
+                        <div class="flex-row">
+                        <span class="playback-time">1:15</span>
+                        <div class="progress progress-thin flex-grow">
+                          <div class="progress-bar" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: 60%;"></div>
+                        </div>
+                        <span class="playback-runtime">2:23</span>
+                        </div>
+                    </div>
+                    <ul class="nav navbar-nav">
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown"><span class="glyphicon glyphicon-facetime-video"></span> <span class="caret"></span></a>
+                            <ul class="dropdown-menu" role="menu">
+                                <li><a href="#">iPad</a></li>
+                                <li><a href="#">Viera VT60</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div><!-- /.navbar-collapse -->
+            </div><!-- /.container-fluid -->
+        </nav>
+
+        <div class="contentbrowser">
+            <div class="item" ng-repeat="item in main.library">
+                <div class="thumbnail">
+                    <img ng-src="{{item.thumbnail}}" popover="<h3>{{item.title}} ({{item.year}})</h3>
+                        <p><strong>Runtime:</strong> {{item.runtime | duration}}</p>
+                        <p><strong>Genres:</strong> {{item.genres.join(', ')}}</p>" popover-html="true" popover-placement="right auto" />
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
