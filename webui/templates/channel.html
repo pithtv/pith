@@ -1,0 +1,15 @@
+<div class="contentbrowser">
+    <div class="item" ng-repeat="item in containerContents">
+        <div class="thumbnail">
+            <a href="#/channel/{{channelId}}/{{item.id}}">
+                <img ng-src="{{item.thumbnail}}" ng-if="item.thumbnail"/>
+                <div ng-if="item.thumbnail == null">
+                    {{item.title}}
+                </div>
+                <div ng-if="item.playable" class="media-overlay">
+                    <a ng-click="play(item.id)"><span class="glyphicon glyphicon-play"></span></a>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>

@@ -72,3 +72,8 @@ body {
     border-top: none;
     border-bottom: none;
 }
+
+.item .thumbnail {
+    width: 100%;
+    height: 100%;
+}
