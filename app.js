@@ -1,7 +1,6 @@
 var Pith = require("./pith.js");
 var rest = require("./lib/pithrest.js");
 var express = require("express");
-var DNode = require("dnode");
 var network = require("./lib/network.js");
 
 var serverAddress = network.getDefaultServerAddress();
