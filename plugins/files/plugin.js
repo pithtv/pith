@@ -13,7 +13,13 @@ FilesChannel.prototype = {
         var path = this.rootDir;
         var matchRootDir = new RegExp("^" + path);
         if(containerId != null) {
+            if(path.match(/\/$/)===null) {
+                path += "/";
+            }
             path = path + containerId;
+            if(path.match(/\/$/)===null) {
+                path += "/";
+            }
         }
         
         var filesChannel = this;

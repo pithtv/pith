@@ -7,7 +7,6 @@
         "bootstrap": "latest",
         "sprintf": "latest",
         "angular-bootstrap": "latest",
-        "veinjs": "latest",
-        "dnode": "latest"
+        "veinjs": "latest"
 	}
 }
