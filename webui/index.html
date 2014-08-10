@@ -18,8 +18,6 @@
         <link rel="stylesheet" href="lib/bootstrap/dist/css/bootstrap.min.css" />
         <link rel="stylesheet" href="lib/bootstrap/dist/css/bootstrap-theme.min.css" />
         <script src="lib/bootstrap/dist/js/bootstrap.min.js"></script>
-        <script src="lib/angular-bootstrap/ui-bootstrap.min.js"></script>
-        <script src="lib/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
 
         <link href="css/main.css" rel="stylesheet" />
         
@@ -50,7 +48,7 @@
                     <a class="navbar-brand" href="#"><img src="static/pith.svg" /></a>
                     <ul class="nav navbar-nav">
                         <li class="dropdown">
-                            <a href="#" class="dropdown-toggle" data-toggle="dropdown"><span class="glyphicon glyphicon-list"></span> <span class="caret"></span></a>
+                            <a class="dropdown-toggle" data-toggle="dropdown"><span class="glyphicon glyphicon-list"></span> <span class="caret"></span></a>
                             <ul class="dropdown-menu" role="menu">
                                 <li ng-repeat="channel in main.channels"><a href="#/channel/{{channel.id}}/">{{channel.title}}</a></li>
                                 <li class="divider"></li>
@@ -66,16 +64,16 @@
                 <div class="collapse navbar-box">
                     <ul class="nav navbar-nav">
                         <li ng-show="main.currentStatus.actions.Pause">
-                            <a href="#" class="navbar-link" ng-click="main.control.pause()"><span class="glyphicon glyphicon-pause"></span></a>
+                            <a class="navbar-link" ng-click="main.control.pause()"><span class="glyphicon glyphicon-pause"></span></a>
                         </li>
                         <li ng-show="main.currentStatus.actions.Play">
-                            <a href="#" class="navbar-link" ng-click="main.control.play()"><span class="glyphicon glyphicon-play"></span></a>
+                            <a class="navbar-link" ng-click="main.control.play()"><span class="glyphicon glyphicon-play"></span></a>
                         </li>
                         <li ng-show="main.currentStatus.actions.Skip">
-                            <a href="#" class="navbar-link" ng-click="main.control.pause()"><span class="glyphicon glyphicon-fast-forward"></span></a>
+                            <a class="navbar-link" ng-click="main.control.pause()"><span class="glyphicon glyphicon-fast-forward"></span></a>
                         </li>
                         <li ng-show="main.currentStatus.actions.Stop">
-                            <a href="#" class="navbar-link" ng-click="main.control.stop()"><span class="glyphicon glyphicon-stop"></span></a>
+                            <a class="navbar-link" ng-click="main.control.stop()"><span class="glyphicon glyphicon-stop"></span></a>
                         </li>
                     </ul>
                     <div class="nav navbar-nav playback-info navbar-flex">
@@ -90,8 +88,8 @@
                     </div>
                     <ul class="nav navbar-nav">
                         <li class="dropdown">
-                            <a href="#" class="dropdown-toggle" data-toggle="dropdown"><img ng-src="{{main.getSelectedPlayer().icons.48x48.url}}" height="24"/> <span class="caret"></span></a>
-                            <ul class="dropdown-menu" role="menu">
+                            <a class="dropdown-toggle" data-toggle="dropdown"><img ng-src="{{main.getSelectedPlayer().icons.48x48.url}}" height="24"/> <span class="caret"></span></a>
+                            <ul class="dropdown-menu dropdown-menu-right" role="menu">
                                 <li ng-repeat="player in main.getPlayers()"><a href="#" ng-click="main.selectPlayer(player.id)"><img ng-src="{{player.icons.48x48.url}}" height="24" /> {{player.friendlyName}}</a></li>
                             </ul>
                         </li>
