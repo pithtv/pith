@@ -8,10 +8,30 @@ body {
     opacity: 0.1;
 }
 
-.contentbrowser .item {
+.contentbrowser .contentitem {
     display: inline-block;
     margin: 4px;
     height: 160px;
+    vertical-align: top;
+    position: relative;
+}
+
+.contentbrowser .contentitem.withthumb .itemoverlay {
+    display: none;
+}
+
+.contentbrowser .contentitem.withthumb:hover .itemoverlay {
+    display: block;
+}
+
+.contentbrowser .contentitem .itemtitle {
+    bottom: 5px;
+    position: absolute;
+}
+
+.contentitem .thumbnail {
+    width: 100%;
+    height: 100%;
 }
 
 .contentbrowser .thumbnail img {
@@ -63,6 +83,7 @@ body {
     font-weight: bold;
     text-align: center;
     color: #777;
+    overflow: hidden;
 }
 
 .playback-info {
@@ -71,9 +92,4 @@ body {
     margin: 0px 5px;
     border-top: none;
     border-bottom: none;
-}
-
-.item .thumbnail {
-    width: 100%;
-    height: 100%;
 }

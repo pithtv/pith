@@ -2,7 +2,7 @@
 
 var channelController = angular.module("ChannelControllers", []);
 
-channelController.controller('channelController', ['$scope','$http','$routeParams', function($scope, $http, $routeParams) {
+channelController.controller('channelController', ['$scope','$http','$routeParams','PlayerControlService', function($scope, $http, $routeParams, playerControl) {
     $scope.containerContents = [];
     $scope.loading = true;
     $scope.channelId = $routeParams.channelId;
@@ -15,7 +15,7 @@ channelController.controller('channelController', ['$scope','$http','$routeParam
             $scope.containerContents = res.data;
         });
     
-    $scope.play = function(itemId) {
-        $http.get("/rest/player/0/load/" + $scope.channelId + "/" + itemId);
+    $scope.load = function(itemId) {
+        playerControl.load($scope.channelId, itemId);
     }
 }]);

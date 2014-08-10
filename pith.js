@@ -10,6 +10,12 @@ var database = tingodb.Db("~/.pith/database", {});
 
 var route = express.Router();
 
+var sequence = 0;
+
+function newId() {
+    return "id"+sequence++;
+}
+
 function pith (rootUrl) {
     this.load(rootUrl);
 }
@@ -22,6 +28,7 @@ pith.prototype = {
     channelInstances: {},
     
     players: [],
+    playerMap: {},
     
     getChannelInstance: function (channelId) {
         var channelInstance = this.channelInstances[channelId];
@@ -44,11 +51,38 @@ pith.prototype = {
     },
     
     registerPlayer: function (player) {
+        player.id = newId();
         this.players.push(player);
-        this.emit("playerRegistered", player);
+        this.playerMap[player.id] = player;
+        this.emit("playerregistered", player);
+        var self = this;
+        player.on("statechange", function(status) {
+            status.serverTimestamp = new Date().getTime();
+            self.emit("playerstatechange", player.id, status);
+        });
+    },
+    
+    unregisterPlayer: function(player) {
+        this.players = this.players.filter(function(e) {
+            return e.id !== player.id;
+        });
+        this.playerMap[player.id] = undefined;
+        self.emit("playerdisappeared", player.id);
+    },
+    
+    updatePlayerStates: function() {
+        var newTs = new Date().getTime();
+        this.players.forEach(function(e) {
+            if(e.status.state.playing) {
+                var delta = (newTs - e.status.serverTimestamp) / 1000;
+                e.status.position.time += delta;
+                e.status.serverTimestamp = newTs;
+            }
+        });
     },
     
     listPlayers: function(cb) {
+        this.updatePlayerStates();
         cb(this.players);  
     },
     
@@ -66,25 +100,36 @@ pith.prototype = {
         var pith = this;
         if(item.isLocal()) {
             channelInstance.getLocalFile(itemId, function(localFile) {
-                cb(pith.rootUrl + "/stream/" + channelId + "/" + itemId);
+                var itemPath = itemId.split("/").map(encodeURIComponent).join("/");
+                cb(pith.rootUrl + "/stream/" + channelId + "/" + itemPath);
             });
         } else {
             channelInstance.getStreamUrl(itemId, cb);
         }
     },
     
-    loadMedia: function(channelId, itemId, playerId) {
-        var player = this.players[0];
+    loadMedia: function(channelId, itemId, playerId, cb) {
+        var player = this.playerMap[playerId];
         this.getStream(channelId, itemId, function(url) {
-           player.load(url, function() {
-               player.play();
-           }); 
+            player.load(url, function(err) {
+                if(err && err.error) {
+                    cb(err);   
+                } else {
+                    player.play(function(err) {
+                        if(err && err.error) {
+                            cb(err);
+                        } else {
+                            cb();
+                        }
+                    });
+                }
+            });
         });
     },
     
     controlPlayback: function(playerId, command) {
-        var player = this.players[0];
-        player.control(command);
+        var player = this.playerMap[playerId];
+        player[command]();
     },
     
     load: function(rootUrl) {

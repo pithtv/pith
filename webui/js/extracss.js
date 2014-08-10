@@ -9,7 +9,7 @@
             v = {},
             query = '@media (max-width: ' + maxScreenWidth + 'px) and (min-width: ' + minScreenWidth + 'px)';
         
-        v[query] = ['.item'];
+        v[query] = ['.contentitem'];
         
         vein.inject([v], {'width': 'calc((100% - ' + (containerpadding + itempadding * nc) + 'px) / ' + nc + ')'});
     }

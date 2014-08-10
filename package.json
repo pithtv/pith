@@ -13,6 +13,7 @@
     "plugin": "*",
     "tingodb": "*",
     "xml2js": "*",
-    "request": "*"
+    "request": "*",
+    "ws": "*"
   }
 }
