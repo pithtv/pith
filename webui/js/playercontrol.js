@@ -15,8 +15,12 @@ angular.module("PlayerControlModule", ["WsEventsModule"])
                 e.status.timestamp = ts;
             });
             
-            activePlayer = players[0];
-            service.emit("playerstatechange", activePlayer.status);
+            if(!activePlayer) {
+                activePlayer = players[0];
+            }
+            if(activePlayer) {
+                service.emit("playerstatechange", activePlayer.status);
+            }
         });
     
     var service = {
