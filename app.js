@@ -2,6 +2,7 @@ var Pith = require("./pith.js");
 var rest = require("./lib/pithrest.js");
 var express = require("express");
 var network = require("./lib/network.js");
+var http = require("http");
 var ws = require("ws");
 
 var serverAddress = network.getDefaultServerAddress();
@@ -16,9 +17,10 @@ app.use(pithPath, pithApp.handle);
 app.use("/rest", rest(pithApp));
 app.use("/webui", express.static("webui"));
 
-app.listen(3333);
+var server = http.createServer(app);
+server.listen(3333);
 
-var wss = new ws.Server({port: 3334});
+var wss = new ws.Server({server: server});
 
 wss.on('connection', function(ws) {
     var listeners = [];

@@ -4,7 +4,7 @@ angular.module("WsEventsModule", []).factory("WsEventsService", function() {
     var retryInterval = 3000;
     var wsEvents = {};
     
-    var url = "ws://localhost:3334/";
+    var url = "ws://" + document.location.host + "/";
     
     var listeners = {};
     
