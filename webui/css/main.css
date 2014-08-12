@@ -93,3 +93,11 @@ body {
     border-top: none;
     border-bottom: none;
 }
+.noplayer {
+    text-align: center;
+    margin-top: 15px;    
+}
+
+.dropdown-header-empty {
+    font-style: italic;
+}
