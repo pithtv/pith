@@ -62,7 +62,7 @@
 
                 <!-- Collect the nav links, forms, and other content for toggling -->
                 <div class="collapse navbar-box">
-                    <ul class="nav navbar-nav" ng-if="main.control.selectedPlayer">
+                    <ul class="nav navbar-nav" ng-if="main.control.getSelectedPlayer()">
                         <li ng-show="main.currentStatus.actions.Pause">
                             <a class="navbar-link" ng-click="main.control.pause()"><span class="glyphicon glyphicon-pause"></span></a>
                         </li>
@@ -76,17 +76,17 @@
                             <a class="navbar-link" ng-click="main.control.stop()"><span class="glyphicon glyphicon-stop"></span></a>
                         </li>
                     </ul>
-                    <div class="nav navbar-nav playback-info navbar-flex" ng-if="main.control.selectedPlayer">
+                    <div class="nav navbar-nav playback-info navbar-flex" ng-if="main.control.getSelectedPlayer()">
                         <span class="playback-title">{{main.currentStatus.position.title || main.currentStatus.position.uri || "Unknown"}}</span>
                         <div class="flex-row">
                         <span class="playback-time">{{(main.currentStatus.position.time || 0) | duration}}</span>
                         <div class="progress progress-thin flex-grow">
                           <div class="progress-bar" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: -webkit-calc( 100% * {{main.currentStatus.position.time}} / {{main.currentStatus.position.duration}} );"></div>
                         </div>
-                        <span class="playback-runtime">{{(main.currentStatus.position.duration || 0) | duration}}</span>
+                        <span class="playback-runtime">{{(main.currentStatus.position.duration | duration) || "-:--"}}</span>
                         </div>
                     </div>
-                    <div class="nav navbar-nav navbar-flex noplayer" ng-if="!main.control.selectedPlayer">
+                    <div class="nav navbar-nav navbar-flex noplayer" ng-if="!main.control.getSelectedPlayer()">
                         No player selected
                     </div>
                     <ul class="nav navbar-nav">

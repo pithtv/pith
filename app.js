@@ -4,21 +4,34 @@ var express = require("express");
 var network = require("./lib/network.js");
 var http = require("http");
 var ws = require("ws");
+var http = require("http");
+var tingodb = require("tingodb")();
 
-var serverAddress = network.getDefaultServerAddress();
-var port = 3333;
+var serverAddress = network.getDefaultServerAddress().IPv4;
+var port = process.env.PORT || 3333;
 var pithPath = "/pith";
 
-var pithApp = new Pith("http://" + serverAddress.IPv4 + ":" + port + pithPath);
+var db = tingodb.Db("~/.pith.db", {});
+
+console.log("Listening on " + serverAddress + ":" + port);
+
+var pithApp = new Pith({
+    rootUrl: "http://" + serverAddress + ":" + port + pithPath,
+    db: db});
 
 var app = express();
 
 app.use(pithPath, pithApp.handle);
 app.use("/rest", rest(pithApp));
 app.use("/webui", express.static("webui"));
+app.get("/", function(req, res) {
+    res.redirect("/webui");
+});
 
 var server = http.createServer(app);
-server.listen(3333);
+var server = new http.Server(app);
+
+server.listen(port, serverAddress);
 
 var wss = new ws.Server({server: server});
 

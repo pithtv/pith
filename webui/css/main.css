@@ -1,5 +1,5 @@
 body {
-    padding: 70px 10px 0px 10px;
+    padding: 70px 10px 0 10px;
 }
 
 .navbar-brand > img {
@@ -14,6 +14,11 @@ body {
     height: 160px;
     vertical-align: top;
     position: relative;
+}
+
+.itemoverlay {
+    position: absolute;
+    bottom: 0;
 }
 
 .contentbrowser .contentitem.withthumb .itemoverlay {
@@ -35,13 +40,17 @@ body {
 }
 
 .contentbrowser .thumbnail img {
-    max-width: 150px;
-    max-height: 160px;
+    max-width: 101px;
+    max-height: 150px;
 }
 
 .navbar-box {
+    display: box !important;
     display: -webkit-box !important;
+    display: -moz-box !important;
     -webkit-box-orient: horizontal;
+    -ms-box-orient: horizontal;
+    -moz-box-orient: horizontal;
 }
 
 .navbar-box > .navbar-nav {
@@ -50,6 +59,8 @@ body {
 
 .navbar-flex {
     -webkit-box-flex: 1;
+    -moz-box-flex: 1;
+    -ms-box-flex: 1;
 }
 
 .progress-thin {
@@ -84,12 +95,13 @@ body {
     text-align: center;
     color: #777;
     overflow: hidden;
+    white-space: nowrap;
 }
 
 .playback-info {
     padding: 5px 15px;
     border: 1px solid rgba(200,200,200,0.4);
-    margin: 0px 5px;
+    margin: 0 5px;
     border-top: none;
     border-bottom: none;
 }

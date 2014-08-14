@@ -2,11 +2,7 @@
 
 var express = require("express");
 var plugin = require("plugin")();
-var tingodb = require("tingodb")();
-var vidstreamer = require("./lib/vidstreamer");
 var events = require("events");
-
-var database = tingodb.Db("~/.pith/database", {});
 
 var route = express.Router();
 
@@ -16,11 +12,14 @@ function newId() {
     return "id"+sequence++;
 }
 
-function pith (rootUrl) {
-    this.load(rootUrl);
+function Pith (opts) {
+    for(var x in opts) {
+        this[x] = opts[x];
+    }
+    this.load();
 }
 
-pith.prototype = {
+Pith.prototype = {
     route: route,
     
     channels: [],
@@ -34,7 +33,7 @@ pith.prototype = {
         var channelInstance = this.channelInstances[channelId];
         if (channelInstance === undefined) {
             var channel = this.channelMap[channelId];
-            channelInstance = this.channelInstances[channelId] = channel.init(this);
+            channelInstance = this.channelInstances[channelId] = channel.init({pith: this});
         }
         return channelInstance;
     },
@@ -67,7 +66,7 @@ pith.prototype = {
             return e.id !== player.id;
         });
         this.playerMap[player.id] = undefined;
-        self.emit("playerdisappeared", player.id);
+        this.emit("playerdisappeared", player.id);
     },
     
     updatePlayerStates: function() {
@@ -96,16 +95,7 @@ pith.prototype = {
     
     getStream: function (channelId, itemId, cb) {
         var channelInstance = this.getChannelInstance(channelId);
-        var item = channelInstance.getItem(itemId);
-        var pith = this;
-        if(item.isLocal()) {
-            channelInstance.getLocalFile(itemId, function(localFile) {
-                var itemPath = itemId.split("/").map(encodeURIComponent).join("/");
-                cb(pith.rootUrl + "/stream/" + channelId + "/" + itemPath);
-            });
-        } else {
-            channelInstance.getStreamUrl(itemId, cb);
-        }
+        channelInstance.getStreamUrl(itemId, cb);
     },
     
     loadMedia: function(channelId, itemId, playerId, cb) {
@@ -132,28 +122,14 @@ pith.prototype = {
         player[command]();
     },
     
-    load: function(rootUrl) {
+    load: function() {
         require("./plugins/files/plugin").plugin().init({pith: this});
         require("./plugins/upnp-mediarenderer/plugin").plugin().init({pith: this});
-        this.rootUrl = rootUrl;
-        
-        var pithApp = this;
-        
-        vidstreamer.settings({
-            getFile: function(path, cb) {
-                var i = path.indexOf('/');
-                var channelId = path.substring(0, i);
-                var itemId = path.substring(i+1);
-                pithApp.getChannelInstance(channelId).getLocalFile(itemId, cb);
-            }
-        });
-        
-        this.handle.use('/stream', vidstreamer);
     },
     
     handle: route
 }
 
-pith.prototype.__proto__ = events.EventEmitter.prototype;
+Pith.prototype.__proto__ = events.EventEmitter.prototype;
 
-module.exports = pith;
+module.exports = Pith;

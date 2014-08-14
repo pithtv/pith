@@ -4,7 +4,7 @@ var http = require("http");
 var request = require("request");
 var events = require("events");
 
-var client = new ssdp.Client();
+var client = new ssdp.Client({unicastHost: '192.168.1.4'});
 
 var iconTypePreference = [
     'image/jpeg',

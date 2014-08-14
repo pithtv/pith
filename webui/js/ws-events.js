@@ -4,8 +4,8 @@ angular.module("WsEventsModule", []).factory("WsEventsService", function() {
     var retryInterval = 3000;
     var wsEvents = {};
     
-    var url = "ws://" + document.location.host + "/";
-    
+    var url = (document.location.protocol == "http:" ? "ws" : "wss") + "://" + document.location.host + "/";
+
     var listeners = {};
     
     var client = {

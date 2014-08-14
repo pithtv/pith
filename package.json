@@ -14,6 +14,7 @@
     "tingodb": "*",
     "xml2js": "*",
     "request": "*",
-    "ws": "*"
+    "ws": "*",
+    "async": "latest"
   }
 }
