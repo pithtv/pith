@@ -124,11 +124,12 @@ Pith.prototype = {
     
     load: function() {
         require("./plugins/files/plugin").plugin().init({pith: this});
+        require("./plugins/movies/plugin").plugin().init({pith: this});
         require("./plugins/upnp-mediarenderer/plugin").plugin().init({pith: this});
     },
     
     handle: route
-}
+};
 
 Pith.prototype.__proto__ = events.EventEmitter.prototype;
 

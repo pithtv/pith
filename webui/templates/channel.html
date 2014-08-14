@@ -1,10 +1,10 @@
 <div class="contentbrowser">
     <div class="contentitem" ng-repeat="item in containerContents">
-        <div class="thumbnail" ng-class="{{ item.thumbnail && 'withthumb' }}">
+        <div class="thumbnail" ng-class="{{ (item.thumbnail || item.poster) && 'withthumb' }}">
             <a href="#/channel/{{channelId}}/{{item.id}}">
-                <img ng-src="{{item.thumbnail}}" ng-if="item.thumbnail"/>
+                <img ng-src="{{item.thumbnail || item.poster}}" ng-if="item.thumbnail"/>
                 <div class="itemoverlay">
-                    <div class="itemtitle" ng-if="item.thumbnail == null">
+                    <div class="itemtitle" ng-if="item.thumbnail == null && item.poster == null">
                         {{item.title}}
                     </div>
                     <div ng-if="item.playable" class="media-overlay">

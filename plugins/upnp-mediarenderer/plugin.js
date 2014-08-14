@@ -137,8 +137,18 @@ MediaRenderer.prototype = {
         });
     },
     
+    updatePositionInfo: function(cb) {
+        var renderer = this;
+        renderer.getPositionInfo(function(positionInfo) {
+            if(!positionInfo.error) {
+                renderer.status.position = positionInfo;
+            }
+            renderer.emit('statechange', renderer.status);
+        });
+    },
+    
     __processEventBody: function(data) {
-        renderer = this;
+        var renderer = this;
         xml2js(data, function(err, evt) {
             for(var evtType in evt) {
                 var subEvt = evt[evtType];
@@ -170,12 +180,7 @@ MediaRenderer.prototype = {
                                     renderer.status.state = status;
                                 }
                                 
-                                renderer.getPositionInfo(function(positionInfo) {
-                                    if(!positionInfo.error) {
-                                        renderer.status.position = positionInfo;
-                                    }
-                                    renderer.emit('statechange', renderer.status);
-                                });
+                                renderer.updatePositionInfo();
                             });
                         }
                     });
@@ -215,6 +220,10 @@ MediaRenderer.prototype = {
         
         request(options, function() {
         });
+        
+        setInterval(function() {
+            self.updatePositionInfo();
+        }, 1000);
     }
 }
 

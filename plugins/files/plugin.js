@@ -6,7 +6,7 @@ var vidstreamer = require("../../lib/vidstreamer");
 var async = require("async");
 
 function FilesChannel(pith) {
-    logger.trace("FilesChannel channel inited");
+    logger.log("FilesChannel channel inited");
     this.rootDir = "/mnt/store/Public";
     this.pith = pith;
     
@@ -32,7 +32,7 @@ function parent(filename) {
 
 FilesChannel.prototype = {
     listContents: function(containerId, cb) {
-        logger.trace("FilesChannel.listContents", containerId);
+        logger.log("FilesChannel.listContents", containerId);
         var path = this.rootDir;
         var matchRootDir = new RegExp("^" + path);
         if(containerId) {
@@ -124,35 +124,66 @@ FilesChannel.prototype = {
                 item.mimetype = mimetypes[extension];
                 item.playable = item.mimetype && true;
                 
-                async.parallel([function(cb) {
-                    var nfoFile = child(parent(filepath), "movie.nfo");
-                    fs.exists(nfoFile, function(exists) {
-                       if(exists) {
-                           channel.parseNfo(nfoFile, function(err, data) {
-                               for(var x in data) {
-                                   item[x] = data[x];
-                               }
-                               cb();
-                           });
-                       } else {
-                           cb();
-                       }
-                    });  
-                }, function(cb) {
-                    var tbnFile = child(parent(filepath), "movie.tbn");
-                    fs.exists(tbnFile, function(exists) {
-                        if(exists) {
-                            var path = channel.rootDir;
-                            var matchRootDir = new RegExp("^" + path);
-                            var itemPath = tbnFile.replace(matchRootDir, '').split("/").map(encodeURIComponent).join("/");
-                            item.thumbnail = channel.pith.rootUrl + "/stream/" + itemPath;
-                        }
-                        cb();
+                if(item.mimetype && item.mimetype.match(/^video\//)) {
+                    async.parallel([function(done) {
+                        var nfoFile = child(parent(filepath), "movie.nfo");
+                        fs.exists(nfoFile, function(exists) {
+                           if(exists) {
+                               channel.parseNfo(nfoFile, function(err, data) {
+                                   for(var x in data) {
+                                       item[x] = data[x];
+                                   }
+                                   done();
+                               });
+                           } else {
+                               var plainNfoFile = filepath.replace(/\.[^.\/]*$/, ".nfo");
+                               fs.exists(plainNfoFile, function(exists) {
+                                   if(exists) {
+                                       fs.readFile(plainNfoFile, function(err, data) {
+                                           if(!err && data) {
+                                               var m = data.toString().match(/tt[0-9]{7,}/g);
+                                               if(m && m[0]) {
+                                                   item.imdbId = m[0];
+                                               }
+                                           }
+                                           done();
+                                       });
+                                   } else {
+                                       done();
+                                   }
+                               });
+                           }
+                        });  
+                    }, function(done) {
+                        var tbnFile = filepath.replace(/\.[^.\/]*$/, ".tbn");
+                        fs.exists(tbnFile, function(exists) {
+                            if(exists) {
+                                var path = channel.rootDir;
+                                var matchRootDir = new RegExp("^" + path);
+                                var itemPath = tbnFile.replace(matchRootDir, '').split("/").map(encodeURIComponent).join("/");
+                                item.thumbnail = channel.pith.rootPath + "/stream/" + itemPath;
+                                done();
+                            } else {
+                                tbnFile = child(parent(filepath), "movie.tbn");
+                                fs.exists(tbnFile, function(exists) {
+                                   if(exists) {
+                                       var path = channel.rootDir;
+                                       var matchRootDir = new RegExp("^" + path);
+                                       var itemPath = tbnFile.replace(matchRootDir, '').split("/").map(encodeURIComponent).join("/");
+                                       item.thumbnail = channel.pith.rootPath + "/stream/" + itemPath;
+                                       done();
+                                   } else {
+                                       done();
+                                   }
+                                });
+                            }
+                        });
+                    }], function(err, result) {
+                        cb(item);
                     });
-                }], function(err, result) {
+                } else {
                     cb(item);
-                });
-                
+                }
                 
             }
         });
@@ -160,17 +191,15 @@ FilesChannel.prototype = {
     
     getStreamUrl: function(itemId, cb) {
         var channel = this;
-        this.getLocalFile(itemId, function(localFile) {
-            var itemPath = itemId.split("/").map(encodeURIComponent).join("/");
-            cb(channel.pith.rootUrl + "/stream/" + itemPath);
-        });
+        var itemPath = itemId.split("/").map(encodeURIComponent).join("/");
+        cb(channel.pith.rootUrl + "/stream/" + itemPath);
     }
 };
 
 module.exports.plugin = function() {
     return {
         init: function(opts) {
-            logger.trace("FilesChannel plugin initing.");
+            logger.log("FilesChannel plugin initing.");
             opts.pith.registerChannel({
                 id: 'files',
                 title: 'Files',

@@ -11,13 +11,15 @@ var serverAddress = network.getDefaultServerAddress().IPv4;
 var port = process.env.PORT || 3333;
 var pithPath = "/pith";
 
-var db = tingodb.Db("~/.pith.db", {});
+var db = new tingodb.Db(process.env.HOME + "/.pith.db", {});
 
 console.log("Listening on " + serverAddress + ":" + port);
 
 var pithApp = new Pith({
     rootUrl: "http://" + serverAddress + ":" + port + pithPath,
-    db: db});
+    rootPath: pithPath,
+    db: db
+});
 
 var app = express();
 
@@ -28,7 +30,11 @@ app.get("/", function(req, res) {
     res.redirect("/webui");
 });
 
-var server = http.createServer(app);
+app.set("json replacer", function(k,v) {
+    if(k.charAt(0) == '_') return undefined;
+    else return v;
+});
+
 var server = new http.Server(app);
 
 server.listen(port, serverAddress);
