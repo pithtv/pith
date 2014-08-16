@@ -18,4 +18,11 @@ channelController.controller('channelController', ['$scope','$http','$routeParam
     $scope.load = function(itemId) {
         playerControl.load($scope.channelId, itemId);
     }
+    
+    $scope.view = function view(v) {
+        if(v) {
+            localStorage.view = v;
+        }
+        return localStorage.view;
+    };
 }]);

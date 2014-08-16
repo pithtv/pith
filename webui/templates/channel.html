@@ -1,17 +1,51 @@
-<div class="contentbrowser">
-    <div class="contentitem" ng-repeat="item in containerContents">
-        <div class="thumbnail" ng-class="{{ (item.thumbnail || item.poster) && 'withthumb' }}">
-            <a href="#/channel/{{channelId}}/{{item.id}}">
-                <img ng-src="{{item.thumbnail || item.poster}}" ng-if="item.thumbnail"/>
-                <div class="itemoverlay">
-                    <div class="itemtitle" ng-if="item.thumbnail == null && item.poster == null">
-                        {{item.title}}
-                    </div>
-                    <div ng-if="item.playable" class="media-overlay">
-                        <a ng-click="load(item.id)"><span class="glyphicon glyphicon-play"></span></a>
-                    </div>
-                </div>
-            </a>
+<div class="navbar-box channellistheader">
+    <div class="flex-grow">
+        <ul class="breadcrumb">
+            <li>Movies</li>
+            <li>Actors</li>
+            <li>Brad Pitt</li>
+        </ul>
+    </div>
+
+    <div>
+        <div class="btn-group btn-group-sm viewselector" data-toggle="buttons">
+          <label class="btn btn-primary active" ng-click="view('list')">
+            <input type="radio" name="view" id="list" value="list" />
+            <span class="glyphicon glyphicon-list"></span>
+          </label>
+          <label class="btn btn-primary" ng-click="view('poster')">
+            <input type="radio" name="view" id="poster" value="poster" />
+            <span class="glyphicon glyphicon-th"></span>
+          </label>
         </div>
     </div>
+
+    <div class="input-group input-group-sm col-xs-3 search">
+        <input type="text" ng-model="search" role="search" placeholder="Search" class="form-control"/>
+        <span class="input-group-addon"><span class="glyphicon glyphicon-search"></span></span>
+    </div>
 </div>
+
+<div ng-show="loading">
+    Loading.
+</div>
+
+<ul class="contentbrowser" ng-class="view()">
+    <li class="contentitem" ng-repeat="item in containerContents | filter:{title:search} | limitTo:100" ng-class="(item.thumbnail || item.poster) && 'withthumb'">
+        <a href="#/channel/{{channelId}}/{{item.id}}">
+            <img ng-src="{{item.poster || item.thumbnail}}" class="th"/>
+        </a>
+        <div class="iteminfo">
+            <a href="#/channel/{{channelId}}/{{item.id}}">
+                <span class="itemtitle">{{item.title}} <span ng-if="item.year" class="itemyear">{{item.year}}</span></span>
+            </a>
+            <span class="itemtagline" ng-if="item.tagline">{{item.tagline}}</span>
+            <span class="itemrating" data-rating="{{item.rating}}" ng-if="item.rating">{{item.rating}}</span>
+            <span class="itemgenres" ng-if="item.genres && item.genres.length">{{item.genres.join(", ")}}</span>
+            <span class="itemplot" ng-if="item.plot">{{item.plot}}</span>
+            <span ng-if="item.playable" class="actions">
+                <a ng-click="load(item.id)" class="glyphicon glyphicon-play"></a>
+            </span>
+        </div>
+    </li>
+</ul>

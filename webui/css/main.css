@@ -4,44 +4,184 @@ body {
 
 .navbar-brand > img {
   max-height: 37px;
-    margin-top: -8px;
+    margin-top: -6px;
     opacity: 0.1;
 }
 
-.contentbrowser .contentitem {
+.contentbrowser.poster .contentitem {
     display: inline-block;
     margin: 4px;
     height: 160px;
-    vertical-align: top;
     position: relative;
+    text-align: center;
 }
 
-.itemoverlay {
-    position: absolute;
-    bottom: 0;
+.contentbrowser.poster .contentitem img.th {    
+    padding: 4px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    -webkit-transition: all .2s ease-in-out;
+    -o-transition: all .2s ease-in-out;
+    transition: all .2s ease-in-out;
 }
 
-.contentbrowser .contentitem.withthumb .itemoverlay {
+.contentbrowser.poster .contentitem:not(.withthumb) img.th {
+    width: 100%;
+    height: 150px;
+}
+
+.contentbrowser.poster .contentitem.withthumb:not(:hover) .iteminfo,
+.contentbrowser.poster .contentitem .itemplot,
+.contentbrowser.poster .contentitem .itemtagline,
+.contentbrowser.poster .contentitem .itemgenres
+{
     display: none;
 }
 
-.contentbrowser .contentitem.withthumb:hover .itemoverlay {
-    display: block;
-}
-
-.contentbrowser .contentitem .itemtitle {
-    bottom: 5px;
+.contentbrowser.poster .contentitem .iteminfo {
     position: absolute;
+    top: 5px;
+    left: -webkit-calc(50% - 46px);
+    right: -webkit-calc(50% - 46px);
+    text-align: left;
+    background: rgba(240,240,240,0.9);
+    bottom: 17px;
+    padding: 4px;
+    font-weight: bold;
 }
 
-.contentitem .thumbnail {
+.contentbrowser.poster .contentitem .itemrating {
+    display: block;   
+}
+
+.contentbrowser.poster .contentitem .actions {
+    position: absolute;
+    bottom: 2px;
+    left: -webkit-calc(50% - 45px);
+}
+
+.contentbrowser.poster .contentitem .thumbnail {
     width: 100%;
     height: 100%;
 }
 
-.contentbrowser .thumbnail img {
+.contentbrowser.poster img.th {
     max-width: 101px;
     max-height: 150px;
+}
+
+.contentbrowser.list {
+    list-style: none;
+    padding: 0;
+}
+
+.contentbrowser.list .contentitem {
+    list-style: none;
+    padding: 10px;
+    font-size: 90%;
+    height: 130px;
+    position: relative;
+    overflow: hidden;
+}
+
+.contentbrowser.list .actions {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+}
+
+.contentbrowser.list .contentitem .itemplot {
+    padding-top: 7px;
+    overflow: auto;
+    font-size: 90%;
+}
+
+.contentbrowser.list .contentitem:nth-child(even) {
+    background-color: rgba(0,0,0,0.11);   
+}
+
+.contentbrowser.list .contentitem img.th {
+    max-width: 101px;
+    max-height: 110px;
+    float: left;
+    margin-right: 15px;
+}
+
+.contentbrowser.list .contentitem > .iteminfo > span {
+    display: block;
+    margin-left: 88px;
+}
+
+.contentbrowser.list .contentitem > .iteminfo > .itemtagline {
+    display: none;
+}
+
+span.itemyear:before {
+    content: '(';
+}
+
+span.itemyear:after {
+    content: ')';
+}
+
+.contentbrowser.list .contentitem span.itemtitle {
+    font-size: 120%;
+    font-weight: bold;
+}
+
+.itemrating[data-rating] {
+    width: 80px;
+    height: 16px;
+    background-image: url(../static/staroutline.png);
+    background-size: 16px 16px;
+    position: relative;
+    color: rgba(0,0,0,0);
+    font-size: 0;
+}
+
+
+.itemrating:after {
+    background-image: url(../static/star.png);
+    background-size: 16px;
+    position: absolute;
+    display: block;
+    content: '.';
+    height: 100%;
+    top: 0px;
+}
+
+.itemrating[data-rating^="0"]:after {
+    width: 0%;
+}
+.itemrating[data-rating^="1"]:after {
+    width: 10%;
+}
+.itemrating[data-rating^="2"]:after {
+    width: 20%;
+}
+.itemrating[data-rating^="3"]:after {
+    width: 30%;
+}
+.itemrating[data-rating^="4"]:after {
+    width: 40%;
+}
+.itemrating[data-rating^="5"]:after {
+    width: 50%;
+}
+.itemrating[data-rating^="6"]:after {
+    width: 60%;
+}
+.itemrating[data-rating^="7"]:after {
+    width: 70%;
+}
+.itemrating[data-rating^="8"]:after {
+    width: 70%;
+}
+.itemrating[data-rating^="9"]:after {
+    width: 70%;
+}
+.itemrating[data-rating="10"]:after {
+    width: 70%;
 }
 
 .navbar-box {
@@ -112,4 +252,20 @@ body {
 
 .dropdown-header-empty {
     font-style: italic;
+}
+
+.channellistheader > div {
+    padding: 5px;
+}
+
+.channellistheader .viewselector {
+    margin-top: 3px;
+}
+
+.channellistheader .search {
+    margin-top: 3px;
+}
+
+.contentbrowser.poster {
+    padding: 0;
 }
