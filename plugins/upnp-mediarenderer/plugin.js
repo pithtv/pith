@@ -1,6 +1,5 @@
 var ssdp = require("node-ssdp");
 var xml2js = require("xml2js").parseString;
-var http = require("http");
 var request = require("request");
 var events = require("events");
 
@@ -32,7 +31,7 @@ function parseTime(time) {
 }
 
 function sendCommand(url, soapAction, body, cb) {
-    var contentType = "text/xml; charset=utf-8"
+    var contentType = "text/xml; charset=utf-8";
     var postData="<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"yes\"?><s:Envelope s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\" xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\"><s:Body>" + body + "</s:Body></s:Envelope>";
     var options = {
         url: url,
@@ -225,7 +224,7 @@ MediaRenderer.prototype = {
             self.updatePositionInfo();
         }, 1000);
     }
-}
+};
 
 MediaRenderer.prototype.__proto__ = events.EventEmitter.prototype;
 
@@ -241,7 +240,7 @@ function createMediaRenderer(headers, rinfo, opts, cb) {
             var uriRoot = headers.LOCATION.replace(/(http:\/\/[^\/]*).*/, '$1');
             
             function fullUrl(url) {
-                if(url.match(/^http:\/\//) == null) {
+                if(url.match(/^http:\/\//) === null) {
                     return uriRoot + url;
                 } else {
                     return url;

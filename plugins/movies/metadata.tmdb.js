@@ -12,7 +12,7 @@ function createUrl(path) {
 function get(property) {
     return function(e) {
         return e[property];
-    }
+    };
 }
 
 module.exports = function(item, callback) {
@@ -72,9 +72,12 @@ module.exports = function(item, callback) {
             external_source: 'imdb_id'
         }, parser);
     } else {
-        movie = tmdb.searchMovie({
-            query: item.title,
-            year: item.year
-        }, parser);
+        var q = {
+            query: item.title
+        };
+        if(item.year) {
+            q.year = item.year;
+        }
+        movie = tmdb.searchMovie(q, parser);
     }
 };

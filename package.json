@@ -15,6 +15,7 @@
     "xml2js": "*",
     "request": "*",
     "ws": "*",
-    "async": "latest"
+    "async": "latest",
+    "nodeunit": "*"
   }
 }

@@ -1,12 +1,11 @@
 var fs = require("fs");
-var logger = require("console");
 var mimetypes = require("../../lib/mimetypes");
 var xml2js = require("xml2js").parseString;
 var vidstreamer = require("../../lib/vidstreamer");
 var async = require("async");
+var parsefilename = require("../../lib/filenameparser");
 
 function FilesChannel(pith) {
-    logger.log("FilesChannel channel inited");
     this.rootDir = "/mnt/store/Public";
     this.pith = pith;
     
@@ -32,7 +31,6 @@ function parent(filename) {
 
 FilesChannel.prototype = {
     listContents: function(containerId, cb) {
-        logger.log("FilesChannel.listContents", containerId);
         var path = this.rootDir;
         var matchRootDir = new RegExp("^" + path);
         if(containerId) {
@@ -58,8 +56,6 @@ FilesChannel.prototype = {
                         return mimetype && mimetype.match(/^video\//);
                     });
                 }
-                
-                //TODO async
                 async.map(files, function(file, cb) {
                     var filepath = child(path, file);
                     var itemId = filepath.replace(matchRootDir, "");
@@ -124,35 +120,46 @@ FilesChannel.prototype = {
                 item.mimetype = mimetypes[extension];
                 item.playable = item.mimetype && true;
                 
+                item.fileSize = stats.size;
+                item.modificationTime = stats.mtime;
+                item.creationTime = stats.ctime;
+                
                 if(item.mimetype && item.mimetype.match(/^video\//)) {
                     async.parallel([function(done) {
                         var nfoFile = child(parent(filepath), "movie.nfo");
                         fs.exists(nfoFile, function(exists) {
-                           if(exists) {
-                               channel.parseNfo(nfoFile, function(err, data) {
-                                   for(var x in data) {
-                                       item[x] = data[x];
-                                   }
-                                   done();
-                               });
-                           } else {
-                               var plainNfoFile = filepath.replace(/\.[^.\/]*$/, ".nfo");
-                               fs.exists(plainNfoFile, function(exists) {
-                                   if(exists) {
-                                       fs.readFile(plainNfoFile, function(err, data) {
-                                           if(!err && data) {
-                                               var m = data.toString().match(/tt[0-9]{7,}/g);
-                                               if(m && m[0]) {
-                                                   item.imdbId = m[0];
-                                               }
-                                           }
-                                           done();
-                                       });
-                                   } else {
-                                       done();
-                                   }
-                               });
-                           }
+                            if(exists) {
+                                channel.parseNfo(nfoFile, function(err, data) {
+                                    for(var x in data) {
+                                        item[x] = data[x];
+                                    }
+                                    done();
+                                });
+                            } else {
+                                var plainNfoFile = filepath.replace(/\.[^.\/]*$/, ".nfo");
+                                fs.exists(plainNfoFile, function(exists) {
+                                    if(exists) {
+                                        fs.readFile(plainNfoFile, function(err, data) {
+                                            if(!err && data) {
+                                                var m = data.toString().match(/tt[0-9]{7,}/g);
+                                                if(m && m[0]) {
+                                                    item.imdbId = m[0];
+                                                }
+                                            }
+                                            done();
+                                        });
+                                    } else {
+                                        // try to deduce info from the filename and directory
+                                        var meta = parsefilename(filepath);
+                                        if(meta) {
+                                            for(var x in meta) {
+                                                item[x] = meta[x];
+                                            }
+                                        }
+                                        done();
+                                    }
+                                });
+                            }
                         });  
                     }, function(done) {
                         var tbnFile = filepath.replace(/\.[^.\/]*$/, ".tbn");
@@ -199,7 +206,6 @@ FilesChannel.prototype = {
 module.exports.plugin = function() {
     return {
         init: function(opts) {
-            logger.log("FilesChannel plugin initing.");
             opts.pith.registerChannel({
                 id: 'files',
                 title: 'Files',
