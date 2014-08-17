@@ -5,6 +5,7 @@ var network = require("./lib/network.js");
 var http = require("http");
 var ws = require("ws");
 var http = require("http");
+var scaler = require("./lib/imagescaler");
 
 var Global = require("./lib/global");
 
@@ -18,7 +19,7 @@ Global.OpenDatabase(
         console.log("Listening on " + serverAddress + ":" + port);
     
         var pithApp = new Pith({
-            rootUrl: "http://" + serverAddress + ":" + port + pithPath,
+            rootUrl: Global.rootUrl + "/pith/",
             rootPath: pithPath,
             db: db
         });
@@ -28,6 +29,7 @@ Global.OpenDatabase(
         app.use(pithPath, pithApp.handle);
         app.use(Global.settings.apiContext, rest(pithApp));
         app.use(Global.settings.webUiContext, express.static("webui"));
+        app.use("/scale", scaler.handle);
         app.get("/", function(req, res) {
             res.redirect(Global.settings.webUiContext);
         });

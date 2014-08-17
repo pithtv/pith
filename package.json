@@ -17,6 +17,8 @@
     "ws": "*",
     "async": "latest",
     "nodeunit": "*",
-    "node-uuid": "*"
+    "node-uuid": "*",
+    "MD5": "*",
+    "easyimage": "*"
   }
 }

@@ -33,7 +33,7 @@
 <ul class="contentbrowser" ng-repeat-class="view()" vs-repeat vs-scroll-parent="window">
     <li class="contentitem" ng-repeat="item in containerContents | filter:{title:search}" ng-class="(item.thumbnail || item.poster) && 'withthumb'">
         <a href="#/channel/{{channelId}}/{{item.id}}">
-            <img ng-src="{{item.poster || item.thumbnail}}" class="th"/>
+            <img ng-src="{{'/scale/' + (item.poster || item.thumbnail) + '?size=150x150'}}" class="th"/>
         </a>
         <div class="iteminfo">
             <a href="#/channel/{{channelId}}/{{item.id}}">
