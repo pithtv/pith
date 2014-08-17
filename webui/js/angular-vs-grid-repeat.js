@@ -103,11 +103,14 @@
 					},
                     origItemWidth = ngRepeatChild[0].offsetWidth,
                     origItemHeight = ngRepeatChild[0].offsetHeight;
-
+                
 				$element.empty();
-				if(!window.getComputedStyle || window.getComputedStyle($element[0]).position !== 'absolute')
+                
+				
+                if(!window.getComputedStyle || window.getComputedStyle($element[0]).position !== 'absolute')
 					$element.css('position', 'relative');
-				return {
+				
+                return {
 					pre: function($scope, $element, $attrs, $ctrl){
 						var childClone = angular.element(childCloneHtml),
 							originalCollection = [],
@@ -308,6 +311,12 @@
 						});
 
 						$scope.$on('vsRepeatTrigger', reinitialize);
+                        $scope.$watch($attrs.ngRepeatClass, function($class, old$class) {
+                            $element.removeClass(old$class);
+                            $element.addClass($class);
+                            reinitialize();
+                        });
+
 						$scope.$on('vsRepeatResize', function(){
 							autoSize = true;
 							setAutoSize();
@@ -316,6 +325,15 @@
 						var _prevStartIndex,
 							_prevEndIndex;
 						function reinitialize(){
+                            var firstChild = $element.children().eq(0)[0],
+                                w = firstChild.offsetWidth,
+                                h = firstChild.offsetHeight;
+                            if(w && h) {
+                                $scope.gridItemWidth = w;
+                                $scope.gridItemHeight = h;
+                                $scope.itemsPerRow = Math.floor($scrollParent[0][clientBreadth] / w);
+                            }
+                            
 							_prevStartIndex = void 0;
 							_prevEndIndex = void 0;
 							updateInnerCollection();
@@ -377,7 +395,7 @@
                             $scope.startIndex = Math.max(
                                 (Math.floor(
                                     ($scrollParent[0][scrollPos] - $scope.offsetBefore) / $scope.gridItemHeight + $scope.excess/2
-                                ) - $scope.excess) * itemsPerRow,
+                                ) - $scope.excess) * $scope.itemsPerRow,
                                 0
                             );
 
@@ -385,12 +403,10 @@
                                 $scope.startIndex + Math.ceil(
                                     $scrollParent[0][scrollSize] / $scope.elementSize
                                      + $scope.excess
-                                ) * itemsPerRow,
+                                ) * $scope.itemsPerRow,
                                 originalLength
                             );
                             
-                            console.log("Range " + $scope.startIndex + " to " + $scope.endIndex + " (" + ($scope.endIndex - $scope.startIndex));
-
 							var digestRequired = $scope.startIndex !== _prevStartIndex || $scope.endIndex !== _prevEndIndex;
 
 							if(digestRequired)

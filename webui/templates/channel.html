@@ -30,7 +30,7 @@
     Loading.
 </div>
 
-<ul class="contentbrowser" ng-class="view()" vs-repeat vs-grid-item-width="{{view() == 'poster' ? 118 : 0}}" vs-grid-item-height="{{view() == 'poster' ? 168 : 130 }}" vs-scroll-parent="window">
+<ul class="contentbrowser" ng-repeat-class="view()" vs-repeat vs-scroll-parent="window">
     <li class="contentitem" ng-repeat="item in containerContents | filter:{title:search}" ng-class="(item.thumbnail || item.poster) && 'withthumb'">
         <a href="#/channel/{{channelId}}/{{item.id}}">
             <img ng-src="{{item.poster || item.thumbnail}}" class="th"/>
