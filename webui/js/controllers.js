@@ -1,6 +1,6 @@
 "use strict";
 
-var app = angular.module("PithApp", ["PithFilters", "ngRoute", "ChannelControllers", "PlayerControlModule"]);
+var app = angular.module("PithApp", ["PithFilters", "ngRoute", "ChannelControllers", "PlayerControlModule","vs-repeat"]);
 
 app.config(['$routeProvider',
     function($routeProvider) {
@@ -46,7 +46,8 @@ app.controller("MainController", ['$scope','$http','PlayerControlService', funct
     
     this.handleSeekClick = function(event) {
         var targetTime = main.currentStatus.position.duration * event.offsetX / event.target.offsetWidth;
-        playerControl.seek(targetTime);
+        console.log(targetTime);
+//        playerControl.seek(targetTime);
     }
     
     this.control = playerControl;
