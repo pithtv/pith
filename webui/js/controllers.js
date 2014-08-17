@@ -44,5 +44,10 @@ app.controller("MainController", ['$scope','$http','PlayerControlService', funct
         $scope.$apply();
     });
     
+    this.handleSeekClick = function(event) {
+        var targetTime = main.currentStatus.position.duration * event.offsetX / event.target.offsetWidth;
+        playerControl.seek(targetTime);
+    }
+    
     this.control = playerControl;
  }]);

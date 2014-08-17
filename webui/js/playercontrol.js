@@ -54,6 +54,10 @@ angular.module("PlayerControlModule", ["WsEventsModule"])
         
         pause: function() {
             $http.get("/rest/player/" + activePlayer.id + "/pause").error(modalHttpError);   
+        },
+        
+        seek: function(time) {
+            $http.get("/rest/player/" + activePlayer.id + "/seek?time=" + Math.floor(time)).error(modalHttpError);
         }
     };
          
