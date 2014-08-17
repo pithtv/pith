@@ -5,67 +5,69 @@ var network = require("./lib/network.js");
 var http = require("http");
 var ws = require("ws");
 var http = require("http");
-var tingodb = require("tingodb")({searchInArray: true});
-var mongodb = require("mongodb")
 
-var serverAddress = network.getDefaultServerAddress().IPv4;
-var port = process.env.PORT || 3333;
-var pithPath = "/pith";
+var Global = require("./lib/global");
 
-function startup(err, db) {
-    console.log("Listening on " + serverAddress + ":" + port);
+Global.OpenDatabase(
+    function startup(err, db) {
+        
+        var serverAddress = Global.bindAddress;
+        var port = Global.httpPort;
+        var pithPath = Global.settings.pithContext;
 
-    var pithApp = new Pith({
-        rootUrl: "http://" + serverAddress + ":" + port + pithPath,
-        rootPath: pithPath,
-        db: db
-    });
+        console.log("Listening on " + serverAddress + ":" + port);
     
-    var app = express();
-    
-    app.use(pithPath, pithApp.handle);
-    app.use("/rest", rest(pithApp));
-    app.use("/webui", express.static("webui"));
-    app.get("/", function(req, res) {
-        res.redirect("/webui");
-    });
-    
-    app.set("json replacer", function(k,v) {
-        if(k.charAt(0) == '_') return undefined;
-        else return v;
-    });
-    
-    var server = new http.Server(app);
-    
-    server.listen(port, serverAddress);
-    
-    var wss = new ws.Server({server: server});
-    
-    wss.on('connection', function(ws) {
-        var listeners = [];
-        ws.on('message', function(data) {
-            try {
-                var message = JSON.parse(data);
-                switch(message.action) {
-                case 'on':
-                        var listener = function() {
-                            ws.send(JSON.stringify({event: message.event, arguments: Array.prototype.slice.apply(arguments)}));
-                        };
-                        listeners.push({event: message.event, listener: listener});
-                        pithApp.on(message.event, listener);
-                        break;
-                }
-            } catch(e) {
-                console.error("Error processing event message", data, e);
-            }
+        var pithApp = new Pith({
+            rootUrl: "http://" + serverAddress + ":" + port + pithPath,
+            rootPath: pithPath,
+            db: db
         });
-        ws.on('close', function() {
-            console.log("Client disconnected, cleaning up listeners");
-            listeners.forEach(function(e) {
-                pithApp.removeListener(e.event, e.listener); 
+        
+        var app = express();
+        
+        app.use(pithPath, pithApp.handle);
+        app.use(Global.settings.apiContext, rest(pithApp));
+        app.use(Global.settings.webUiContext, express.static("webui"));
+        app.get("/", function(req, res) {
+            res.redirect(Global.settings.webUiContext);
+        });
+        
+        // exclude all private members in JSON messages (those starting with underscore)
+        app.set("json replacer", function(k,v) {
+            if(k.charAt(0) == '_') return undefined;
+            else return v;
+        });
+        
+        var server = new http.Server(app);
+        
+        server.listen(port, serverAddress);
+        
+        var wss = new ws.Server({server: server});
+        
+        wss.on('connection', function(ws) {
+            var listeners = [];
+            ws.on('message', function(data) {
+                try {
+                    var message = JSON.parse(data);
+                    switch(message.action) {
+                    case 'on':
+                            var listener = function() {
+                                ws.send(JSON.stringify({event: message.event, arguments: Array.prototype.slice.apply(arguments)}));
+                            };
+                            listeners.push({event: message.event, listener: listener});
+                            pithApp.on(message.event, listener);
+                            break;
+                    }
+                } catch(e) {
+                    console.error("Error processing event message", data, e);
+                }
+            });
+            ws.on('close', function() {
+                console.log("Client disconnected, cleaning up listeners");
+                listeners.forEach(function(e) {
+                    pithApp.removeListener(e.event, e.listener); 
+                });
             });
         });
-    });
-};
-
-mongodb.MongoClient.connect("mongodb://127.0.0.1:27017/pith", startup);
+    }
+);

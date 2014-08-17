@@ -117,9 +117,9 @@ Pith.prototype = {
         });
     },
     
-    controlPlayback: function(playerId, command) {
+    controlPlayback: function(playerId, command, query) {
         var player = this.playerMap[playerId];
-        player[command]();
+        player[command](undefined, query);
     },
     
     load: function() {

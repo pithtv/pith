@@ -1,8 +1,10 @@
 "use strict";
 
 var async = require("async");
+var Global = require("../../lib/global");
+var uuid = require("node-uuid").v1;
 
-module.exports = function(db) {
+module.exports = function(db, id) {
     var movies = db.collection('movies');
     var people = db.collection('people');
     var keywords = db.collection('keywords');
@@ -83,6 +85,8 @@ module.exports = function(db) {
         var movie = {};
         for(var x in item) movie[x] = item[x];
         
+        movie.id = uuid();
+        
         async.mapSeries(movie.actors, getActorId, function(err, result) {
             movie.actorIds = result;
             async.mapSeries(movie.keywords, getKeywordId, function(err, result) {
@@ -125,6 +129,10 @@ module.exports = function(db) {
         movies.findOne({channelId: channelId, originalId: itemId}, callback);
     }
     
+    function getMovie(itemId, callback) {
+        movies.findOne({id: itemId}, callback);
+    }
+    
     return {
         getPerson: getPerson,
         
@@ -136,6 +144,7 @@ module.exports = function(db) {
         getDirectors: getDirectors,
         getWriters: getWriters,
         getMovies: getMovies,
-        findMovieByOriginalId: findMovieByOriginalId
+        findMovieByOriginalId: findMovieByOriginalId,
+        getMovie: getMovie
     };
 };

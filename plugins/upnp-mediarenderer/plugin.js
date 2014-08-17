@@ -3,7 +3,9 @@ var xml2js = require("xml2js").parseString;
 var request = require("request");
 var events = require("events");
 
-var client = new ssdp.Client({unicastHost: '192.168.1.4'});
+var Global = require("../../lib/global");
+
+var client = new ssdp.Client({unicastHost: Global.bindAddress});
 
 var iconTypePreference = [
     'image/jpeg',
@@ -28,6 +30,18 @@ function parseTime(time) {
     return time.split(":").reduce(function(a,b) {
        return a*60 + parseInt(b); 
     }, 0);
+}
+
+function formatTime(time) {
+    var out = [];
+    var t = time;
+    while(out.length < 2) {
+        var u = t%60;
+        t = (t-u) / 60;
+        out.unshift(u < 10 ? "0"+u : u);
+    }
+    out.unshift(t);
+    return out.join(":");
 }
 
 function sendCommand(url, soapAction, body, cb) {
@@ -101,6 +115,13 @@ MediaRenderer.prototype = {
     pause: function(cb) {
         sendCommand(this.__config.avTransportUrl, "urn:schemas-upnp-org:service:AVTransport:1#Pause",
                     "<u:Pause xmlns:u=\"urn:schemas-upnp-org:service:AVTransport:1\"><InstanceID>0</InstanceID></u:Pause>", cb);
+    },
+    
+    seek: function(cb, query) {
+        var time = formatTime(query.time);
+        console.log(query.time + " -> " + time);
+        sendCommand(this.__config.avTransportUrl, "urn:schemas-upnp-org:service:AVTransport:1#Seek",
+                    "<u:Seek xmlns:u=\"urn:schemas-upnp-org:service:AVTransport:1\"><InstanceID>0</InstanceID><Unit>REL_TIME</Unit><Target>" + time + "</Target></u:Seek>", cb);
     },
     
     getPositionInfo: function(cb) {

@@ -244,7 +244,7 @@ MoviesChannel.prototype = {
     
     getStreamUrl: function(itemId, cb) {
         var channel = this;
-        channel.movies.findOne({id: itemId}, function(err, result) {
+        channel.db.getMovie(itemId, function(err, result) {
             if(err) {
                 cb();
             } else {
