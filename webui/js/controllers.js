@@ -1,6 +1,6 @@
 "use strict";
 
-var app = angular.module("PithApp", ["PithFilters", "ngRoute", "ChannelControllers", "PlayerControlModule"]);
+var app = angular.module("PithApp", ["PithFilters", "ngRoute", "ChannelControllers", "PlayerControlModule","vs-repeat"]);
 
 app.config(['$routeProvider',
     function($routeProvider) {

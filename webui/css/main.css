@@ -12,7 +12,6 @@ body {
     display: inline-block;
     margin: 4px;
     height: 160px;
-    position: relative;
     text-align: center;
 }
 
@@ -80,8 +79,8 @@ body {
     padding: 10px;
     font-size: 90%;
     height: 130px;
-    position: relative;
     overflow: hidden;
+    width: 100%;
 }
 
 .contentbrowser.list .actions {

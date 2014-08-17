@@ -30,8 +30,8 @@
     Loading.
 </div>
 
-<ul class="contentbrowser" ng-class="view()">
-    <li class="contentitem" ng-repeat="item in containerContents | filter:{title:search} | limitTo:100" ng-class="(item.thumbnail || item.poster) && 'withthumb'">
+<ul class="contentbrowser" ng-repeat-class="view()" vs-repeat vs-scroll-parent="window">
+    <li class="contentitem" ng-repeat="item in containerContents | filter:{title:search}" ng-class="(item.thumbnail || item.poster) && 'withthumb'">
         <a href="#/channel/{{channelId}}/{{item.id}}">
             <img ng-src="{{item.poster || item.thumbnail}}" class="th"/>
         </a>
