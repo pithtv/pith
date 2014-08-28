@@ -6,9 +6,29 @@ var uuid = require("node-uuid").v1;
 
 module.exports = function(db, id) {
     var movies = db.collection('movies');
+    var episodes = db.collection('episodes');
+    var shows = db.collection('shows');
     var people = db.collection('people');
     var keywords = db.collection('keywords');
     var genres = db.collection('genres');
+    
+    function findOrCreate(collection, query, constructor, callback) {
+        if(typeof callback != 'function') {
+            callback = constructor;
+            constructor = function(q) { return q; };
+        }
+        collection.findOne(query, function(err, result) {
+            if(result) {
+                callback(null, result);
+            } else {
+                constructor(query, function(err, result) {
+                    collection.insert(result, function(err, result) {
+                        callback(err, result && result[0]);
+                    });
+                });
+            }
+        });
+    }
     
     function getPerson(name, job, callback) {
         people.findOne({name: name}, function(err, result) {
@@ -32,27 +52,11 @@ module.exports = function(db, id) {
     }
     
     function getKeyword(name, callback) {
-        keywords.findOne({name: name}, function(err, result) {
-            if(!result) {
-                keywords.insert({name: name}, function(err, result) {
-                    callback(err, result && result[0]);
-                });
-            } else {
-                callback(null, result);
-            }
-        });
+        findOrCreate(keywords, {name: name}, callback);
     }
     
     function getGenre(name, callback) {
-        genres.findOne({name: name}, function(err, result) {
-            if(!result) {
-                genres.insert({name: name}, function(err, result) {
-                    callback(err, result && result[0]);
-                });
-            } else {
-                callback(null, result);
-            }
-        });
+        findOrCreate(genres, {name: name}, callback);
     }
     
     function _id(callback) {
@@ -99,6 +103,11 @@ module.exports = function(db, id) {
                 });
             });
         });
+    }
+    
+    function storeEpisode(item, callback) {
+        var episode = {};
+        for(var x in item) episode[x] = item[x];
     }
     
     function getKeywords(callback) {

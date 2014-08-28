@@ -236,8 +236,8 @@
                                              oppositePositioningPropertyTransform + '(" + ' + oppositeOffsetCalculationString + ' + "px)"}');
 						}
 						else if(typeof document.documentElement.style.webkitTransform !== "undefined"){ // browser supports -webkit-transform css property
-							childClone.attr('ng-style', '{ "-webkit-transform": "' + positioningPropertyTransform + '(" + ' + offsetCalculationString + ' + "px)"}');
-							childClone.attr('ng-style', '{ "-webkit-transform": "' + oppositePositioningPropertyTransform + '(" + ' + oppositeOffsetCalculationString + ' + "px)"}');
+							childClone.attr('ng-style', '{ "-webkit-transform": "' + positioningPropertyTransform + '(" + ' + offsetCalculationString + ' + "px) ' + 
+							                 oppositePositioningPropertyTransform + '(" + ' + oppositeOffsetCalculationString + ' + "px)"}');
 						}
 						else{
 							childClone.attr('ng-style', '{' + positioningProperty + ': ' + offsetCalculationString + ' + "px"}');
@@ -406,6 +406,10 @@
                                 ) * $scope.itemsPerRow,
                                 originalLength
                             );
+                            
+                            if($scope.startIndex & 1) {
+                                $scope.startIndex--; // always begin on an even index to keep odd/even classes working in CSS
+                            }
                             
 							var digestRequired = $scope.startIndex !== _prevStartIndex || $scope.endIndex !== _prevEndIndex;
 

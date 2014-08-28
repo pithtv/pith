@@ -6,22 +6,23 @@ angular.module("PlayerControlModule", ["WsEventsModule"])
     var players = [];
     var activePlayer = null;
     
-    $http
-        .get('/rest/players')
-        .then(function(res) {
-            var ts = new Date().getTime();
-            players = res.data;
-            players.forEach(function(e) {
-                e.status.timestamp = ts;
+    function refreshPlayers() {
+        $http
+            .get('/rest/players')
+            .then(function(res) {
+                var ts = new Date().getTime();
+                players = res.data;
+                players.forEach(function(e) {
+                    e.status.timestamp = ts;
+                });
+                
+                if(!activePlayer) {
+                    activePlayer = players[0];
+                }
             });
-            
-            if(!activePlayer) {
-                activePlayer = players[0];
-            }
-            if(activePlayer) {
-                service.emit("playerstatechange", activePlayer.status);
-            }
-        });
+    }
+    
+    refreshPlayers();
     
     var service = {
         getSelectedPlayer: function() {
@@ -36,8 +37,6 @@ angular.module("PlayerControlModule", ["WsEventsModule"])
             activePlayer = players.filter(function(e) {
                 return e.id === playerId;
             })[0];
-            
-            this.emit("playerstatechange", activePlayer.status);
         },
         
         load: function(channelId, itemId) {
@@ -68,19 +67,36 @@ angular.module("PlayerControlModule", ["WsEventsModule"])
          
     WsEventsService.on("playerstatechange", function(playerId, status) {
         status.timestamp = new Date().getTime();
-        players.filter(function(e) {
-           return e.id = playerId; 
-        })[0].status = status;
+        var p = players.filter(function(e) {
+           return e.id === playerId; 
+        });
+        if(p && p.length) p[0].status = status;
         if(playerId == activePlayer.id) {
-            service.emit("playerstatechange", status);   
+            service.emit("playerstatechange", status);  
         }
+    }).on("playerregistered", function(player) {
+        players.push(player);
+        if(!activePlayer) {
+            activePlayer = player;
+            service.emit("playerstatechange", status);
+        }
+        service.emit("playerlistchanged");
+    }).on("playerdisappeared", function(player) {
+        players = players.filter(function(e) {
+            return e.id !== player.id;
+        });
+        if(activePlayer && activePlayer.id === player.id) {
+            activePlayer = players[0];
+            service.emit("playerstatechange", status);
+        }
+        service.emit("playerlistchanged");
     });
          
     setInterval(function() {
         var newTs = new Date().getTime();
         players.forEach(function(e) {
             var status = e.status;
-            if(status.state.playing) {
+            if(status.state && status.state.playing) {
                 var tsDelta = (newTs - status.timestamp)/1000;
                 status.timestamp = newTs;
                 status.position.time += tsDelta;

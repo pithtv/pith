@@ -8,7 +8,6 @@
   "dependencies": {
     "express": "~4.2.0",
     "static-favicon": "~1.0.0",
-    "node-ssdp": "*",
     "moviedb": "*",
     "plugin": "*",
     "tingodb": "*",
@@ -19,6 +18,8 @@
     "nodeunit": "*",
     "node-uuid": "*",
     "MD5": "*",
-    "easyimage": "*"
+    "easyimage": "*",
+    "ssdp-client": "*",
+    "mongodb": "*"
   }
 }

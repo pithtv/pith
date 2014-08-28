@@ -22,10 +22,8 @@ body {
     -webkit-transition: all .2s ease-in-out;
     -o-transition: all .2s ease-in-out;
     transition: all .2s ease-in-out;
-}
-
-.contentbrowser.poster .contentitem:not(.withthumb) img.th {
-    width: 100%;
+    
+    width: 110px;
     height: 150px;
 }
 

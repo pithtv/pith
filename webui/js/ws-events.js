@@ -19,6 +19,7 @@ angular.module("WsEventsModule", []).factory("WsEventsService", function() {
                 }
             }
             listeners[event].push(callback);
+            return this;
         }
     }
     
@@ -36,9 +37,7 @@ angular.module("WsEventsModule", []).factory("WsEventsService", function() {
             }
         }
         ws.onmessage = function(data) {
-            console.debug("Received event " + data.data);
             var evt = JSON.parse(data.data);
-            console.log(evt);
             this.trigger(evt.event, evt.arguments);
         };
         ws.trigger = function(event, args) {

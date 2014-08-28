@@ -1,11 +1,12 @@
-var ssdp = require("node-ssdp");
+var ssdp = require("ssdp-client");
 var xml2js = require("xml2js").parseString;
 var request = require("request");
 var events = require("events");
+var $url = require("url");
 
 var Global = require("../../lib/global");
 
-var client = new ssdp.Client({unicastHost: Global.bindAddress});
+var client = ssdp({unicastHost: Global.bindAddress});
 
 var iconTypePreference = [
     'image/jpeg',
@@ -14,6 +15,8 @@ var iconTypePreference = [
     'image/png'];
 
 var sequence = 0;
+
+var players = {};
 
 function MediaRenderer(config) {
     this.__config = config;
@@ -27,6 +30,7 @@ function MediaRenderer(config) {
 }
 
 function parseTime(time) {
+    if(time._) time = time._;
     return time.split(":").reduce(function(a,b) {
        return a*60 + parseInt(b); 
     }, 0);
@@ -44,7 +48,19 @@ function formatTime(time) {
     return out.join(":");
 }
 
-function sendCommand(url, soapAction, body, cb) {
+function _(t) {
+    return t._ || t;
+}
+
+function sendCommand(service, command, parameters, cb) {
+    var url = service.url;
+    var soapAction = service.type + "#" + command;
+    var body = "<u:" + command + " xmlns:u=\"" + service.type + "\">";
+    for(var x in parameters) {
+        body += "<" + x + ">" + parameters[x] + "</" + x + ">";
+    }
+    body += "</u:" + command + ">";
+    
     var contentType = "text/xml; charset=utf-8";
     var postData="<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"yes\"?><s:Envelope s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\" xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\"><s:Body>" + body + "</s:Body></s:Envelope>";
     var options = {
@@ -58,27 +74,41 @@ function sendCommand(url, soapAction, body, cb) {
     };
     
     request(options, function(err, res, body) {
-        if(res.statusCode != 200) {
-            xml2js(body, function(err,upnpReply) {
-                var fault = upnpReply['s:Envelope']['s:Body'][0]['s:Fault'][0];
-                console.log(fault.detail[0].UPnPError[0]);
-                var error = {
-                    error: 'UPnP Error',
-                    code: fault.detail[0].UPnPError[0].errorCode[0],
-                    message: fault.detail[0].UPnPError[0].errorDescription[0]
-                };
-                if(cb!==undefined) {
-                    cb(error);
-                }
-            });
+        if(err) {
+            cb(err);
+        } else if(res.statusCode != 200) {
+            if(body) {
+                xml2js(body, function(err,upnpReply) {
+                    if(err) {
+                        cb(err);
+                    } else {
+                        var fault = upnpReply['s:Envelope']['s:Body'][0]['s:Fault'][0];
+                        console.log(fault.detail[0].UPnPError[0]);
+                        var error = {
+                            error: 'UPnP Error',
+                            code: _(fault.detail[0].UPnPError[0].errorCode[0]),
+                            message: _(fault.detail[0].UPnPError[0].errorDescription[0])
+                        };
+                        if(cb!==undefined) {
+                            cb(error);
+                        }
+                    }
+                });
+            } else {
+                cb("Empty response body");
+            }
         } else {
             if(cb!==undefined) {
                 if(body) {
                     xml2js(body, function(err, bodyObject) {
-                        cb(bodyObject);
+                        if(!err) {
+                            cb(null, bodyObject);
+                        } else {
+                            cb(err);
+                        }
                     });
                 } else {
-                    cb();
+                    cb(null);
                 }
             }
         }
@@ -88,45 +118,66 @@ function sendCommand(url, soapAction, body, cb) {
 MediaRenderer.prototype = {
     load: function(mediaUrl, cb) {
         var renderer = this;
-        this.stop(function(err) {
-            if(err && err.error) {
-                cb(err);
-            } else {
-                sendCommand(renderer.__config.avTransportUrl, "urn:schemas-upnp-org:service:AVTransport:1#SetAVTransportURI",
-                            "<u:SetAVTransportURI xmlns:u=\"urn:schemas-upnp-org:service:AVTransport:1\">" +
-                                "<InstanceID>0</InstanceID>" + 
-                                "<CurrentURI>" + mediaUrl + "</CurrentURI>"+
-                                "<CurrentURIMetaData></CurrentURIMetaData>"+
-                            "</u:SetAVTransportURI>", cb);
-            }
-        });
+        
+        console.log("Loading " + mediaUrl);
+        
+        function doLoad() {
+            sendCommand(renderer.__config.avTransport, "SetAVTransportURI", {
+                InstanceID: 0,
+                CurrentURI: mediaUrl,
+                CurrentURIMetaData: ""
+            }, cb);
+        }
+        
+        if(this.status.actions.stop) {
+            this.stop(function(err) {
+                // if(err) {
+                //     cb(err);
+                // } else {
+                    doLoad();
+                // }
+            });
+        } else {
+            doLoad();
+        }
+        
     },
     
     play: function(cb) {
-        sendCommand(this.__config.avTransportUrl, "urn:schemas-upnp-org:service:AVTransport:1#Play",
-                    "<u:Play xmlns:u=\"urn:schemas-upnp-org:service:AVTransport:1\"><InstanceID>0</InstanceID><Speed>1</Speed></u:Play>", cb);
+        sendCommand(this.__config.avTransport, "Play", {
+            InstanceID: 0,
+            Speed: 1
+        }, cb);
     },
     
     stop: function(cb) {
-        sendCommand(this.__config.avTransportUrl, "urn:schemas-upnp-org:service:AVTransport:1#Stop",
-                    "<u:Stop xmlns:u=\"urn:schemas-upnp-org:service:AVTransport:1\"><InstanceID>0</InstanceID></u:Stop>", cb);
+        sendCommand(this.__config.avTransport, "Stop", {
+            InstanceID: 0
+        }, cb);
     },
     
     pause: function(cb) {
-        sendCommand(this.__config.avTransportUrl, "urn:schemas-upnp-org:service:AVTransport:1#Pause",
-                    "<u:Pause xmlns:u=\"urn:schemas-upnp-org:service:AVTransport:1\"><InstanceID>0</InstanceID></u:Pause>", cb);
+        sendCommand(this.__config.avTransport, "Pause", {
+            InstanceID: 0
+        }, cb);
     },
     
     seek: function(cb, query) {
         var time = formatTime(query.time);
         console.log(query.time + " -> " + time);
-        sendCommand(this.__config.avTransportUrl, "urn:schemas-upnp-org:service:AVTransport:1#Seek",
-                    "<u:Seek xmlns:u=\"urn:schemas-upnp-org:service:AVTransport:1\"><InstanceID>0</InstanceID><Unit>REL_TIME</Unit><Target>" + time + "</Target></u:Seek>", cb);
+        sendCommand(this.__config.avTransport, "Seek", {
+            InstanceID: 0,
+            Unit: "REL_TIME",
+            Target: time
+        }, cb);
     },
     
     getPositionInfo: function(cb) {
-        sendCommand(this.__config.avTransportUrl, "urn:schemas-upnp-org:service:AVTransport:1#GetPositionInfo",
-            "<u:GetPositionInfo xmlns:u=\"urn:schemas-upnp-org:service:AVTransport:1\"><InstanceID>0</InstanceID></u:GetPositionInfo>", function(reply) {
+        sendCommand(this.__config.avTransport, "GetPositionInfo", {
+            InstanceID: 0
+        }, function(err, reply) {
+                if(err) { cb(err); return; }
+                
                 var positionInfo = reply['s:Envelope']['s:Body'][0]['u:GetPositionInfoResponse'][0];
                 var pos = {
                     track: positionInfo.Track[0],
@@ -140,30 +191,36 @@ MediaRenderer.prototype = {
 
                 if(positionInfo.TrackMetaData && positionInfo.TrackMetaData[0]) {
                     xml2js(positionInfo.TrackMetaData[0], function(err, meta) {
-                        var didlLite = meta['DIDL-Lite'].item[0];
-                        for(var x in didlLite) {
-                            var val = didlLite[x][0];
-                            switch(x) {
-                                case 'dc:title': pos.title = val; break;
-                                case 'upnp:genre': pos.genre = val; break;
+                        if(!err) {
+                            var didlLite = meta['DIDL-Lite'].item[0];
+                            for(var x in didlLite) {
+                                var val = didlLite[x][0];
+                                switch(x) {
+                                    case 'dc:title': pos.title = val; break;
+                                    case 'upnp:genre': pos.genre = val; break;
+                                }
                             }
+                            cb(null, pos);
+                        } else {
+                            cb(err);
                         }
-
-                        cb(pos);
                     });
                 } else {
-                    cb(pos);
+                    cb(null, pos);
                 }
         });
     },
     
     updatePositionInfo: function(cb) {
         var renderer = this;
-        renderer.getPositionInfo(function(positionInfo) {
-            if(!positionInfo.error) {
+        renderer.getPositionInfo(function(err, positionInfo) {
+            if(!err) {
                 renderer.status.position = positionInfo;
+                renderer.emit('statechange', renderer.status);
             }
-            renderer.emit('statechange', renderer.status);
+            if(cb) {
+                cb(err);
+            }
         });
     },
     
@@ -185,7 +242,7 @@ MediaRenderer.prototype = {
                                     var actions = didl.CurrentTransportActions[0].$.val.match(/(([^,\\]|\\\\|\\,|\\)+)/g);
                                     renderer.status.actions = {};
                                     if(actions) actions.forEach(function(state) {
-                                        renderer.status.actions[state] = true;
+                                        renderer.status.actions[state.toLowerCase()] = true;
                                     });
                                 }
                                 if(didl.TransportState) {
@@ -230,7 +287,7 @@ MediaRenderer.prototype = {
         
         var options = {
             method: "SUBSCRIBE",
-            url: this.__config.avTransportEvtUrl,
+            url: this.__config.avTransport.eventUrl,
             headers: {
                 CALLBACK: "<" + callbackUri + ">",
                 NT: "upnp:event",
@@ -258,29 +315,26 @@ function createMediaRenderer(headers, rinfo, opts, cb) {
                 icons: {}
             }};
             
-            var uriRoot = headers.LOCATION.replace(/(http:\/\/[^\/]*).*/, '$1');
-            
             function fullUrl(url) {
-                if(url.match(/^http:\/\//) === null) {
-                    return uriRoot + url;
-                } else {
-                    return url;
-                }
+                return $url.resolve(headers.LOCATION, url);
             }
             
             var device = descriptor.root.device[0];
             device.serviceList[0].service.forEach(function(e) {
                 var ctrlUrl = fullUrl(e.controlURL[0]);
                 var evtUrl = fullUrl(e.eventSubURL[0]);
-
+                var service = {
+                    url: ctrlUrl,
+                    eventUrl: evtUrl,
+                    type: e.serviceType[0]
+                };
+                    
                 switch(e.serviceType[0]) {
                 case 'urn:schemas-upnp-org:service:AVTransport:1':
-                    config.avTransportUrl = ctrlUrl;
-                    config.avTransportEvtUrl = evtUrl;
+                    config.avTransport = service;
                     break;
                 case 'urn:schemas-upnp-org:service:RenderingControl:1':
-                    config.renderingControlUrl = ctrlUrl;
-                    config.renderingControlEvtUrl = evtUrl;
+                    config.renderingControl = service;
                     break;
                 }
             });
@@ -302,23 +356,38 @@ function createMediaRenderer(headers, rinfo, opts, cb) {
             
             config.props.friendlyName = device.friendlyName[0];
             
+            config.props.id = headers.USN;
+            
             cb(new MediaRenderer(config));
         });
     });
 }
 
 function init(opts) {
-    client.on('response', function inResponse(headers, code, rinfo) {
-        createMediaRenderer(headers, rinfo, opts, function(renderer) {
-            opts.pith.registerPlayer(renderer); 
-        });
+    client.subscribe('urn:schemas-upnp-org:service:AVTransport:1').on('response', function inResponse(data, rinfo) {
+        if(!players[data.USN]) {
+            createMediaRenderer(data, rinfo, opts, function(renderer) {
+                players[data.USN] = renderer;
+                opts.pith.registerPlayer(renderer);
+            });
+        }
+    }).on('alive', function inAlive(data, rinfo) {
+        if(!players[data.USN]) {
+            createMediaRenderer(data, rinfo, opts, function(renderer) {
+                players[data.USN] = renderer;
+                opts.pith.registerPlayer(renderer);
+            });
+        }
+    }).on('byebye', function inByeBye(data, rinfo) {
+        if(players[data.USN]) {
+            opts.pith.unregisterPlayer(players[data.USN]);
+            players[data.USN] = undefined;
+        }
     });
-
-    client.search('urn:schemas-upnp-org:service:AVTransport:1');
 }
 
 module.exports.plugin = function() {
     return {
         init: init
-    }
+    };
 };

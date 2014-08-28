@@ -23,6 +23,6 @@ channelController.controller('channelController', ['$scope','$http','$routeParam
         if(v) {
             localStorage.view = v;
         }
-        return localStorage.view;
+        return localStorage.view || "list";
     };
 }]);

@@ -9,7 +9,7 @@ var route = express.Router();
 var sequence = 0;
 
 function newId() {
-    return "id"+sequence++;
+    return "id"+(sequence++);
 }
 
 function Pith (opts) {
@@ -50,7 +50,7 @@ Pith.prototype = {
     },
     
     registerPlayer: function (player) {
-        player.id = newId();
+        if(!player.id) player.id = newId();
         this.players.push(player);
         this.playerMap[player.id] = player;
         this.emit("playerregistered", player);
@@ -66,16 +66,20 @@ Pith.prototype = {
             return e.id !== player.id;
         });
         this.playerMap[player.id] = undefined;
-        this.emit("playerdisappeared", player.id);
+        this.emit("playerdisappeared", player);
     },
     
     updatePlayerStates: function() {
         var newTs = new Date().getTime();
         this.players.forEach(function(e) {
-            if(e.status.state.playing) {
-                var delta = (newTs - e.status.serverTimestamp) / 1000;
-                e.status.position.time += delta;
-                e.status.serverTimestamp = newTs;
+            try {
+                if(e.status.state.playing) {
+                    var delta = (newTs - e.status.serverTimestamp) / 1000;
+                    e.status.position.time += delta;
+                    e.status.serverTimestamp = newTs;
+                }
+            } catch(e) {
+                
             }
         });
     },
@@ -102,11 +106,11 @@ Pith.prototype = {
         var player = this.playerMap[playerId];
         this.getStream(channelId, itemId, function(url) {
             player.load(url, function(err) {
-                if(err && err.error) {
+                if(err) {
                     cb(err);   
                 } else {
                     player.play(function(err) {
-                        if(err && err.error) {
+                        if(err) {
                             cb(err);
                         } else {
                             cb();
@@ -117,9 +121,13 @@ Pith.prototype = {
         });
     },
     
-    controlPlayback: function(playerId, command, query) {
+    controlPlayback: function(playerId, command, query, cb) {
         var player = this.playerMap[playerId];
-        player[command](undefined, query);
+        if(typeof query === 'function') {
+            cb = query;
+            query = undefined;
+        }
+        player[command](cb, query);
     },
     
     load: function() {

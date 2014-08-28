@@ -35,10 +35,12 @@ Global.OpenDatabase(
         });
         
         // exclude all private members in JSON messages (those starting with underscore)
-        app.set("json replacer", function(k,v) {
+        function jsonReplacer(k,v) {
             if(k.charAt(0) == '_') return undefined;
             else return v;
-        });
+        };
+        
+        app.set("json replacer", jsonReplacer);
         
         var server = new http.Server(app);
         
@@ -54,7 +56,7 @@ Global.OpenDatabase(
                     switch(message.action) {
                     case 'on':
                             var listener = function() {
-                                ws.send(JSON.stringify({event: message.event, arguments: Array.prototype.slice.apply(arguments)}));
+                                ws.send(JSON.stringify({event: message.event, arguments: Array.prototype.slice.apply(arguments)}, jsonReplacer));
                             };
                             listeners.push({event: message.event, listener: listener});
                             pithApp.on(message.event, listener);

@@ -1,14 +1,17 @@
 <!DOCTYPE html>
 <html ng-app="PithApp">
     <head>
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="translucent">
+        <meta name="format-detection" content="telephone=no">
+        
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
 
         <title>Pith Media Server</title>
         
         <link rel="apple-touch-icon" href="static/pith.png">
-        <meta name="apple-mobile-web-app-capable" content="yes">
 
         <script src="lib/jquery/dist/jquery.min.js"></script>
         <script src="lib/angular/angular.js" lang="javascript"></script>
@@ -65,16 +68,16 @@
                 <!-- Collect the nav links, forms, and other content for toggling -->
                 <div class="collapse navbar-box">
                     <ul class="nav navbar-nav" ng-if="main.control.getSelectedPlayer()">
-                        <li ng-show="main.currentStatus.actions.Pause">
+                        <li ng-show="main.currentStatus.actions.pause">
                             <a class="navbar-link" ng-click="main.control.pause()"><span class="glyphicon glyphicon-pause"></span></a>
                         </li>
-                        <li ng-show="main.currentStatus.actions.Play">
+                        <li ng-show="main.currentStatus.actions.play">
                             <a class="navbar-link" ng-click="main.control.play()"><span class="glyphicon glyphicon-play"></span></a>
                         </li>
-                        <li ng-show="main.currentStatus.actions.Skip">
+                        <li ng-show="main.currentStatus.actions.skip">
                             <a class="navbar-link" ng-click="main.control.pause()"><span class="glyphicon glyphicon-fast-forward"></span></a>
                         </li>
-                        <li ng-show="main.currentStatus.actions.Stop">
+                        <li ng-show="main.currentStatus.actions.stop">
                             <a class="navbar-link" ng-click="main.control.stop()"><span class="glyphicon glyphicon-stop"></span></a>
                         </li>
                     </ul>
@@ -85,7 +88,7 @@
                         <div class="progress progress-thin flex-grow" ng-click="main.handleSeekClick($event, this)">
                           <div class="progress-bar" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: -webkit-calc( 100% * {{main.currentStatus.position.time}} / {{main.currentStatus.position.duration}} );"></div>
                         </div>
-                        <span class="playback-runtime">{{(main.currentStatus.position.duration | duration) || "-:--"}}</span>
+                        <span class="playback-runtime">{{(main.currentStatus.position.duration || undefined) | duration}}</span>
                         </div>
                     </div>
                     <div class="nav navbar-nav navbar-flex noplayer" ng-if="!main.control.getSelectedPlayer()">
