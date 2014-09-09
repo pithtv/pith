@@ -3,6 +3,7 @@ var xml2js = require("xml2js").parseString;
 var request = require("request");
 var events = require("events");
 var $url = require("url");
+var entities = require("entities");
 
 var Global = require("../../lib/global");
 
@@ -30,10 +31,13 @@ function MediaRenderer(config) {
 }
 
 function parseTime(time) {
-    if(time._) time = time._;
-    return time.split(":").reduce(function(a,b) {
-       return a*60 + parseInt(b); 
-    }, 0);
+    if(!time) {
+        return undefined;
+    } else {
+        return time.split(":").reduce(function(a,b) {
+           return a*60 + parseInt(b); 
+        }, 0);
+    }
 }
 
 function formatTime(time) {
@@ -49,7 +53,12 @@ function formatTime(time) {
 }
 
 function _(t) {
-    return t._ || t;
+    var x = t._ || t;
+    if(typeof x === 'string') {
+        return x;
+    } else {
+        return undefined;
+    }
 }
 
 function sendCommand(service, command, parameters, cb) {
@@ -61,13 +70,18 @@ function sendCommand(service, command, parameters, cb) {
     }
     body += "</u:" + command + ">";
     
-    var contentType = "text/xml; charset=utf-8";
-    var postData="<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"yes\"?><s:Envelope s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\" xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\"><s:Body>" + body + "</s:Body></s:Envelope>";
+    var contentType = "text/xml; charset=\"utf-8\"";
+    var postData=
+        "<s:Envelope s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\" xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\">" +
+        "<s:Body>" + body + "</s:Body>" +
+        "</s:Envelope>";
+        
     var options = {
         url: url,
         headers: {
             'Content-Type': contentType,
             'SOAPAction': '"' + soapAction + '"',
+            'USER-AGENT': 'iPad/7.1.2, UPnP/1.0, Pith/0.0.1'
         },
         method: 'POST',
         body: postData
@@ -116,7 +130,7 @@ function sendCommand(service, command, parameters, cb) {
 }
 
 MediaRenderer.prototype = {
-    load: function(mediaUrl, cb) {
+    load: function(item, mediaUrl, cb) {
         var renderer = this;
         
         console.log("Loading " + mediaUrl);
@@ -125,7 +139,16 @@ MediaRenderer.prototype = {
             sendCommand(renderer.__config.avTransport, "SetAVTransportURI", {
                 InstanceID: 0,
                 CurrentURI: mediaUrl,
-                CurrentURIMetaData: ""
+                CurrentURIMetaData:
+'&lt;DIDL-Lite xmlns=&quot;urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/&quot; xmlns:dc=&quot;http://purl.org/dc/elements/1.1/&quot; xmlns:dlna=&quot;urn:schemas-dlna-org:metadata-1-0/&quot; xmlns:upnp=&quot;urn:schemas-upnp-org:metadata-1-0/upnp/&quot;&gt;'+
+'\n&lt;item id=&quot;' + entities.encodeXML(entities.encodeXML(item.id)) + '&quot; parentID=&quot;0&quot; restricted=&quot;1&quot;&gt;'+
+'\n&lt;dc:title&gt;&lt;![CDATA[' + entities.encodeXML(item.title) + ']]&gt;&lt;/dc:title&gt;'+
+'\n&lt;upnp:class&gt;object.item.videoItem&lt;/upnp:class&gt;'+
+'\n&lt;res ' + 
+        'protocolInfo=&quot;http-get:*:' + item.mimetype + '&quot; '+
+'&gt;' + mediaUrl + '&lt;/res&gt;'+
+'\n&lt;/item&gt;'+
+'\n&lt;/DIDL-Lite&gt;\n'
             }, cb);
         }
         
@@ -164,7 +187,6 @@ MediaRenderer.prototype = {
     
     seek: function(cb, query) {
         var time = formatTime(query.time);
-        console.log(query.time + " -> " + time);
         sendCommand(this.__config.avTransport, "Seek", {
             InstanceID: 0,
             Unit: "REL_TIME",
@@ -183,10 +205,10 @@ MediaRenderer.prototype = {
                     track: positionInfo.Track[0],
                     AbsCount: positionInfo.AbsCount[0],
                     RelCount: positionInfo.RelCount[0],
-                    AbsTime: parseTime(positionInfo.AbsTime[0]),
-                    time: parseTime(positionInfo.RelTime[0]),
+                    AbsTime: parseTime(_(positionInfo.AbsTime[0])),
+                    time: parseTime(_(positionInfo.RelTime[0])),
                     uri: positionInfo.TrackURI[0],
-                    duration: parseTime(positionInfo.TrackDuration[0])
+                    duration: parseTime(_(positionInfo.TrackDuration[0]))
                 };
 
                 if(positionInfo.TrackMetaData && positionInfo.TrackMetaData[0]) {
@@ -267,8 +289,9 @@ MediaRenderer.prototype = {
     },
     
     startWatching: function() {
-        var callbackUri = "/upnpevt/" + sequence + "/"; 
+        var callbackUri = "/upnpevt/" + (sequence++) + "/"; 
         var self = this;
+        
         this.__config.pithApp.route.use(callbackUri, function(req,res) {
             var data = '';
             
@@ -283,6 +306,7 @@ MediaRenderer.prototype = {
                 res.end();
             });
         });
+        
         callbackUri = this.__config.pithApp.rootUrl + callbackUri;
         
         var options = {
@@ -298,9 +322,17 @@ MediaRenderer.prototype = {
         request(options, function() {
         });
         
-        setInterval(function() {
+        this.positionTimer = setInterval(function() {
             self.updatePositionInfo();
         }, 1000);
+    },
+    
+    offline: function() {
+        console.log("Device went offline: " + this.friendlyName);
+        if(this.positionTimer) {
+            clearInterval(this.positionTimer);
+            this.positionTimer = null;
+        }
     }
 };
 
@@ -364,22 +396,21 @@ function createMediaRenderer(headers, rinfo, opts, cb) {
 }
 
 function init(opts) {
-    client.subscribe('urn:schemas-upnp-org:service:AVTransport:1').on('response', function inResponse(data, rinfo) {
+    function handlePresence(data, rinfo) {
         if(!players[data.USN]) {
+            players[data.USN] = {}; // placeholder so we don't make them twice in case the alive is triggered before createMediaRenderer finishes
             createMediaRenderer(data, rinfo, opts, function(renderer) {
                 players[data.USN] = renderer;
                 opts.pith.registerPlayer(renderer);
             });
         }
-    }).on('alive', function inAlive(data, rinfo) {
-        if(!players[data.USN]) {
-            createMediaRenderer(data, rinfo, opts, function(renderer) {
-                players[data.USN] = renderer;
-                opts.pith.registerPlayer(renderer);
-            });
-        }
-    }).on('byebye', function inByeBye(data, rinfo) {
+    }
+    client.subscribe('urn:schemas-upnp-org:service:AVTransport:1')
+    .on('response', handlePresence)
+    .on('alive', handlePresence)
+    .on('byebye', function inByeBye(data, rinfo) {
         if(players[data.USN]) {
+            players[data.USN].offline();
             opts.pith.unregisterPlayer(players[data.USN]);
             players[data.USN] = undefined;
         }
