@@ -93,7 +93,11 @@ Pith.prototype = {
         cb(this.channels);
     },
     
-    listChannel: function (channelId, containerId, cb) {
+    getChannelContentDetail: function (channelId, containerId, cb) {
+        this.getChannelInstance(channelId).getItem(containerId, cb);
+    },
+    
+    listChannelContents: function (channelId, containerId, cb) {
         this.getChannelInstance(channelId).listContents(containerId, cb);
     },
     
@@ -103,20 +107,23 @@ Pith.prototype = {
     },
     
     loadMedia: function(channelId, itemId, playerId, cb) {
+        var self = this;
         var player = this.playerMap[playerId];
         this.getStream(channelId, itemId, function(url) {
-            player.load(url, function(err) {
-                if(err) {
-                    cb(err);   
-                } else {
-                    player.play(function(err) {
-                        if(err) {
-                            cb(err);
-                        } else {
-                            cb();
-                        }
-                    });
-                }
+            self.getChannelContentDetail(channelId, itemId, function(err, item) {
+                player.load(item, url, function(err) {
+                    if(err) {
+                        cb(err);
+                    } else {
+                        player.play(function(err) {
+                            if(err) {
+                                cb(err);
+                            } else {
+                                cb();
+                            }
+                        });
+                    }
+                });
             });
         });
     },

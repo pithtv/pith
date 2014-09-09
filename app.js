@@ -1,7 +1,6 @@
 var Pith = require("./pith.js");
 var rest = require("./lib/pithrest.js");
 var express = require("express");
-var network = require("./lib/network.js");
 var http = require("http");
 var ws = require("ws");
 var http = require("http");
@@ -26,6 +25,8 @@ Global.OpenDatabase(
         
         var app = express();
         
+        app.set('x-powered-by', false);
+        
         app.use(pithPath, pithApp.handle);
         app.use(Global.settings.apiContext, rest(pithApp));
         app.use(Global.settings.webUiContext, express.static("webui"));
@@ -38,7 +39,7 @@ Global.OpenDatabase(
         function jsonReplacer(k,v) {
             if(k.charAt(0) == '_') return undefined;
             else return v;
-        };
+        }
         
         app.set("json replacer", jsonReplacer);
         

@@ -2,17 +2,29 @@
 
 var channelController = angular.module("ChannelControllers", []);
 
-channelController.controller('channelController', ['$scope','$http','$routeParams','PlayerControlService', function($scope, $http, $routeParams, playerControl) {
+channelController.controller('channelController', 
+        ['$scope','$http','$routeParams','PlayerControlService',
+        function($scope, $http, $routeParams, playerControl) {
+    
     $scope.containerContents = [];
+    $scope.itemDetails = {};
     $scope.loading = true;
     $scope.channelId = $routeParams.channelId;
     $scope.currentContainer = $routeParams.containerId;
     
     $scope.loading = true;
-    $http.get("/rest/channel/"+$scope.channelId+"/" + ($scope.currentContainer||""))
+    $http.get("/rest/channel/detail/"+$scope.channelId+"/" + ($scope.currentContainer||""))
         .then(function(res) {
-            $scope.loading = false;
-            $scope.containerContents = res.data;
+            var item = res.data;
+            $scope.itemDetails = item;
+            if(item.type == 'container') {
+                return $http.get("/rest/channel/list/"+$scope.channelId+"/" + ($scope.currentContainer||"")).then(function(res) {
+                    $scope.loading = false;
+                    $scope.containerContents = res.data;
+                });
+            } else {
+                $scope.loading = false;
+            }
         });
     
     $scope.load = function(itemId) {

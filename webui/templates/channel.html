@@ -1,9 +1,6 @@
 <div class="navbar-box channellistheader">
     <div class="flex-grow">
         <ul class="breadcrumb">
-            <li>Movies</li>
-            <li>Actors</li>
-            <li>Brad Pitt</li>
         </ul>
     </div>
 
@@ -30,9 +27,20 @@
     Loading.
 </div>
 
-<ul class="contentbrowser" ng-repeat-class="view()" vs-repeat vs-scroll-parent="window">
-    <li class="contentitem" ng-repeat="item in containerContents | filter:{title:search}" ng-class="(item.thumbnail || item.poster) && 'withthumb'">
-        <a href="#/channel/{{channelId}}/{{item.id}}">
+<div class="contentdetail well well-sm" ng-if="itemDetails">
+    <h3 ng-if="itemDetails.title">{{itemDetails.title}}</h3>
+    <h4 ng-if="itemDetails.tagline">{{itemDetails.tagline}}</h4>
+    <div ng-if="itemDetails.plot">{{itemDetails.plot}}</div>
+    <div class="btn-group" ng-if="itemDetails.playable">
+         <button class="btn glyphicon glyphicon-play" ng-click="load(itemDetails.id)"></button>        
+    </div>
+</div>
+
+<div ng-if="itemDetails.fanart" ng-style="{ 'background-image': 'url(\'' + itemDetails.fanart + '\')' }" class="fanart"></div>
+
+<ul class="contentbrowser" ng-repeat-class="view()" vs-repeat vs-scroll-parent="window" vs-excess="2">
+    <li class="contentitem" ng-repeat="item in containerContents | filter:{title:search}" ng-class="(item.thumbnail || item.poster) &amp;&amp; 'withthumb'">
+        <a href="#/channel/{{channelId}}/{{item.id}}" ng-if="item.poster || item.thumbnail">
             <img ng-src="{{'/scale/' + (item.poster || item.thumbnail) + '?size=100x150'}}" class="th"/>
         </a>
         <div class="iteminfo">
@@ -41,7 +49,7 @@
             </a>
             <span class="itemtagline" ng-if="item.tagline">{{item.tagline}}</span>
             <span class="itemrating" data-rating="{{item.rating}}" ng-if="item.rating">{{item.rating}}</span>
-            <span class="itemgenres" ng-if="item.genres && item.genres.length">{{item.genres.join(", ")}}</span>
+            <span class="itemgenres" ng-if="item.genres &amp;&amp; item.genres.length">{{item.genres.join(", ")}}</span>
             <span class="itemplot" ng-if="item.plot">{{item.plot}}</span>
             <span ng-if="item.playable" class="actions">
                 <a ng-click="load(item.id)" class="glyphicon glyphicon-play"></a>

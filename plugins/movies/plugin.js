@@ -17,7 +17,7 @@ var settings = {
 function MoviesChannel(pithApp) {
     this.pithApp = pithApp;
     this.db = db(pithApp.db);
-    this.scan();
+    //this.scan();
 }
 
 var rootDirectories = [

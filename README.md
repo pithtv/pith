@@ -49,6 +49,8 @@ Install node and bower dependencies
     npm install
     bower install
 
+Change the settings in lib/global.js (particularly the filepath to your content).
+
 Start it up
 
     node app.js

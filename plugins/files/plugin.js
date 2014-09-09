@@ -4,15 +4,17 @@ var vidstreamer = require("../../lib/vidstreamer");
 var async = require("async");
 var $path = require("path");
 var parseNfo = require("./parsenfo");
+var settings = require("../../lib/global").settings;
 
 var metaDataProviders = [
     require("./movie-nfo"),
 //    require("./tvshow-nfo"),
-    require("./thumbnails")
+    require("./thumbnails"),
+    require("./fanart")
 ];
 
 function FilesChannel(pith) {
-    this.rootDir = "/mnt/store/Public";
+    this.rootDir = settings.files.rootDir;
     this.pith = pith;
     
     var channel = this;
@@ -46,11 +48,16 @@ FilesChannel.prototype = {
             if(err) {
                 cb(null);
             } else {
-                async.map(files, function(file, cb) {
+                async.map(files.filter(function(e) {
+                    return (e[0] != "." || settings.files.showHiddenFiles) && settings.files.excludeExtensions.indexOf($path.extname(e)) == -1;
+                }), function(file, cb) {
                     var filepath = $path.join(path, file);
                     var itemId = filepath.replace(matchRootDir, "");
-                    filesChannel.getItem(itemId, function(item) {
-                        cb(undefined, item);
+                    filesChannel.getItem(itemId, false,function(err, item) {
+                        if(err) {
+                            throw err;
+                        }
+                        cb(err, item);
                     });
                 }, function(err, contents) {
                     cb(contents);
@@ -62,13 +69,16 @@ FilesChannel.prototype = {
     getItem: function(itemId, detailed, cb) {
         if(typeof detailed === 'function') {
             cb = detailed;
-            detailed = false;
+            detailed = true;
         }
         
         var filepath = $path.join(this.rootDir, itemId);
         var channel = this;
         fs.stat(filepath, function(err, stats) {
-            
+            if(err) {
+                cb(err);
+                return;
+            }
             var item = {
                 title: itemId.replace(/.*\//, ""),
                 id: itemId
@@ -76,26 +86,6 @@ FilesChannel.prototype = {
     
             if(stats.isDirectory()) {
                 item.type = 'container';
-                
-                if(detailed) {
-                    var nfo = $path.join(filepath, "tvshow.nfo");
-                    fs.exists(nfo, function(exists) {
-                        if(exists) {
-                            parseNfo(nfo, function(err, result) {
-                                if(result) {
-                                    for(var x in result) {
-                                        item[x] = result[x];
-                                    }
-                                }
-                                cb(item);
-                            });
-                        } else {
-                            cb(item);
-                        }
-                    });
-                } else {
-                    cb(item);
-                }
             } else {
                 item.type = 'file';
                 var extension = itemId.replace(/.*(\.[^.])/, '$1');
@@ -105,15 +95,22 @@ FilesChannel.prototype = {
                 item.fileSize = stats.size;
                 item.modificationTime = stats.mtime;
                 item.creationTime = stats.ctime;
-                
-                async.parallel(metaDataProviders.map(function(f) {
+            }
+            
+            var applicableProviders = metaDataProviders.filter(function(f) {
+                return f.appliesTo(channel, filepath, item);
+            });
+            
+            if(applicableProviders.length) {
+                async.parallel(applicableProviders.map(function(f) {
                     return function(cb) {
-                        f(channel, filepath, item, cb);
+                        f.get(channel, filepath, item, cb);
                     };
                 }), function() {
-                    cb(item);
+                    cb(null, item);
                 });
-                
+            } else {
+                cb(null, item);
             }
         });
     },
@@ -121,7 +118,7 @@ FilesChannel.prototype = {
     getStreamUrl: function(itemId, cb) {
         var channel = this;
         var itemPath = itemId.split("/").map(encodeURIComponent).join("/");
-        cb(channel.pith.rootUrl +  "/stream/" + itemPath);
+        cb(channel.pith.rootUrl +  "stream/" + itemPath);
     }
 };
 
