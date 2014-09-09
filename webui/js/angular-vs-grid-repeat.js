@@ -338,8 +338,8 @@
 							_prevEndIndex = void 0;
 							updateInnerCollection();
 							resizeFillElement(sizesPropertyExists ?
-												$scope.sizesCumulative[originalLength] :
-												$scope.elementSize*originalLength
+												$scope.sizesCumulative[originalLength] / $scope.itemsPerRow :
+												$scope.elementSize* Math.ceil(originalLength / $scope.itemsPerRow)
 											);
 							$scope.$emit('vsRepeatReinitialized');
 						}
@@ -407,7 +407,7 @@
                                 originalLength
                             );
                             
-                            if($scope.startIndex & 1) {
+                            if($scope.startIndex & 1 && $scope.itemsPerRow == 1) {
                                 $scope.startIndex--; // always begin on an even index to keep odd/even classes working in CSS
                             }
                             
