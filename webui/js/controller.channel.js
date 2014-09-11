@@ -18,6 +18,7 @@ channelController.controller('channelController',
     function loadState(state) {
         $scope.currentContainer = state && state.channelpath[state.channelpath.length - 1].id || "";
         $scope.currentPath = state && state.channelpath || [];
+        $scope.search = state.search;
         
         $http.get("/rest/channel/detail/"+$scope.channelId+"/" + ($scope.currentContainer))
         .then(function(res) {
@@ -35,6 +36,8 @@ channelController.controller('channelController',
     }
     
     function pushState(state) {
+        history.state.search = $scope.search;
+        history.replaceState(history.state);
         history.pushState(state);
         loadState(state);
     }
