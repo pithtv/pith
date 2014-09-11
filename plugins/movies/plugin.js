@@ -20,14 +20,29 @@ function MoviesChannel(pithApp) {
     //this.scan();
 }
 
+function mapMovie(e) {
+    e.origId = e.id;
+    e.id = "movies/" + e.id;
+    return e;
+}
+
 var rootDirectories = [
     {
-        id: "all",
+        id: "movies",
         title: "All movies",
         type: "container",
         _getContents: function(db, containerId, cb) {
             db.getMovies({}, function(err, result) {
-                cb(result);
+                cb(err, result.map(mapMovie));
+            });
+        },
+        _getItem: function(db, itemId, cb) {
+            db.getMovies({id: itemId}, function(err, result) {
+                if(err) {
+                    cb(err);
+                } else {
+                    cb(null, result[0]);
+                }
             });
         }
     },
@@ -38,20 +53,21 @@ var rootDirectories = [
         _getContents: function(db, containerId, cb) {
             if(containerId) {
                 db.getMovies({actorIds: containerId}, function(err, result){
-                    cb(result);
+                    cb(err, result.map(mapMovie));
                 });
             } else {
                 db.getActors(function(err, result) {
                     if(err) {
-                        console.log(err);
+                        cb(err);
+                    } else {
+                        cb(null, result.map(function(e) {
+                            return {
+                                id: "actors/" + e._id,
+                                title: e.name,
+                                type: "container"
+                            };
+                        }));
                     }
-                    cb(result.map(function(e) {
-                        return {
-                            id: "actors/" + e._id,
-                            title: e.name,
-                            type: "container"
-                        };
-                    }));
                 });
             }
         }
@@ -63,20 +79,21 @@ var rootDirectories = [
         _getContents: function(db, containerId, cb) {
             if(containerId) {
                 db.getMovies({directorIds: containerId}, function(err, result){
-                    cb(result);
+                    cb(err, result.map(mapMovie));
                 });
             } else {
                 db.getDirectors(function(err, result) {
                     if(err) {
-                        console.log(err);
+                        cb(err);
+                    } else {
+                        cb(null, result.map(function(e) {
+                            return {
+                                id: "directors/" + e._id,
+                                title: e.name,
+                                type: "container"
+                            };
+                        }));
                     }
-                    cb(result.map(function(e) {
-                        return {
-                            id: "directors/" + e._id,
-                            title: e.name,
-                            type: "container"
-                        };
-                    }));
                 });
             }
         }
@@ -88,20 +105,21 @@ var rootDirectories = [
         _getContents: function(db, containerId, cb) {
             if(containerId) {
                 db.getMovies({writerIds: containerId}, function(err, result){
-                    cb(result);
+                    cb(err, result.map(mapMovie));
                 });
             } else {
                 db.getWriters(function(err, result) {
                     if(err) {
-                        console.log(err);
+                        cb(err);
+                    } else {
+                        cb(null, result.map(function(e) {
+                            return {
+                                id: "writers/" + e._id,
+                                title: e.name,
+                                type: "container"
+                            };
+                        }));
                     }
-                    cb(result.map(function(e) {
-                        return {
-                            id: "writers/" + e._id,
-                            title: e.name,
-                            type: "container"
-                        };
-                    }));
                 });
             }
         }
@@ -113,14 +131,14 @@ var rootDirectories = [
         _getContents: function(db, containerId, cb) {
             if(containerId) {
                 db.getMovies({keywordIds: containerId}, function(err, result) {
-                    cb(result);
+                    cb(err, result.map(mapMovie));
                 });
             } else {
                 db.getKeywords(function(err, result) {
                     if(err) {
-                        console.log(err);
+                        cb(err);
                     } else {
-                        cb(result.map(function(e) {
+                        cb(null, result.map(function(e) {
                             return {
                                 id: "keywords/" + e._id,
                                 title: e.name,
@@ -139,14 +157,14 @@ var rootDirectories = [
         _getContents: function(db, containerId, cb) {
             if(containerId) {
                 db.getMovies({genreIds: containerId}, function(err, result) {
-                    cb(result);
+                    cb(err, result.map(mapMovie));
                 });
             } else {
                 db.getGenres(function(err, result) {
                     if(err) {
-                        console.log(err);
+                        cb(err);
                     } else {
-                        cb(result.map(function(e) {
+                        cb(null, result.map(function(e) {
                             return {
                                 id: "genre/" + e._id,
                                 title: e.name,
@@ -228,7 +246,7 @@ MoviesChannel.prototype = {
     
     listContents: function(containerId, cb) {
         if(!containerId) {
-            cb(rootDirectories);
+            cb(null, rootDirectories);
         } else {
             var i = containerId.indexOf('/');
             
@@ -242,14 +260,34 @@ MoviesChannel.prototype = {
         }
     },
     
-    getStreamUrl: function(itemId, cb) {
-        var channel = this;
-        channel.db.getMovie(itemId, function(err, result) {
-            if(err) {
-                cb();
+    getItem: function(itemId, cb) {
+        if(!itemId) {
+            cb(null, { title: "Movies" });
+        } else {
+            var i = itemId.indexOf('/');
+            
+            var directoryId = i > -1 ? itemId.substring(0,i) : itemId;
+            
+            var directory = rootDirectories.filter(function(e) {
+                return e.id == directoryId; 
+            })[0];
+            
+            if(directory._getItem) {
+                directory._getItem(this.db, i > -1 ? itemId.substring(i+1) : null, cb);
             } else {
-                var targetChannel = channel.pithApp.getChannelInstance(result.channelId);
-                targetChannel.getStreamUrl(itemId, cb);
+                cb(null, { id: itemId });
+            }
+        }
+    },
+    
+    getStreamUrl: function(item, cb) {
+        var channel = this;
+        var targetChannel = channel.pithApp.getChannelInstance(item.channelId);
+        targetChannel.getItem(item.originalId, function(err, item) {
+            if(err) {
+                cb(err);
+            } else {
+                targetChannel.getStreamUrl(item, cb);
             }
         });
     }

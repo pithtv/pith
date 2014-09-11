@@ -46,7 +46,7 @@ FilesChannel.prototype = {
         
         fs.readdir(path, function(err, files) {
             if(err) {
-                cb(null);
+                cb(err);
             } else {
                 async.map(files.filter(function(e) {
                     return (e[0] != "." || settings.files.showHiddenFiles) && settings.files.excludeExtensions.indexOf($path.extname(e)) == -1;
@@ -60,7 +60,7 @@ FilesChannel.prototype = {
                         cb(err, item);
                     });
                 }, function(err, contents) {
-                    cb(contents);
+                    cb(err, contents);
                 });
             }
         });
@@ -115,8 +115,9 @@ FilesChannel.prototype = {
         });
     },
     
-    getStreamUrl: function(itemId, cb) {
+    getStreamUrl: function(item, cb) {
         var channel = this;
+        var itemId = item.id;
         var itemPath = itemId.split("/").map(encodeURIComponent).join("/");
         cb(channel.pith.rootUrl +  "stream/" + itemPath);
     }

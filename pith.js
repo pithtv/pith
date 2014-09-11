@@ -109,8 +109,9 @@ Pith.prototype = {
     loadMedia: function(channelId, itemId, playerId, cb) {
         var self = this;
         var player = this.playerMap[playerId];
-        this.getStream(channelId, itemId, function(url) {
-            self.getChannelContentDetail(channelId, itemId, function(err, item) {
+        var channel = self.getChannelInstance(channelId);
+        channel.getItem(itemId, function(err, item) {
+            channel.getStreamUrl(item, function(url) {
                 player.load(item, url, function(err) {
                     if(err) {
                         cb(err);
