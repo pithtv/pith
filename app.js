@@ -10,6 +10,9 @@ var Global = require("./lib/global");
 
 Global.OpenDatabase(
     function startup(err, db) {
+        if(err) {
+            throw err;
+        }
         
         var serverAddress = Global.bindAddress;
         var port = Global.httpPort;

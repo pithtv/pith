@@ -21,6 +21,7 @@
     "easyimage": "*",
     "ssdp-client": "*",
     "mongodb": "*",
-    "entities": "*"
+    "entities": "*",
+    "upnp-client-minimal": "*"
   }
 }
