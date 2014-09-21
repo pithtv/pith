@@ -20,6 +20,9 @@ channelController.controller('channelController',
         $scope.currentPath = state && state.channelpath || [];
         $scope.search = state.search;
         
+        $scope.itemDetails = null;
+        $scope.containerContents = null;
+        
         $http.get("/rest/channel/detail/"+$scope.channelId+"/" + ($scope.currentContainer))
         .then(function(res) {
             var item = res.data;

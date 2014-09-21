@@ -2,9 +2,29 @@ body {
     padding: 70px 10px 0 10px;
 }
 
-.navbar-brand > img {
-  max-height: 37px;
+#loading-bar .bar {
+    top: 55px;
+}
+
+@-webkit-keyframes rotation {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loading #path2997 {
+  -webkit-animation: rotation 1.5s linear infinite;
+  transform-origin: 38% 50%;
+  transition: 0.5s;
+}
+
+#logo {
     margin-top: -6px;
+    height: 37px;
+    width: 37px;
     opacity: 0.1;
 }
 
@@ -12,6 +32,7 @@ body {
     display: inline-block;
     margin: 4px;
     height: 160px;
+    width: 110px;
     text-align: center;
 }
 
@@ -173,13 +194,13 @@ span.itemyear:after {
     width: 70%;
 }
 .itemrating[data-rating^="8"]:after {
-    width: 70%;
+    width: 80%;
 }
 .itemrating[data-rating^="9"]:after {
-    width: 70%;
+    width: 90%;
 }
-.itemrating[data-rating="10"]:after {
-    width: 70%;
+.itemrating[data-rating="100"]:after {
+    width: 100%;
 }
 
 .navbar-box {

@@ -1,7 +1,7 @@
 (function() {
     "use strict";
     
-    var minColumnWidth = 120, containerpadding = 0, itempadding=8, nc;
+    var minColumnWidth = 120, containerpadding = 20, itempadding=8, nc;
     
     for(nc = 1; nc < 20; nc++) {
         var maxScreenWidth = (nc + 1) * minColumnWidth - 1,

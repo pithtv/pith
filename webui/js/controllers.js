@@ -1,6 +1,15 @@
 "use strict";
 
-var app = angular.module("PithApp", ["PithFilters", "ngRoute", "ChannelControllers", "PlayerControlModule","vs-repeat"]);
+var app = angular.module("PithApp",
+        ["PithFilters",
+         "ngRoute",
+         "ChannelControllers",
+         "PlayerControlModule",
+         "vs-repeat",
+         "angular-loading-bar"])
+    .config(['cfpLoadingBarProvider', function(cfpLoadingBarProvider) {
+        cfpLoadingBarProvider.includeSpinner = false;
+    }]);
 
 app.config(['$routeProvider',
     function($routeProvider) {
@@ -21,6 +30,14 @@ app.controller("MainController", ['$scope','$http','PlayerControlService', funct
     var main = this;
     
     this.channels = [];
+    
+    $scope.$on('cfpLoadingBar:loading', function() {
+        $scope.loading = true;
+    });
+    
+    $scope.$on('cfpLoadingBar:completed', function() {
+        $scope.loading = false;
+    });
     
     $http.get('/rest/channels')
         .then(function(res) {

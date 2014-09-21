@@ -1,13 +1,14 @@
 {
-	"name": "pith-webui",
-	"version": "0.0.1",
-	"dependencies": {
-		"angular": "latest",
-		"angular-route": "latest",
-        "bootstrap": "latest",
-        "sprintf": "latest",
-        "angular-bootstrap": "latest",
-        "veinjs": "latest",
-        "eventEmitter": "latest"
-	}
+  "name": "pith-webui",
+  "version": "0.0.1",
+  "dependencies": {
+    "angular": "latest",
+    "angular-route": "latest",
+    "bootstrap": "latest",
+    "sprintf": "latest",
+    "angular-bootstrap": "latest",
+    "veinjs": "latest",
+    "eventEmitter": "latest",
+    "angular-loading-bar": "~0.6.0"
+  }
 }
