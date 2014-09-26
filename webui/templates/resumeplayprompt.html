@@ -1,0 +1,12 @@
+<div class="modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-body modal-body-lg">Playback was last stopped at {{time | duration}}.</div>
+      <div class="modal-footer modal-footer-btn">
+        <button type="button" ng-click="resume(); $hide();">Resume</button>
+        <button type="button" ng-click="restart(); $hide();">Restart</button>
+        <button type="button" ng-click="$hide()">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>

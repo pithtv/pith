@@ -3,8 +3,8 @@
 var channelController = angular.module("ChannelControllers", []);
 
 channelController.controller('channelController', 
-        ['$scope','$http','$routeParams','PlayerControlService',
-        function($scope, $http, $routeParams, playerControl) {
+        ['$scope','$http','$routeParams', '$rootScope',
+        function($scope, $http, $routeParams, $rootScope) {
     
     $scope.containerContents = [];
     $scope.itemDetails = {};
@@ -51,7 +51,7 @@ channelController.controller('channelController',
     }
     
     $scope.load = function(itemId) {
-        playerControl.load($scope.channelId, itemId);
+        $rootScope.$broadcast('player:load', $scope.channelId, itemId);
     };
     
     $scope.open = function(item) {

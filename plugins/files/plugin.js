@@ -3,8 +3,8 @@ var mimetypes = require("../../lib/mimetypes");
 var vidstreamer = require("../../lib/vidstreamer");
 var async = require("async");
 var $path = require("path");
-var parseNfo = require("./parsenfo");
 var settings = require("../../lib/global").settings;
+var playstate = require("./playstate");
 
 var metaDataProviders = [
     require("./movie-nfo"),
@@ -13,11 +13,13 @@ var metaDataProviders = [
     require("./fanart")
 ];
 
-function FilesChannel(pith) {
+function FilesChannel(pith, statestore) {
     this.rootDir = settings.files.rootDir;
     this.pith = pith;
     
     var channel = this;
+    
+    this.statestore = statestore;
     
     vidstreamer.settings({
         getFile: function(path, cb) {
@@ -119,21 +121,37 @@ FilesChannel.prototype = {
         var channel = this;
         var itemId = item.id;
         var itemPath = itemId.split("/").map(encodeURIComponent).join("/");
-        cb(channel.pith.rootUrl +  "stream/" + itemPath);
+        cb(false, channel.pith.rootUrl +  "stream/" + itemPath);
+    },
+    
+    getLastPlayState: function(itemId, cb) {
+        cb(null, this.statestore.get(itemId));
+    },
+    
+    putPlayState: function(itemId, state, cb) {
+        try {
+            state.id = itemId;
+            this.statestore.put(state);
+            if(cb) cb(false, "OK");
+        } catch(e) {
+            if(cb) cb(e);
+        }
     }
 };
 
 module.exports.plugin = function() {
     return {
         init: function(opts) {
-            opts.pith.registerChannel({
-                id: 'files',
-                title: 'Files',
-                type: 'channel',
-                init: function(opts) {
-                    return new FilesChannel(opts.pith);
-                },
-                sequence: 0
+            playstate(opts.pith.db, function(err, statestore) {
+                opts.pith.registerChannel({
+                    id: 'files',
+                    title: 'Files',
+                    type: 'channel',
+                    init: function(opts) {
+                        return new FilesChannel(opts.pith, statestore);
+                    },
+                    sequence: 0
+                });
             });
         },
         

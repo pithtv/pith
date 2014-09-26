@@ -16,8 +16,9 @@ var iconTypePreference = [
 
 var players = {};
 
-function MediaRenderer(device) {
-    this.device = device;
+function MediaRenderer(device, opts) {
+    this._device = device;
+    this._opts = opts;
     
     this.friendlyName = device.friendlyName;
     
@@ -40,7 +41,7 @@ function MediaRenderer(device) {
         }
     });
     
-    this.avTransport = device.services['urn:upnp-org:serviceId:AVTransport'];
+    this._avTransport = device.services['urn:upnp-org:serviceId:AVTransport'];
     
     this.status = {};
     
@@ -52,7 +53,7 @@ function parseTime(time) {
         return undefined;
     } else {
         return time.split(":").reduce(function(a,b) {
-           return a*60 + parseInt(b); 
+           return a*60 + parseInt(b,10); 
         }, 0);
     }
 }
@@ -80,64 +81,83 @@ function _(t) {
 }
 
 MediaRenderer.prototype = {
-    load: function(item, mediaUrl, cb) {
+    load: function(channel, item, cb) {
         var renderer = this;
         
-        console.log("Loading " + mediaUrl);
-        
-        function doLoad() {
-            renderer.avTransport.SetAVTransportURI({
-                InstanceID: 0,
-                CurrentURI: mediaUrl,
-                CurrentURIMetaData:
-'&lt;DIDL-Lite xmlns=&quot;urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/&quot; xmlns:dc=&quot;http://purl.org/dc/elements/1.1/&quot; xmlns:dlna=&quot;urn:schemas-dlna-org:metadata-1-0/&quot; xmlns:upnp=&quot;urn:schemas-upnp-org:metadata-1-0/upnp/&quot;&gt;'+
-'\n&lt;item id=&quot;' + entities.encodeXML(entities.encodeXML(item.id)) + '&quot; parentID=&quot;0&quot; restricted=&quot;1&quot;&gt;'+
-'\n&lt;dc:title&gt;&lt;![CDATA[' + entities.encodeXML(item.title) + ']]&gt;&lt;/dc:title&gt;'+
-'\n&lt;upnp:class&gt;object.item.videoItem&lt;/upnp:class&gt;'+
-'\n&lt;res ' + 
-        'protocolInfo=&quot;http-get:*:' + item.mimetype + '&quot; '+
-'&gt;' + mediaUrl + '&lt;/res&gt;'+
-'\n&lt;/item&gt;'+
-'\n&lt;/DIDL-Lite&gt;\n'
-            }, cb);
-        }
-        
-        if(this.status.actions.stop) {
-            this.stop(function(err) {
-                // if(err) {
-                //     cb(err);
-                // } else {
+        channel.getStreamUrl(item, function(err, mediaUrl) {
+            console.log("Loading " + mediaUrl);
+            
+            function doLoad() {
+                renderer._avTransport.SetAVTransportURI({
+                    InstanceID: 0,
+                    CurrentURI: mediaUrl,
+                    CurrentURIMetaData:
+                        entities.encodeXML(
+                            '<DIDL-Lite xmlns="urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/" xmlns:pith="http://github.com/evinyatar/pith/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dlna="urn:schemas-dlna-org:metadata-1-0/" xmlns:upnp="urn:schemas-upnp-org:metadata-1-0/upnp/">'+
+                                '<item id="' + entities.encodeXML(item.id) + '" parentID="0" restricted="1">'+
+                                    '<dc:title><![CDATA[' + item.title + ']]></dc:title>'+
+                                    '<upnp:class>object.item.videoItem</upnp:class>'+
+                                    '<res protocolInfo="http-get:*:' + item.mimetype + '" '+'>' + mediaUrl + '</res>'+
+                                    '<pith:itemId>' + entities.encodeXML(item.id) + '</pith:itemId>'+
+                                    '<pith:channelId>' + entities.encodeXML(channel.id) + '</pith:channelId>'+
+                                '</item>'+
+                            '</DIDL-Lite>\n')
+                }, cb);
+            }
+            
+            if(renderer.status.actions.stop) {
+                renderer.stop(function(err) {
                     doLoad();
-                // }
-            });
-        } else {
-            doLoad();
-        }
+                });
+            } else {
+                doLoad();
+            }
+        });
         
     },
     
-    play: function(cb) {
-        this.avTransport.Play({
+    play: function(cb, time) {
+        var renderer = this;
+        this._avTransport.Play({
             InstanceID: 0,
             Speed: 1
-        }, cb);
+        }, function(err) {
+            if(err) {
+                cb(err);
+                return;
+            }
+            
+            var retryCount = 3;
+            
+            function waitForSeek(status) {
+                if(status.actions.seek) {
+                    renderer.seek(cb, { time: time });
+                } else if(retryCount-- > 0) {
+                    renderer.once('statechange', waitForSeek);
+                } else {
+                    cb("Seeking not available");
+                }
+            }
+            
+            renderer.once('statechange', waitForSeek);
+        });
     },
     
     stop: function(cb) {
-        this.avTransport.Stop({
+        this._avTransport.Stop({
             InstanceID: 0
         }, cb);
     },
     
     pause: function(cb) {
-        this.avTransport.Pause({
+        this._avTransport.Pause({
             InstanceID: 0
         }, cb);
     },
     
     seek: function(cb, query) {
         var time = formatTime(query.time);
-        this.avTransport.Seek({
+        this._avTransport.Seek({
             InstanceID: 0,
             Unit: "REL_TIME",
             Target: time
@@ -145,7 +165,7 @@ MediaRenderer.prototype = {
     },
     
     getPositionInfo: function(cb) {
-        this.avTransport.GetPositionInfo({InstanceID: 0}, function(err, positionInfo) {
+        this._avTransport.GetPositionInfo({InstanceID: 0}, function(err, positionInfo) {
             if(err) {
                 cb(err); return;
             }
@@ -169,6 +189,8 @@ MediaRenderer.prototype = {
                             switch(x) {
                                 case 'dc:title': pos.title = val; break;
                                 case 'upnp:genre': pos.genre = val; break;
+                                case 'pith:itemId': pos.itemId = val; break;
+                                case 'pith:channelId': pos.channelId = val; break;
                             }
                         }
                         cb(null, pos);
@@ -184,6 +206,10 @@ MediaRenderer.prototype = {
         var renderer = this;
         renderer.getPositionInfo(function(err, positionInfo) {
             if(!err) {
+                if(positionInfo.channelId) {
+                    renderer._opts.pith.putPlayState(positionInfo.channelId, positionInfo.itemId, {time: positionInfo.time, duration: positionInfo.duration});
+                }
+                
                 renderer.status.position = positionInfo;
                 renderer.emit('statechange', renderer.status);
             }
@@ -196,7 +222,7 @@ MediaRenderer.prototype = {
     startWatching: function() {
         var self = this;
         
-        this.avTransport.on('LastChange', function(changeEvent) {
+        this._avTransport.on('LastChange', function(changeEvent) {
             xml2js(changeEvent, function(err, body) {
                 var didl = body.Event.InstanceID[0];
                 
@@ -245,7 +271,7 @@ function createMediaRenderer(headers, rinfo, opts, cb) {
         if(err) {
             cb(err);
         } else {
-            cb(false, new MediaRenderer(device));
+            cb(false, new MediaRenderer(device, opts));
         }
     });
 }

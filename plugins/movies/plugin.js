@@ -21,7 +21,7 @@ function MoviesChannel(pithApp) {
 }
 
 function mapMovie(e) {
-    e.origId = e.id;
+    e.movieId = e.id;
     e.id = "movies/" + e.id;
     return e;
 }
@@ -41,7 +41,11 @@ var rootDirectories = [
                 if(err) {
                     cb(err);
                 } else {
-                    cb(null, result[0]);
+                    if(result[0]) {
+                        cb(null, mapMovie(result[0]));
+                    } else {
+                        cb(null, undefined);
+                    }
                 }
             });
         }
@@ -272,6 +276,11 @@ MoviesChannel.prototype = {
                 return e.id == directoryId; 
             })[0];
             
+            if(!directory) {
+                cb(Error("Not found"));
+                return;
+            }
+            
             if(directory._getItem) {
                 directory._getItem(this.db, i > -1 ? itemId.substring(i+1) : null, cb);
             } else {
@@ -289,6 +298,26 @@ MoviesChannel.prototype = {
             } else {
                 targetChannel.getStreamUrl(item, cb);
             }
+        });
+    },
+    
+    getLastPlayState: function(itemId, cb) {
+        var self = this;
+        this.getItem(itemId, function(err, item) {
+            var targetChannel = self.pithApp.getChannelInstance(item.channelId);
+            targetChannel.getLastPlayState(item.originalId, cb);
+        });
+    },
+    
+    putPlayState: function(itemId, state, cb) {
+        var self = this;
+        this.getItem(itemId, function(err, item) {
+            if(err) {
+                if(cb) cb(err);
+                return;
+            }
+            var targetChannel = self.pithApp.getChannelInstance(item.channelId);
+            targetChannel.putPlayState(item.originalId, state, cb);
         });
     }
 };

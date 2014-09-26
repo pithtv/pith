@@ -34,6 +34,7 @@ Pith.prototype = {
         if (channelInstance === undefined) {
             var channel = this.channelMap[channelId];
             channelInstance = this.channelInstances[channelId] = channel.init({pith: this});
+            channelInstance.id = channelId;
         }
         return channelInstance;
     },
@@ -106,23 +107,34 @@ Pith.prototype = {
         channelInstance.getStreamUrl(itemId, cb);
     },
     
-    loadMedia: function(channelId, itemId, playerId, cb) {
+    getLastPlayState: function(channelId, itemId, cb) {
+        var channelInstance = this.getChannelInstance(channelId);
+        channelInstance.getLastPlayState(itemId, cb);
+    },
+    
+    putPlayState: function(channelId, itemId, state, cb) {
+        var channelInstance = this.getChannelInstance(channelId);
+        if(state.time > Math.max(state.duration - 300, state.duration * 11 / 12)) {
+            state.status = 'watched';
+        } else {
+            state.status = 'inprogress';
+        }
+        channelInstance.putPlayState(itemId, state, cb);
+    },
+    
+    loadMedia: function(channelId, itemId, playerId, cb, opts) {
         var self = this;
         var player = this.playerMap[playerId];
         var channel = self.getChannelInstance(channelId);
         channel.getItem(itemId, function(err, item) {
             channel.getStreamUrl(item, function(url) {
-                player.load(item, url, function(err) {
+                player.load(channel, item, function(err) {
                     if(err) {
                         cb(err);
                     } else {
                         player.play(function(err) {
-                            if(err) {
-                                cb(err);
-                            } else {
-                                cb();
-                            }
-                        });
+                            cb(err);
+                        }, opts && opts.time);
                     }
                 });
             });

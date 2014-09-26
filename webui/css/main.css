@@ -301,3 +301,28 @@ span.itemyear:after {
     background-repeat: no-repeat;
     background-size: cover;
 }
+
+.modal-footer-btn {
+    padding: 0;
+}
+
+.modal-body-lg {
+  padding: 1em;
+  font-size: 130%;
+  text-align: center;
+}
+
+.modal-footer-btn > button {
+    border: none;
+    background: none;
+    font-size: 130%;
+    display: block;
+    text-align: center;
+    padding: 0.6em;
+    width: 100%;
+    color: rgb(50,120,255);
+}
+
+.modal-footer-btn > button+button {
+    border-top: 1px solid rgba(0,0,0,0.1);
+}

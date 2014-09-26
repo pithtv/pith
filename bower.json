@@ -4,11 +4,15 @@
   "dependencies": {
     "angular": "latest",
     "angular-route": "latest",
-    "bootstrap": "latest",
     "sprintf": "latest",
     "angular-bootstrap": "latest",
     "veinjs": "latest",
     "eventEmitter": "latest",
-    "angular-loading-bar": "~0.6.0"
+    "angular-loading-bar": "~0.6.0",
+    "angular-strap": "~2.1.0",
+    "angular-motion": "~0.3.3"
+  },
+  "resolutions": {
+    "angular": "1.2.25"
   }
 }

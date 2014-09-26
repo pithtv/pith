@@ -6,7 +6,8 @@ var app = angular.module("PithApp",
          "ChannelControllers",
          "PlayerControlModule",
          "vs-repeat",
-         "angular-loading-bar"])
+         "angular-loading-bar",
+         "mgcrea.ngStrap.modal"])
     .config(['cfpLoadingBarProvider', function(cfpLoadingBarProvider) {
         cfpLoadingBarProvider.includeSpinner = false;
     }]);
@@ -26,7 +27,7 @@ app.config(['$routeProvider',
             });
     }]);
 
-app.controller("MainController", ['$scope','$http','PlayerControlService', function($scope, $http, playerControl) {
+app.controller("MainController", ['$scope','$http','PlayerControlService', "$modal", function($scope, $http, playerControl, $modal) {
     var main = this;
     
     this.channels = [];
@@ -37,6 +38,34 @@ app.controller("MainController", ['$scope','$http','PlayerControlService', funct
     
     $scope.$on('cfpLoadingBar:completed', function() {
         $scope.loading = false;
+    });
+    
+    $scope.$on('player:load', function(event, channelId, itemId) {
+        playerControl.getLastPlayState(channelId, itemId)
+         .success(function(state) {
+             if(state.status == 'inprogress') {
+                var scope = $scope.$new();
+                scope.time = state.time;
+                scope.duration = state.duration;
+                
+                scope.restart = function() {
+                    playerControl.load(channelId, itemId);
+                };
+                
+                scope.resume = function() {
+                    playerControl.load(channelId, itemId, state.time);
+                };
+        
+                $modal({
+                    title: 'My Title',
+                    template: 'templates/resumeplayprompt.html',
+                    show: true,
+                    scope: scope
+                });
+            } else {
+                playerControl.load(channelId, itemId);
+            }
+        });
     });
     
     $http.get('/rest/channels')

@@ -1,7 +1,7 @@
 angular.module("PlayerControlModule", ["WsEventsModule"])
 .factory("PlayerControlService", 
-    ["$http", "WsEventsService",
-     function($http, WsEventsService) {
+    ["$http", "WsEventsService", "$q",
+     function($http, WsEventsService, $q) {
     
     var players = [];
     var activePlayer = null;
@@ -39,28 +39,31 @@ angular.module("PlayerControlModule", ["WsEventsModule"])
             })[0];
         },
         
-        load: function(channelId, itemId) {
-            $http.get("/rest/player/" + activePlayer.id + "/load/" + channelId + "/" + itemId).error(modalHttpError);
+        load: function(channelId, itemId, time) {
+            return $http.get("/rest/player/" + activePlayer.id + "/load/" + channelId + "/" + itemId, {params: {time: time}}).error(modalHttpError);
         },
         
         play: function() {
-            $http.get("/rest/player/" + activePlayer.id + "/play").error(modalHttpError);   
+            return $http.get("/rest/player/" + activePlayer.id + "/play").error(modalHttpError);   
         },
         
         stop: function() {
-            $http.get("/rest/player/" + activePlayer.id + "/stop").error(modalHttpError);   
+            return $http.get("/rest/player/" + activePlayer.id + "/stop").error(modalHttpError);   
         },
         
         pause: function() {
-            $http.get("/rest/player/" + activePlayer.id + "/pause").error(modalHttpError);   
+            return $http.get("/rest/player/" + activePlayer.id + "/pause").error(modalHttpError);   
         },
         
         seek: function(time) {
-            $http.get("/rest/player/" + activePlayer.id + "/seek?time=" + Math.floor(time)).error(modalHttpError);
+            return $http.get("/rest/player/" + activePlayer.id + "/seek?time=" + Math.floor(time)).error(modalHttpError);
+        },
+        
+        getLastPlayState: function(channelId, itemId) {
+            return $http.get("/rest/channel/playstate/" + channelId + "/" + itemId).error(modalHttpError);
         }
     };
          
-
     for(var x in EventEmitter.prototype) {
         service[x] = EventEmitter.prototype[x];
     }

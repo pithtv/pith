@@ -4,7 +4,7 @@ var async = require("async");
 var Global = require("../../lib/global");
 var uuid = require("node-uuid").v1;
 
-module.exports = function(db, id) {
+module.exports = function(db) {
     var movies = db.collection('movies');
     var episodes = db.collection('episodes');
     var shows = db.collection('shows');
