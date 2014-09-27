@@ -304,8 +304,12 @@ MoviesChannel.prototype = {
     getLastPlayState: function(itemId, cb) {
         var self = this;
         this.getItem(itemId, function(err, item) {
-            var targetChannel = self.pithApp.getChannelInstance(item.channelId);
-            targetChannel.getLastPlayState(item.originalId, cb);
+            if(item && item.playable) {
+                var targetChannel = self.pithApp.getChannelInstance(item.channelId);
+                targetChannel.getLastPlayState(item.originalId, cb);
+            } else {
+                cb(err, item);
+            }
         });
     },
     

@@ -5,6 +5,7 @@ var http = require("http");
 var ws = require("ws");
 var http = require("http");
 var scaler = require("./lib/imagescaler");
+var bodyparser = require("body-parser");
 
 var Global = require("./lib/global");
 
@@ -27,6 +28,8 @@ Global.OpenDatabase(
         });
         
         var app = express();
+        
+        app.use(bodyparser.json());
         
         app.set('x-powered-by', false);
         

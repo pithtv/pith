@@ -6,22 +6,23 @@
     "start": "node ./bin/www"
   },
   "dependencies": {
-    "express": "~4.2.0",
-    "static-favicon": "~1.0.0",
-    "moviedb": "*",
-    "plugin": "*",
-    "tingodb": "*",
-    "xml2js": "*",
-    "request": "*",
-    "ws": "*",
-    "async": "latest",
-    "nodeunit": "*",
-    "node-uuid": "*",
     "MD5": "*",
+    "async": "latest",
+    "body-parser": "^1.9.0",
     "easyimage": "*",
-    "ssdp-client": "*",
-    "mongodb": "*",
     "entities": "*",
-    "upnp-client-minimal": "*"
+    "express": "~4.2.0",
+    "mongodb": "*",
+    "moviedb": "*",
+    "node-uuid": "*",
+    "nodeunit": "*",
+    "plugin": "*",
+    "request": "*",
+    "ssdp-client": "*",
+    "static-favicon": "~1.0.0",
+    "tingodb": "*",
+    "upnp-client-minimal": "*",
+    "ws": "*",
+    "xml2js": "*"
   }
 }

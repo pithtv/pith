@@ -3,6 +3,7 @@
 var express = require("express");
 var plugin = require("plugin")();
 var events = require("events");
+var async = require("async");
 
 var route = express.Router();
 
@@ -98,8 +99,23 @@ Pith.prototype = {
         this.getChannelInstance(channelId).getItem(containerId, cb);
     },
     
-    listChannelContents: function (channelId, containerId, cb) {
-        this.getChannelInstance(channelId).listContents(containerId, cb);
+    listChannelContents: function (channelId, containerId, cb, options) {
+        var ci = this.getChannelInstance(channelId);
+        ci.listContents(containerId, function(err, contents) {
+            if(!err && options.includePlayStates) {
+                async.map(contents, function(item, m) {
+                    ci.getLastPlayState(item.id, function(err, state) {
+                        item.playState = state;
+                        m(err, item);
+                    });
+                }, function(err, result) {
+                    cb(err, result);
+                });
+            } else {
+                cb(err, contents);
+            }
+        });
+        
     },
     
     getStream: function (channelId, itemId, cb) {
@@ -114,10 +130,12 @@ Pith.prototype = {
     
     putPlayState: function(channelId, itemId, state, cb) {
         var channelInstance = this.getChannelInstance(channelId);
-        if(state.time > Math.max(state.duration - 300, state.duration * 11 / 12)) {
-            state.status = 'watched';
-        } else {
-            state.status = 'inprogress';
+        if(!state.status) {
+            if(state.time > Math.max(state.duration - 300, state.duration * 11 / 12)) {
+                state.status = 'watched';
+            } else {
+                state.status = 'inprogress';
+            }
         }
         channelInstance.putPlayState(itemId, state, cb);
     },
