@@ -74,7 +74,7 @@ angular.module("PlayerControlModule", ["WsEventsModule"])
            return e.id === playerId; 
         });
         if(p && p.length) p[0].status = status;
-        if(playerId == activePlayer.id) {
+        if(activePlayer && playerId == activePlayer.id) {
             service.emit("playerstatechange", status);  
         }
     }).on("playerregistered", function(player) {
