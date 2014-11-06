@@ -17,7 +17,10 @@ var settings = {
 function MoviesChannel(pithApp) {
     this.pithApp = pithApp;
     this.db = db(pithApp.db);
-    //this.scan();
+    var self = this;
+    setTimeout(function() {
+        self.scan()
+        }, 30000);
 }
 
 function mapMovie(e) {
