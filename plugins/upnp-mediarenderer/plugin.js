@@ -96,7 +96,7 @@ MediaRenderer.prototype = {
                             '<DIDL-Lite xmlns="urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/" xmlns:pith="http://github.com/evinyatar/pith/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dlna="urn:schemas-dlna-org:metadata-1-0/" xmlns:upnp="urn:schemas-upnp-org:metadata-1-0/upnp/">'+
                                 '<item id="' + entities.encodeXML(item.id) + '" parentID="0" restricted="1">'+
                                     '<dc:title><![CDATA[' + item.title + ']]></dc:title>'+
-                                    '<upnp:class>object.item.videoItem</upnp:class>'+
+                                    '<upnp:class>object.item</upnp:class>'+
                                     '<res protocolInfo="http-get:*:' + item.mimetype + '" '+'>' + mediaUrl + '</res>'+
                                     '<pith:itemId>' + entities.encodeXML(item.id) + '</pith:itemId>'+
                                     '<pith:channelId>' + entities.encodeXML(channel.id) + '</pith:channelId>'+
@@ -123,23 +123,27 @@ MediaRenderer.prototype = {
             Speed: 1
         }, function(err) {
             if(err) {
-                cb(err);
+                if(cb) cb(err);
                 return;
             }
             
-            var retryCount = 3;
-            
-            function waitForSeek(status) {
-                if(status.actions.seek) {
-                    renderer.seek(cb, { time: time });
-                } else if(retryCount-- > 0) {
-                    renderer.once('statechange', waitForSeek);
-                } else {
-                    cb("Seeking not available");
+            if(time) {
+                var timeout = new Date().getTime() + 3000;
+                
+                function waitForSeek(status) {
+                    if(status.actions.seek) {
+                        renderer.seek(cb, { time: time });
+                    } else if(new Date().getTime() < timeout) {
+                        renderer.once('statechange', waitForSeek);
+                    } else {
+                        cb("Seeking not available");
+                    }
                 }
+                
+                renderer.once('statechange', waitForSeek);
+            } else {
+                cb();
             }
-            
-            renderer.once('statechange', waitForSeek);
         });
     },
     
