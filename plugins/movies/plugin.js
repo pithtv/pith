@@ -209,19 +209,27 @@ MoviesChannel.prototype = {
                                         
                                         item.modificationTime = container.modificationTime;
                                         item.creationTime = container.creationTime;
-                                        item.backupTitle = container.title;
+                                        
+                                        function store(result) {
+                                            result.originalId = item.id;
+                                            result.channelId = dir.channel;
+                                            result.id = item.id;
+                                            result.dateScanned = new Date();
+                                            channel.db.storeMovie(result, function(err) {
+                                                cb();
+                                            });
+                                        }
                                         
                                         channel.scanItem(item, function(err, result) {
                                             if(err) {
+                                                item.title = container.title;
+                                                channel.scanItem(item, function(err, result) {
+                                                    if(err) cb();
+                                                    else store(result);
+                                                });
                                                 cb();
                                             } else {
-                                                result.originalId = item.id;
-                                                result.channelId = dir.channel;
-                                                result.id = item.id;
-                                                result.dateScanned = new Date();
-                                                channel.db.storeMovie(result, function(err) {
-                                                    cb();
-                                                });
+                                                store(result);
                                             }
                                         });
                                     } else {
