@@ -15,7 +15,7 @@ module.exports = function(db) {
     function findOrCreate(collection, query, constructor, callback) {
         if(typeof callback != 'function') {
             callback = constructor;
-            constructor = function(q) { return q; };
+            constructor = function(q, cb) { cb(undefined, q); };
         }
         collection.findOne(query, function(err, result) {
             if(result) {
@@ -61,7 +61,7 @@ module.exports = function(db) {
     
     function _id(callback) {
         return function(err, result) {
-            callback(err, result._id.toHexString());
+            callback(err, result && result._id.toHexString());
         };
     }
     

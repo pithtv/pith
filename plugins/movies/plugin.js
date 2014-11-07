@@ -19,8 +19,8 @@ function MoviesChannel(pithApp) {
     this.db = db(pithApp.db);
     var self = this;
     setTimeout(function() {
-        self.scan()
-        }, 30000);
+        self.scan();
+    }, 10000);
 }
 
 function mapMovie(e) {
@@ -193,7 +193,10 @@ MoviesChannel.prototype = {
             var channelInstance = channel.pithApp.getChannelInstance(dir.channel);
             
             function listContents(container, done) {
-                channelInstance.listContents(container && container.id, function(contents) {
+                channelInstance.listContents(container && container.id, function(err, contents) {
+                    if(err) {
+                        done(err);
+                    }
                     if(contents && contents.length) {
                         async.eachSeries(contents, function(item, cb) {
                             if(item.type == 'container') {
@@ -235,7 +238,7 @@ MoviesChannel.prototype = {
                 });
             }
             
-            channelInstance.getItem(dir.containerId, function(container) {
+            channelInstance.getItem(dir.containerId, function(err, container) {
                 listContents(container, function() {
                     setTimeout(function() {
                         channel.scan();
