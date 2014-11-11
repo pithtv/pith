@@ -25,16 +25,20 @@ module.exports = function(db, callback) {
         cache[md5(object.id)] = object;
     }
     
-    function flush() {
-        for(var x in queue) {
-            var state = queue[x];
-            if(state._id) {
-                collection.update({_id: state._id}, state);
-            } else {
-                collection.insert(state);
+    function scheduleFlush() {
+        setTimeout(function() {
+
+            for(var x in queue) {
+                var state = queue[x];
+                if(state._id) {
+                    collection.update({_id: state._id}, state, scheduleFlush);
+                } else {
+                    collection.insert(state, scheduleFlush);
+                }
             }
-        }
-        queue = {};
+            queue = {};
+
+        }, 10000);
     }
     
     var playstate = {
@@ -48,7 +52,7 @@ module.exports = function(db, callback) {
                 callback(err);
             } else if(doc === null) {
                 callback(false, playstate);
-                setInterval(flush, 10000); // flush every 10 seconds
+                scheduleFlush();
             } else {
                 cache[md5(doc.id)] = doc;
             }
