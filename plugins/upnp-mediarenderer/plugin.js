@@ -88,6 +88,8 @@ MediaRenderer.prototype = {
             console.log("Loading " + mediaUrl);
             
             function doLoad() {
+                var type = item.mimetype.split('/')[0];
+                
                 renderer._avTransport.SetAVTransportURI({
                     InstanceID: 0,
                     CurrentURI: mediaUrl,
@@ -95,8 +97,8 @@ MediaRenderer.prototype = {
                         entities.encodeXML(
                             '<DIDL-Lite xmlns="urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/" xmlns:pith="http://github.com/evinyatar/pith/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dlna="urn:schemas-dlna-org:metadata-1-0/" xmlns:upnp="urn:schemas-upnp-org:metadata-1-0/upnp/">'+
                                 '<item id="' + entities.encodeXML(item.id) + '" parentID="0" restricted="1">'+
-                                    '<dc:title><![CDATA[' + item.title + ']]></dc:title>'+
-                                    '<upnp:class>object.item</upnp:class>'+
+                                    '<dc:title>' + entities.encodeXML(item.title) + '</dc:title>'+
+                                    '<upnp:class>object.item.' + type + 'Item</upnp:class>'+
                                     '<res protocolInfo="http-get:*:' + item.mimetype + '" '+'>' + mediaUrl + '</res>'+
                                     '<pith:itemId>' + entities.encodeXML(item.id) + '</pith:itemId>'+
                                     '<pith:channelId>' + entities.encodeXML(channel.id) + '</pith:channelId>'+
