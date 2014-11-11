@@ -130,19 +130,25 @@ Pith.prototype = {
     
     putPlayState: function(channelId, itemId, state, cb) {
         var channelInstance = this.getChannelInstance(channelId);
-        if(!state.status) {
-            if(state.time > Math.max(state.duration - 300, state.duration * 11 / 12)) {
-                state.status = 'watched';
-            } else {
-                state.status = 'inprogress';
+        if(state.duration > 600) {
+            if(!state.status) {
+                if(state.time > Math.max(state.duration - 300, state.duration * 11 / 12)) {
+                    state.status = 'watched';
+                } else {
+                    state.status = 'inprogress';
+                }
             }
+            channelInstance.putPlayState(itemId, state, cb);
         }
-        channelInstance.putPlayState(itemId, state, cb);
     },
     
     loadMedia: function(channelId, itemId, playerId, cb, opts) {
         var self = this;
         var player = this.playerMap[playerId];
+        if(!player) {
+            cb(new Error("Unknown player", playerId));
+            return;
+        }
         var channel = self.getChannelInstance(channelId);
         channel.getItem(itemId, function(err, item) {
             channel.getStreamUrl(item, function(url) {
