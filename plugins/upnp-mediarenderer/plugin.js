@@ -125,6 +125,7 @@ MediaRenderer.prototype = {
             Speed: 1
         }, function(err) {
             if(err) {
+                console.error(cb);
                 if(cb) cb(err);
                 return;
             }
@@ -137,7 +138,7 @@ MediaRenderer.prototype = {
                         renderer.seek(cb, { time: time });
                     } else if(new Date().getTime() < timeout) {
                         renderer.once('statechange', waitForSeek);
-                    } else {
+                    } else if(cb) {
                         cb("Seeking not available");
                     }
                 }
@@ -230,28 +231,33 @@ MediaRenderer.prototype = {
         
         this._avTransport.on('LastChange', function(changeEvent) {
             xml2js(changeEvent, function(err, body) {
-                var didl = body.Event.InstanceID[0];
-                
-                if(didl.CurrentTransportActions) {
-                    var actions = didl.CurrentTransportActions[0].$.val.match(/(([^,\\]|\\\\|\\,|\\)+)/g);
-                    self.status.actions = {};
-                    if(actions) actions.forEach(function(state) {
-                        self.status.actions[state.toLowerCase()] = true;
-                    });
-                }
-                if(didl.TransportState) {
-                    var state = didl.TransportState[0];
-                    var status;
-                    switch(state.$.val) {
-                            case 'PAUSED_PLAYBACK': status = {paused: true}; break;
-                            case 'PLAYING': status = {playing: true}; break;
-                            case 'STOPPED': status = {stopped: true}; break;
-                            case 'TRANSITIONING': status = {transitioning: true}; break;
+                if(err) {
+                    console.error(err);
+                } else {
+                    var didl = body.Event.InstanceID[0];
+
+                    if(didl.CurrentTransportActions) {
+                        var actions = didl.CurrentTransportActions[0].$.val.match(/(([^,\\]|\\\\|\\,|\\)+)/g);
+                        self.status.actions = {};
+                        if(actions) actions.forEach(function(state) {
+                            self.status.actions[state.toLowerCase()] = true;
+                        });
                     }
-                    self.status.state = status;
+                    if(didl.TransportState) {
+                        var state = didl.TransportState[0];
+                        var status;
+                        switch(state.$.val) {
+                                case 'PAUSED_PLAYBACK': status = {paused: true}; break;
+                                case 'PLAYING': status = {playing: true}; break;
+                                case 'STOPPED': status = {stopped: true}; break;
+                                case 'TRANSITIONING': status = {transitioning: true}; break;
+                        }
+                        self.status.state = status;
+                    }
+
+                    self.updatePositionInfo();
+
                 }
-                
-                self.updatePositionInfo();
             });
 
         });
