@@ -2,8 +2,9 @@
 
 var express = require("express");
 var plugin = require("plugin")();
-var events = require("events");
+var EventEmitter = require("./lib/events");
 var async = require("async");
+var global = require("./lib/global")();
 
 var route = express.Router();
 
@@ -48,18 +49,19 @@ Pith.prototype = {
             else if(a.sequence < b.sequence) return -1;
             else return 1;
         });
-        this.emit("channelRegistered", channel);
+        this.emit("channelRegistered", {channel: channel});
     },
     
     registerPlayer: function (player) {
         if(!player.id) player.id = newId();
         this.players.push(player);
         this.playerMap[player.id] = player;
-        this.emit("playerregistered", player);
+        this.emit("playerregistered", {player: player});
+
         var self = this;
         player.on("statechange", function(status) {
             status.serverTimestamp = new Date().getTime();
-            self.emit("playerstatechange", player.id, status);
+            self.emit("playerstatechange", {player: player, status: status});
         });
     },
     
@@ -68,7 +70,7 @@ Pith.prototype = {
             return e.id !== player.id;
         });
         this.playerMap[player.id] = undefined;
-        this.emit("playerdisappeared", player);
+        this.emit("playerdisappeared", {player: player});
     },
     
     updatePlayerStates: function() {
@@ -167,6 +169,7 @@ Pith.prototype = {
     
     controlPlayback: function(playerId, command, query, cb) {
         var player = this.playerMap[playerId];
+        this.emit()
         if(typeof query === 'function') {
             cb = query;
             query = undefined;
@@ -175,14 +178,15 @@ Pith.prototype = {
     },
     
     load: function() {
-        require("./plugins/files/plugin").plugin().init({pith: this});
-        require("./plugins/movies/plugin").plugin().init({pith: this});
-        require("./plugins/upnp-mediarenderer/plugin").plugin().init({pith: this});
+        require("./plugins/files/plugin").init({pith: this});
+        require("./plugins/movies/plugin").init({pith: this});
+        require("./plugins/upnp-mediarenderer/plugin").init({pith: this});
+        require("./plugins/yamaha/plugin").init({pith: this});
     },
     
     handle: route
 };
 
-Pith.prototype.__proto__ = events.EventEmitter.prototype;
+Pith.prototype.__proto__ = EventEmitter.prototype;
 
 module.exports = Pith;

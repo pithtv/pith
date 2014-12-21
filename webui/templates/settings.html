@@ -1,0 +1,5 @@
+<tabset>
+    <tab ng-repeat="tab in pages" heading="{{tab.title}}" active="tab.active" disabled="tab.disabled">
+        <ng-include src="tab.template" ng-if="tab.active" />
+    </tab>
+</tabset>

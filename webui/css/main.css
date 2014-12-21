@@ -97,6 +97,7 @@ body {
     bottom: 17px;
     padding: 4px;
     font-weight: bold;
+    overflow: hidden;
 }
 
 .contentbrowser.poster .contentitem .itemrating {

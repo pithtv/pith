@@ -1,7 +1,7 @@
 "use strict";
 
 var async = require("async");
-var Global = require("../../lib/global");
+var Global = require("../../lib/global")();
 var uuid = require("node-uuid").v1;
 
 module.exports = function(db) {

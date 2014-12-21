@@ -3,7 +3,7 @@ var mimetypes = require("../../lib/mimetypes");
 var vidstreamer = require("../../lib/vidstreamer");
 var async = require("async");
 var $path = require("path");
-var settings = require("../../lib/global").settings;
+var settings = require("../../lib/global")().settings;
 var playstate = require("./playstate");
 
 var metaDataProviders = [
@@ -23,7 +23,7 @@ function FilesChannel(pith, statestore) {
     
     vidstreamer.settings({
         getFile: function(path, cb) {
-            cb($path.join(channel.rootDir, decodeURIComponent(path)));
+            cb($path.resolve(channel.rootDir, decodeURIComponent(path)));
         }
     });
     
@@ -53,16 +53,13 @@ FilesChannel.prototype = {
                 async.map(files.filter(function(e) {
                     return (e[0] != "." || settings.files.showHiddenFiles) && settings.files.excludeExtensions.indexOf($path.extname(e)) == -1;
                 }), function(file, cb) {
-                    var filepath = $path.join(path, file);
+                    var filepath = $path.resolve(path, file);
                     var itemId = filepath.replace(matchRootDir, "");
                     filesChannel.getItem(itemId, false,function(err, item) {
-                        if(err) {
-                            throw err;
-                        }
                         cb(err, item);
                     });
                 }, function(err, contents) {
-                    cb(err, contents);
+                    cb(err, contents.filter(function(e) { return e !== undefined; }));
                 });
             }
         });
@@ -74,7 +71,7 @@ FilesChannel.prototype = {
             detailed = true;
         }
         
-        var filepath = $path.join(this.rootDir, itemId);
+        var filepath = $path.resolve(this.rootDir, itemId);
         var channel = this;
         fs.stat(filepath, function(err, stats) {
             if(err) {
@@ -139,22 +136,20 @@ FilesChannel.prototype = {
     }
 };
 
-module.exports.plugin = function() {
-    return {
-        init: function(opts) {
-            playstate(opts.pith.db, function(err, statestore) {
-                opts.pith.registerChannel({
-                    id: 'files',
-                    title: 'Files',
-                    type: 'channel',
-                    init: function(opts) {
-                        return new FilesChannel(opts.pith, statestore);
-                    },
-                    sequence: 0
-                });
+module.exports = {
+    init: function(opts) {
+        playstate(opts.pith.db, function(err, statestore) {
+            opts.pith.registerChannel({
+                id: 'files',
+                title: 'Files',
+                type: 'channel',
+                init: function(opts) {
+                    return new FilesChannel(opts.pith, statestore);
+                },
+                sequence: 0
             });
-        },
-        
-        metaDataProviders: metaDataProviders
-    };
+        });
+    },
+
+    metaDataProviders: metaDataProviders
 };

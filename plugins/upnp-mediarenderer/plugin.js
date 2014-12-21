@@ -4,7 +4,7 @@ var events = require("events");
 var entities = require("entities");
 var Device = require("upnp-client-minimal");
 
-var Global = require("../../lib/global");
+var Global = require("../../lib/global")();
 
 var client = ssdp({unicastHost: Global.bindAddress});
 
@@ -19,6 +19,8 @@ var players = {};
 function MediaRenderer(device, opts) {
     this._device = device;
     this._opts = opts;
+
+    this.id = device.UDN;
     
     this.friendlyName = device.friendlyName;
     
@@ -278,44 +280,50 @@ MediaRenderer.prototype = {
 
 MediaRenderer.prototype.__proto__ = events.EventEmitter.prototype;
 
-function createMediaRenderer(headers, rinfo, opts, cb) {
-    Device({descriptorUrl: headers.LOCATION}, function(err, device) {
-        if(err) {
-            cb(err);
-        } else {
-            cb(false, new MediaRenderer(device, opts));
+module.exports = {
+    init: function init(opts) {
+        var plugin = this;
+        function handlePresence(data, rinfo) {
+            if(!players[data.USN]) {
+                players[data.USN] = {}; // placeholder so we don't make them twice in case the alive is triggered before createMediaRenderer finishes
+                plugin.handlePlayerAppearance(data, rinfo, opts, function(err, renderer) {
+                    if(err) {
+                        console.log(err);
+                    } else {
+                        players[data.USN] = renderer;
+                        opts.pith.registerPlayer(renderer);
+                    }
+                });
+            }
         }
-    });
-}
-
-function init(opts) {
-    function handlePresence(data, rinfo) {
-        if(!players[data.USN]) {
-            players[data.USN] = {}; // placeholder so we don't make them twice in case the alive is triggered before createMediaRenderer finishes
-            createMediaRenderer(data, rinfo, opts, function(err, renderer) {
-                if(err) {
-                    console.log(err);
-                } else {
-                    players[data.USN] = renderer;
-                    opts.pith.registerPlayer(renderer);
+        client.subscribe('urn:schemas-upnp-org:device:MediaRenderer:1')
+            .on('response', handlePresence)
+            .on('alive', handlePresence)
+            .on('byebye', function inByeBye(data, rinfo) {
+                if(players[data.USN]) {
+                    players[data.USN].offline();
+                    opts.pith.unregisterPlayer(players[data.USN]);
+                    players[data.USN] = undefined;
                 }
             });
-        }
-    }
-    client.subscribe('urn:schemas-upnp-org:device:MediaRenderer:1')
-    .on('response', handlePresence)
-    .on('alive', handlePresence)
-    .on('byebye', function inByeBye(data, rinfo) {
-        if(players[data.USN]) {
-            players[data.USN].offline();
-            opts.pith.unregisterPlayer(players[data.USN]);
-            players[data.USN] = undefined;
-        }
-    });
-}
+    },
 
-module.exports.plugin = function() {
-    return {
-        init: init
-    };
+    handlePlayerAppearance: function(headers, rinfo, opts, cb) {
+        var plugin = this;
+        Device({descriptorUrl: headers.LOCATION}, function(err, device) {
+            if(err) {
+                cb(err);
+            } else {
+                plugin.createRenderer(device, opts, function(err, renderer) {
+                    cb(false, renderer);
+                });
+            }
+        });
+    },
+
+    createRenderer: function(device, opts, callback) {
+        callback(false, new MediaRenderer(device, opts));
+    },
+
+    MediaRenderer: MediaRenderer
 };

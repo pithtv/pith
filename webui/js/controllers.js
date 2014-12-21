@@ -1,14 +1,16 @@
 "use strict";
 
 var app = angular.module("PithApp",
-        ["PithFilters",
-         "ngRoute",
-         "ChannelControllers",
-         "PlayerControlModule",
-         "vs-repeat",
-         "angular-loading-bar",
-         "mgcrea.ngStrap.modal"])
-    .config(['cfpLoadingBarProvider', function(cfpLoadingBarProvider) {
+    ["PithFilters",
+        "ngRoute",
+        "ChannelControllers",
+        "PlayerControlModule",
+        "SettingsControllers",
+        "vs-repeat",
+        "angular-loading-bar",
+        "mgcrea.ngStrap.modal",
+        "ui.bootstrap"])
+    .config(['cfpLoadingBarProvider', function (cfpLoadingBarProvider) {
         cfpLoadingBarProvider.includeSpinner = false;
     }]);
 
@@ -22,9 +24,14 @@ app.config(['$routeProvider',
             when('', {
                 templateUrl: 'templates/main.html',
                 controller: 'mainController'
-            }).otherwise({
+            }).
+            when('/settings', {
+                templateUrl: 'templates/settings.html',
+                controller: 'mainSettingsController'
+            }).
+            otherwise({
                 redirectTo: ''
-            });
+            })
     }]);
 
 app.controller("MainController", ['$scope','$http','PlayerControlService', "$modal", function($scope, $http, playerControl, $modal) {

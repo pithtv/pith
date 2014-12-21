@@ -193,57 +193,59 @@ MoviesChannel.prototype = {
             var channelInstance = channel.pithApp.getChannelInstance(dir.channel);
             
             function listContents(container, done) {
-                channelInstance.listContents(container && container.id, function(err, contents) {
-                    if(err) {
-                        done(err);
-                    }
-                    if(contents && contents.length) {
-                        async.eachSeries(contents, function(item, cb) {
-                            if(item.type == 'container') {
-                               listContents(item, cb);
-                            } else if(item.playable && item.mimetype.match(/^video\//)) {
-                                
-                                channel.db.findMovieByOriginalId(dir.channel, item.id, function(err, result) {
-                                    if(!result) {
-                                        console.log("Found new item " + item.id);
-                                        
-                                        item.modificationTime = container.modificationTime;
-                                        item.creationTime = container.creationTime;
-                                        
-                                        function store(result) {
-                                            result.originalId = item.id;
-                                            result.channelId = dir.channel;
-                                            result.id = item.id;
-                                            result.dateScanned = new Date();
-                                            channel.db.storeMovie(result, function(err) {
-                                                cb();
-                                            });
-                                        }
-                                        
-                                        channel.scanItem(item, function(err, result) {
-                                            if(err) {
-                                                item.title = container.title;
-                                                channel.scanItem(item, function(err, result) {
-                                                    if(err) cb();
-                                                    else store(result);
+                if(container) {
+                    channelInstance.listContents(container && container.id, function (err, contents) {
+                        if (err) {
+                            done(err);
+                        }
+                        if (contents && contents.length) {
+                            async.eachSeries(contents, function (item, cb) {
+                                if (item.type == 'container') {
+                                    listContents(item, cb);
+                                } else if (item.playable && item.mimetype.match(/^video\//)) {
+
+                                    channel.db.findMovieByOriginalId(dir.channel, item.id, function (err, result) {
+                                        if (!result) {
+                                            console.log("Found new item " + item.id);
+
+                                            item.modificationTime = container.modificationTime;
+                                            item.creationTime = container.creationTime;
+
+                                            function store(result) {
+                                                result.originalId = item.id;
+                                                result.channelId = dir.channel;
+                                                result.id = item.id;
+                                                result.dateScanned = new Date();
+                                                channel.db.storeMovie(result, function (err) {
+                                                    cb();
                                                 });
-                                                cb();
-                                            } else {
-                                                store(result);
                                             }
-                                        });
-                                    } else {
-                                        cb();
-                                    }
-                                });
-                            } else {
-                                cb();
-                            }                  
-                        }, done);
-                    } else {
-                        done();
-                    }
-                });
+
+                                            channel.scanItem(item, function (err, result) {
+                                                if (err) {
+                                                    item.title = container.title;
+                                                    channel.scanItem(item, function (err, result) {
+                                                        if (err) cb();
+                                                        else store(result);
+                                                    });
+                                                    cb();
+                                                } else {
+                                                    store(result);
+                                                }
+                                            });
+                                        } else {
+                                            cb();
+                                        }
+                                    });
+                                } else {
+                                    cb();
+                                }
+                            }, done);
+                        } else {
+                            done();
+                        }
+                    });
+                }
             }
             
             channelInstance.getItem(dir.containerId, function(err, container) {
@@ -340,20 +342,18 @@ MoviesChannel.prototype = {
     }
 };
 
-module.exports.plugin = function() {
-    return {
-        init: function(opts) {
-            var instance = new MoviesChannel(opts.pith);
-            
-            opts.pith.registerChannel({
-                id: 'movies',
-                title: 'Movies',
-                type: 'channel',
-                init: function(opts) {
-                    return instance;
-                },
-                sequence: 2
-            });
-        }
-    };
+module.exports = {
+    init: function(opts) {
+        var instance = new MoviesChannel(opts.pith);
+
+        opts.pith.registerChannel({
+            id: 'movies',
+            title: 'Movies',
+            type: 'channel',
+            init: function(opts) {
+                return instance;
+            },
+            sequence: 2
+        });
+    }
 };
