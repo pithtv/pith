@@ -36,17 +36,25 @@
 <h3>
 <a id="the-server" class="anchor" href="#the-server" aria-hidden="true"><span class="octicon octicon-link"></span></a>The server.</h3>
 
-<p>The only software you need to install is the Pith server on your NAS or computer. It maintains a library of media that's on there.</p>
+<p>The only software you need to install is the Pith server on your NAS or computer. It maintains a library of media that's on there; it will scan local media, try to fetch relevant metadata from internet sources, and catalog everything in many convenient ways.</p>
 
 <h3>
 <a id="the-interface" class="anchor" href="#the-interface" aria-hidden="true"><span class="octicon octicon-link"></span></a>The interface.</h3>
 
-<p>Pith presents an easy-to-use web interface on your tablet, laptop or smartphone from which all interaction takes place. You use it to browse your media library, and control playback.</p>
+<p>Pith presents an easy-to-use web interface on your tablet, laptop or smartphone from which all interaction takes place. You use it to browse your media library, and control playback. Browse movies by title, year, rating or even actor. Play, seek, pause playback with a single touch or click.</p>
 
 <h3>
 <a id="the-player" class="anchor" href="#the-player" aria-hidden="true"><span class="octicon octicon-link"></span></a>The player.</h3>
 
 <p>Pith is designed from the ground up to be able to support many networked media playback devices. In the first release, support is limited to UPnP/DLNA enabled devices, but the goal is to support many more (e.g. AirPlay, Squeezebox, Chromecast, ...).</p>
+
+<h1>
+<a id="how-does-it-work-technically" class="anchor" href="#how-does-it-work-technically" aria-hidden="true"><span class="octicon octicon-link"></span></a>How does it work (technically)?</h1>
+
+<p>Pith is a node.js application that can be run on your computer or NAS. It exposes a web interface, as well as a JSON REST api and a media streaming service through http.
+The web interface is single page static html, and communicates with pith exclusively through the REST api and Websockets (for realtime feedback). It is built on Angular and Bootstrap 3.0, and can be used as a fullscreen web app on iPad so it looks virtually indistinguishable from a native app.
+Pith can be used with MongoDB for metadata storage, or using the integrated TingoDB database. Periodic scans on user defined paths scan for new media which is then cataloged in the database. Metadata is obtained from themoviedb.com.
+Playback is currently limited to UPnP/DLNA devices; it has been tested successfully with Panasonic Viera devices, Yamaha A-830 and XBMC.</p>
 
 <h1>
 <a id="how-to-get-started" class="anchor" href="#how-to-get-started" aria-hidden="true"><span class="octicon octicon-link"></span></a>How to get started</h1>
