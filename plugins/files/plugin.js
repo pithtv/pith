@@ -5,6 +5,7 @@ var async = require("async");
 var $path = require("path");
 var settings = require("../../lib/global")().settings;
 var playstate = require("./playstate");
+var ff = require("fluent-ffmpeg");
 
 var metaDataProviders = [
     require("./movie-nfo"),
@@ -23,7 +24,7 @@ function FilesChannel(pith, statestore) {
     
     vidstreamer.settings({
         getFile: function(path, cb) {
-            cb($path.resolve(channel.rootDir, decodeURIComponent(path)));
+            cb(channel.getFile(path));
         }
     });
     
@@ -63,6 +64,10 @@ FilesChannel.prototype = {
                 });
             }
         });
+    },
+
+    getFile: function(path, cb) {
+        return $path.resolve(this.rootDir, decodeURIComponent(path));
     },
     
     getItem: function(itemId, detailed, cb) {
@@ -114,11 +119,17 @@ FilesChannel.prototype = {
         });
     },
     
-    getStreamUrl: function(item, cb) {
+    getStream: function(item, cb) {
         var channel = this;
         var itemId = item.id;
         var itemPath = itemId.split("/").map(encodeURIComponent).join("/");
-        cb(false, channel.pith.rootUrl +  "stream/" + itemPath);
+        ff.ffprobe(this.getFile(item.id), function(err, metadata) {
+            cb(false, {
+                url: channel.pith.rootUrl +  "stream/" + itemPath,
+                duration: parseFloat(metadata.format.duration) * 1000,
+                mimetype: item.mimetype
+            });
+        });
     },
     
     getLastPlayState: function(itemId, cb) {

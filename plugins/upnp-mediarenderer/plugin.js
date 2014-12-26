@@ -3,6 +3,7 @@ var xml2js = require("xml2js").parseString;
 var events = require("events");
 var entities = require("entities");
 var Device = require("upnp-client-minimal");
+var sprintf = require("sprintf-js").sprintf;
 
 var Global = require("../../lib/global")();
 
@@ -60,16 +61,24 @@ function parseTime(time) {
     }
 }
 
-function formatTime(time) {
-    var out = [];
-    var t = time;
-    while(out.length < 2) {
-        var u = t%60;
-        t = (t-u) / 60;
-        out.unshift(u < 10 ? "0"+u : u);
+function format(n, parts, f) {
+    var out = [], nn = n;
+    while(parts.length) {
+        var p = parts.pop(), pn = nn % p;
+        out.unshift(pn);
+        nn = (nn - pn) / p;
     }
-    out.unshift(t);
-    return out.join(":");
+    out.unshift(nn);
+    out.unshift(f);
+    return sprintf.apply(null, out);
+}
+
+function formatTime(time) {
+    return format(time, [60, 60], "%02d:%02d:%02d");
+}
+
+function formatMsDuration(time) {
+    return format(time, [60, 60, 1000], "%d:%02d:%02d.%03d");
 }
 
 function _(t) {
@@ -86,7 +95,8 @@ MediaRenderer.prototype = {
     load: function(channel, item, cb) {
         var renderer = this;
         
-        channel.getStreamUrl(item, function(err, mediaUrl) {
+        channel.getStream(item, function(err, stream) {
+            var mediaUrl = stream.url;
             console.log("Loading " + mediaUrl);
             
             function doLoad() {
@@ -101,7 +111,7 @@ MediaRenderer.prototype = {
                                 '<item id="' + entities.encodeXML(item.id) + '" parentID="0" restricted="1">'+
                                     '<dc:title>' + entities.encodeXML(item.title) + '</dc:title>'+
                                     '<upnp:class>object.item.' + type + 'Item</upnp:class>'+
-                                    '<res protocolInfo="http-get:*:' + item.mimetype + '" '+'>' + mediaUrl + '</res>'+
+                                    '<res duration="' + formatMsDuration(stream.duration) + '" protocolInfo="http-get:*:' + stream.mimetype + ':DLNA.ORG_OP=01;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=01500000000000000000000000000000">' + mediaUrl + '</res>'+
                                     '<pith:itemId>' + entities.encodeXML(item.id) + '</pith:itemId>'+
                                     '<pith:channelId>' + entities.encodeXML(channel.id) + '</pith:channelId>'+
                                 '</item>'+
@@ -137,7 +147,13 @@ MediaRenderer.prototype = {
                 
                 function waitForSeek(status) {
                     if(status.actions.seek) {
-                        renderer.seek(cb, { time: time });
+                        renderer.seek(function(err) {
+                            if(err) {
+                                renderer.once('statechange', waitForSeek);
+                            } else {
+                                cb();
+                            }
+                        }, { time: time });
                     } else if(new Date().getTime() < timeout) {
                         renderer.once('statechange', waitForSeek);
                     } else if(cb) {
@@ -233,7 +249,9 @@ MediaRenderer.prototype = {
         
         this._avTransport.on('LastChange', function(changeEvent) {
             xml2js(changeEvent, function(err, body) {
-                if(err) {
+                if(!body) {
+                    console.error("Body empty?");
+                } else if(err) {
                     console.error(err);
                 } else {
                     var didl = body.Event.InstanceID[0];

@@ -305,14 +305,14 @@ MoviesChannel.prototype = {
         }
     },
     
-    getStreamUrl: function(item, cb) {
+    getStream: function(item, cb) {
         var channel = this;
         var targetChannel = channel.pithApp.getChannelInstance(item.channelId);
         targetChannel.getItem(item.originalId, function(err, item) {
             if(err) {
                 cb(err);
             } else {
-                targetChannel.getStreamUrl(item, cb);
+                targetChannel.getStream(item, cb);
             }
         });
     },

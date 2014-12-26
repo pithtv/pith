@@ -153,16 +153,14 @@ Pith.prototype = {
         }
         var channel = self.getChannelInstance(channelId);
         channel.getItem(itemId, function(err, item) {
-            channel.getStreamUrl(item, function(url) {
-                player.load(channel, item, function(err) {
-                    if(err) {
+            player.load(channel, item, function(err) {
+                if(err) {
+                    cb(err);
+                } else {
+                    player.play(function(err) {
                         cb(err);
-                    } else {
-                        player.play(function(err) {
-                            cb(err);
-                        }, opts && opts.time);
-                    }
-                });
+                    }, opts && opts.time);
+                }
             });
         });
     },
