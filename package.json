@@ -26,5 +26,8 @@
     "upnp-client-minimal": "*",
     "ws": "*",
     "xml2js": "*"
+  },
+  "devDependencies": {
+    "grunt-manifest": "^0.4.0"
   }
 }

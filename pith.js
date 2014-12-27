@@ -122,7 +122,7 @@ Pith.prototype = {
     
     getStream: function (channelId, itemId, cb) {
         var channelInstance = this.getChannelInstance(channelId);
-        channelInstance.getStreamUrl(itemId, cb);
+        channelInstance.getStream(itemId, cb);
     },
     
     getLastPlayState: function(channelId, itemId, cb) {
@@ -167,7 +167,6 @@ Pith.prototype = {
     
     controlPlayback: function(playerId, command, query, cb) {
         var player = this.playerMap[playerId];
-        this.emit()
         if(typeof query === 'function') {
             cb = query;
             query = undefined;
@@ -180,6 +179,14 @@ Pith.prototype = {
         require("./plugins/movies/plugin").init({pith: this});
         require("./plugins/upnp-mediarenderer/plugin").init({pith: this});
         require("./plugins/yamaha/plugin").init({pith: this});
+    },
+
+    settings: function(settings) {
+        if(arguments.length === 0) {
+            return global.settings;
+        } else {
+            global.storeSettings(settings);
+        }
     },
     
     handle: route
