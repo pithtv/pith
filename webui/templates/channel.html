@@ -41,7 +41,7 @@
 
 <ul class="contentbrowser" ng-repeat-class="view()" vs-repeat vs-scroll-parent="window" vs-excess="2" vs-autoresize="true">
     <li class="contentitem"
-        ng-repeat="item in containerContents | filter:{title:search}"
+        ng-repeat="item in containerContents | filter:{title:(search||'')}"
         ng-class="
             {'withthumb': item.thumbnail || item.poster,
              'watched': item.playState &amp;&amp; item.playState.status == 'watched',
