@@ -132,7 +132,7 @@ Pith.prototype = {
     
     putPlayState: function(channelId, itemId, state, cb) {
         var channelInstance = this.getChannelInstance(channelId);
-        if(state.duration > 600) {
+        if(state.status !== undefined || state.duration > 600) {
             if(!state.status) {
                 if(state.time > Math.max(state.duration - 300, state.duration * 11 / 12)) {
                     state.status = 'watched';
