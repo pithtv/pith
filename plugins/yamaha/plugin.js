@@ -15,7 +15,7 @@ util.inherits(YamahaRenderer, upnpmediarenderer.MediaRenderer);
 override(upnpmediarenderer, function($super) {
     return {
         createRenderer: function(device, opts, callback) {
-            if(device.descriptor.root['yamaha:X_device']) {
+            if(device.descriptor && device.descriptor.root['yamaha:X_device']) {
                 var yamahaDevice = device.descriptor.root['yamaha:X_device'][0],
                     remoteControlService = yamahaDevice['yamaha:X_serviceList'][0]['yamaha:X_service'].filter(function(service) {
                         return service['yamaha:X_specType'][0] == 'urn:schemas-yamaha-com:service:X_YamahaRemoteControl:1';
