@@ -8,7 +8,6 @@ var app = angular.module("PithApp",
         "SettingsControllers",
         "vs-repeat",
         "angular-loading-bar",
-        "mgcrea.ngStrap.modal",
         "ui.bootstrap"])
     .config(['cfpLoadingBarProvider', function (cfpLoadingBarProvider) {
         cfpLoadingBarProvider.includeSpinner = false;
@@ -63,9 +62,9 @@ app.controller("MainController", ['$scope','$http','PlayerControlService', "$mod
                     playerControl.load(channelId, itemId, state.time);
                 };
         
-                $modal({
+                $modal.open({
                     title: 'My Title',
-                    template: 'templates/resumeplayprompt.html',
+                    templateUrl: 'templates/resumeplayprompt.html',
                     show: true,
                     scope: scope
                 });

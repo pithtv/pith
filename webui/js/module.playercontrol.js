@@ -1,7 +1,7 @@
-angular.module("PlayerControlModule", ["WsEventsModule"])
+angular.module("PlayerControlModule", ["WsEventsModule", "errorDialogModule"])
 .factory("PlayerControlService", 
-    ["$http", "WsEventsService", "$q",
-        function($http, WsEventsService, $q) {
+    ["$http", "WsEventsService", "$q", "modalHttpError",
+        function($http, WsEventsService, $q, modalHttpError) {
             var players = [];
             var activePlayer = null;
 

@@ -6,15 +6,16 @@ css/main.css
 js/angular-vs-grid-repeat.js
 js/controller.channel.js
 js/controller.settings.js
-js/error.js
 js/extracss.js
 js/inherit.js
 js/module.controllers.js
+js/module.errordialog.js
 js/module.filters.js
 js/module.playercontrol.js
 js/module.settings.js
 js/module.ws-events.js
 templates/channel.html
+templates/errordialog.html
 templates/main.html
 templates/resumeplayprompt.html
 templates/settings.html

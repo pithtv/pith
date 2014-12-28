@@ -1,7 +1,15 @@
-angular.
+angular
+    .module("errorDialogModule", ["ui.bootstrap"])
+    .factory("modalHttpError", ["$modal", "$rootScope", function($modal, $rootScope) {
+        function modalHttpError(data, status, header, config) {
+            var scope = $rootScope.$new();
+            scope.message = data.message;
+            $modal.open({
+                templateUrl: "errordialog.html",
+                show: true,
+                scope: scope
+            });
+        }
 
-function modalHttpError(data, status, header, config) {
-    var modal = $("#errormodal");
-    modal.find(".modal-body").text("Error: " + data.message);
-    modal.modal({show: true});
-}
+        return modalHttpError;
+    }]);
