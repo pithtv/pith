@@ -3,7 +3,7 @@
         <button ng-click="save()" class="btn btn-primary pull-right" ng-disabled="settingsForm.$invalid">Save</button>
         <tabset>
             <tab ng-repeat="tab in pages" heading="{{tab.title}}" active="tab.active" disabled="tab.disabled">
-                <ng-include src="tab.template" ng-if="tab.active" />
+                <ng-include src="tab.template" />
             </tab>
         </tabset>
     </form>
