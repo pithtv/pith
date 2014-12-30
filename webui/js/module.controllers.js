@@ -107,3 +107,23 @@ app.controller("MainController", ['$scope','$http','PlayerControlService', "$mod
     
     this.control = playerControl;
  }]);
+
+app.directive('convertMs', function() {
+    return { restrict: 'A',
+        require: 'ngModel',
+        link: function(scope, element, attrs, ngModel) {
+
+            if(ngModel) { // Don't do anything unless we have a model
+
+                ngModel.$parsers.push(function (value) {
+                    return value * 1000 * 60;
+                });
+
+                ngModel.$formatters.push(function (value) {
+                    return value / 1000 / 60;
+                });
+
+            }
+        }
+    };
+});

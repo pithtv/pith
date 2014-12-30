@@ -1,30 +1,35 @@
-<p><form role="form well">
-    <div class="form-group">
-        <label>Media root directory</label>
-        <input type="text" ng-model="settings.files.rootDir" class="form-control" />
+<p><form role="form well" ng-controller="mediaSettingsController">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            General settings
+        </div>
+        <div class="panel-body">
+            <div class="form-group">
+                <label>Media root directory</label>
+                <input type="text" ng-model="settings.files.rootDir" class="form-control" />
+            </div>
+            <div class="alert alert-danger alert-sm">
+                Changing this path will invalidate all file folders in your media folders. Be sure to remove any invalid folders and clean the library if you change this value.
+            </div>
+
+            <div class="form-group">
+                <label>Scan for new library items every (ms):</label>
+                <input type="number" ng-model="settings.library.scanInterval" class="form-control" convert-ms />
+            </div>
+        </div>
     </div>
 
-    <div class="form-group">
-        <label>Library folders </label>
-        <accordion>
-
-            <accordion-group ng-repeat="folder in (settings.library.folders)">
-                <accordion-heading>
-                    <strong>{{folder.containerId}}</strong> contains {{categories[folder.contains]}}
-                    <a class="pull-right" ng-click="removeLibraryContainer(folder)"><span class="glyphicon glyphicon-remove" /></a>
-                </accordion-heading>
-                <p>
-                    <label><input type="checkbox" ng-model="folder.scanAutomatically" /> Scan automatically</label>
-                </p>
-                <p>
-                    Contains <select ng-model="folder.contains">
-                        <option value="movies">Movies</option>
-                        <option value="tvshows">TV shows</option>
-                        <option value="music">Music</option>
-                    </select>
-                </p>
-            </accordion-group>
-        </accordion>
-        <button class="btn btn-primary" ng-click="addLibraryContainer()">Add folder</button>
+    <div class="panel panel-default" ng-repeat="(type, title) in categories">
+        <div class="panel-heading">{{title}} folders
+        </div>
+        <ul class="list-group">
+            <li class="list-group-item" ng-repeat="folder in (settings.library.folders | filter : {contains: type})" ng-class="{ 'has-error': !folder.contains }">
+                <label><input type="checkbox" ng-model="folder.scanAutomatically" /> {{folder.containerId}}</label>
+                <a class="pull-right" ng-click="removeLibraryContainer(folder)" title="Remove folder"><span class="glyphicon glyphicon-remove" /></a>
+            </li>
+        </ul>
+        <div class="panel-footer">
+            <a ng-click="addLibraryContainer(type)" class=""><span class="glyphicon glyphicon-plus" /> Add folder</a>
+        </div>
     </div>
 </form></p>

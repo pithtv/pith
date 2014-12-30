@@ -3,8 +3,8 @@
 var settingsModule = angular.module("SettingsControllers", ['SettingsServiceModule', 'ui.bootstrap', 'pith.containerChooserModule']);
 
 settingsModule.controller('mainSettingsController',
-    ['$scope','$http','$routeParams', '$rootScope', 'SettingsService', '$modal',
-        function($scope, $http, $routeParams, $rootScope, $settingsService, $modal) {
+    ['$scope', '$http', '$routeParams', '$rootScope', 'SettingsService',
+        function ($scope, $http, $routeParams, $rootScope, $settingsService) {
             var settings;
 
             $scope.pages = [
@@ -23,40 +23,43 @@ settingsModule.controller('mainSettingsController',
                 $scope.settings = settings = angular.copy($settingsService.get());
             }
 
-            if($settingsService.ready()) {
+            if ($settingsService.ready()) {
                 load();
             } else {
                 $settingsService.once('load', load);
             }
 
-            $scope.save = function() {
+            $scope.save = function () {
                 $settingsService.put($scope.settings);
-            };
-
-            $scope.addLibraryContainer = function(type) {
-                $modal.open({
-                    templateUrl: 'templates/settings/containerchooser.html',
-                    controller: 'containerChooserController',
-                    title: "Choose a container"
-                }).result.then(function(s) {
-                        settings.library.folders.push(s);
-                        $scope.openFolder = s;
-                });
-            };
-
-            $scope.removeLibraryContainer = function(container) {
-                $modal.open({
-                    templateUrl: 'templates/settings/confirmremovelibrarycontainer.html',
-                }).result.then(function() {
-                        settings.library.folders.splice(settings.library.folders.indexOf(container), 1);
-                })
-            }
-
-            $scope.categories = {
-                movies: "Movies",
-                tvshows: "TV shows",
-                music: "Music"
             };
         }
     ]
-)
+).controller('mediaSettingsController', ["$scope", "$modal", function ($scope, $modal) {
+        var settings = $scope.$parent.settings;
+
+        $scope.addLibraryContainer = function(type) {
+            $modal.open({
+                templateUrl: 'templates/settings/containerchooser.html',
+                controller: 'containerChooserController',
+                title: "Choose a container"
+            }).result.then(function (s) {
+                    settings.library.folders.push(s);
+                    s.contains = type;
+                    $scope.openFolder = s;
+                });
+        };
+
+        $scope.removeLibraryContainer = function (container) {
+            $modal.open({
+                templateUrl: 'templates/settings/confirmremovelibrarycontainer.html',
+            }).result.then(function () {
+                    settings.library.folders.splice(settings.library.folders.indexOf(container), 1);
+                })
+        }
+
+        $scope.categories = {
+            movies: "Movies",
+            tvshows: "TV shows",
+            music: "Music"
+        };
+    }]);
