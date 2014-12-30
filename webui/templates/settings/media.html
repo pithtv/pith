@@ -1,4 +1,4 @@
-<p><form role="form well" ng-controller="mediaSettingsController" name="settingsForm">
+<p><div ng-controller="mediaSettingsController">
     <div class="panel panel-default">
         <div class="panel-heading">
             General settings
@@ -12,9 +12,9 @@
                 Changing this path will invalidate all file folders in your media folders. Be sure to remove any invalid folders and clean the library if you change this value.
             </div>
 
-            <div class="form-group">
-                <label>Scan for new library items every (ms):</label>
-                <input type="number" ng-model="settings.library.scanInterval" class="form-control" convert-ms />
+            <div class="form-group" ng-class="{'has-error': settingsForm.scanInterval.$invalid}">
+                <label for="scanInterval">Scan for new library items every (ms):</label>
+                <input type="number" ng-model="settings.library.scanInterval" class="form-control" convert-ms required min="1" name="scanInterval" id="scanInterval" />
             </div>
         </div>
     </div>
@@ -32,4 +32,4 @@
             <a ng-click="addLibraryContainer(type)" class=""><span class="glyphicon glyphicon-plus" /> Add folder</a>
         </div>
     </div>
-</form></p>
+</div></p>
