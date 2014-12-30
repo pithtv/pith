@@ -1,0 +1,18 @@
+<div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" ng-click="$dismiss()"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+    <h4 class="modal-title" id="myModalLabel">
+        {{ title || "Channels" }}
+    </h4>
+</div>
+<div class="modal-body">
+    <ul class="list-group">
+        <li ng-if="goBack !== null" class="list-group-item" ng-click="goBack()">..</li>
+        <li class="list-group-item" ng-repeat="item in contents | limitTo : limit" ng-click="go(item.id, item.title)">
+            {{item.title}}
+        </li>
+        <li class="list-group-item" ng-if="contents.length > limit" ng-click="showMore()"><i>Show more...</i></li>
+    </ul>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-primary pull-right" ng-click="select()">Select</button>
+</div>

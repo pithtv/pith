@@ -1,10 +1,12 @@
 "use strict";
 
-var settingsModule = angular.module("SettingsControllers", ['SettingsServiceModule']);
+var settingsModule = angular.module("SettingsControllers", ['SettingsServiceModule', 'ui.bootstrap', 'pith.containerChooserModule']);
 
 settingsModule.controller('mainSettingsController',
-    ['$scope','$http','$routeParams', '$rootScope', 'SettingsService',
-        function($scope, $http, $routeParams, $rootScope, settings) {
+    ['$scope','$http','$routeParams', '$rootScope', 'SettingsService', '$modal',
+        function($scope, $http, $routeParams, $rootScope, $settingsService, $modal) {
+            var settings;
+
             $scope.pages = [
                 {
                     title: "Media",
@@ -18,18 +20,43 @@ settingsModule.controller('mainSettingsController',
             ];
 
             function load() {
-                $scope.settings = angular.copy(settings.get());
+                $scope.settings = settings = angular.copy($settingsService.get());
             }
 
-            if(settings.ready()) {
+            if($settingsService.ready()) {
                 load();
             } else {
-                settings.once('load', load);
+                $settingsService.once('load', load);
             }
 
             $scope.save = function() {
-                settings.put($scope.settings);
+                $settingsService.put($scope.settings);
+            };
+
+            $scope.addLibraryContainer = function(type) {
+                $modal.open({
+                    templateUrl: 'templates/settings/containerchooser.html',
+                    controller: 'containerChooserController',
+                    title: "Choose a container"
+                }).result.then(function(s) {
+                        settings.library.folders.push(s);
+                        $scope.openFolder = s;
+                });
+            };
+
+            $scope.removeLibraryContainer = function(container) {
+                $modal.open({
+                    templateUrl: 'templates/settings/confirmremovelibrarycontainer.html',
+                }).result.then(function() {
+                        settings.library.folders.splice(settings.library.folders.indexOf(container), 1);
+                })
+            }
+
+            $scope.categories = {
+                movies: "Movies",
+                tvshows: "TV shows",
+                music: "Music"
             };
         }
     ]
-);
+)

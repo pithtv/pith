@@ -5,24 +5,26 @@
     </div>
 
     <div class="form-group">
-        <label>Movie folders</label>
-        <ul class="list-group">
-            <li class="list-group-item" ng-repeat="folder in (settings.library.folders | filter:{contains:'movies'}:strict)"><strong>{{folder.containerId}}</strong>
-                <a class="pull-right"><span class="glyphicon glyphicon-remove" /></a>
-            </li>
-            <li class="list-group-item"><a><span class="glyphicon glyphicon-plus" /></a>
-            </li>
-        </ul>
-    </div>
+        <label>Library folders </label>
+        <accordion>
 
-    <div class="form-group">
-        <label>TV folders</label>
-        <ul class="list-group">
-            <li class="list-group-item" ng-repeat="folder in (settings.library.folders | filter:{contains:'tvshows'}:strict)"><strong>{{folder.containerId}}</strong>
-                <span class="pull-right"><span class="glyphicon glyphicon-remove" /></span>
-            </li>
-            <li class="list-group-item"><span class="glyphicon glyphicon-plus" />
-            </li>
-        </ul>
+            <accordion-group ng-repeat="folder in (settings.library.folders)">
+                <accordion-heading>
+                    <strong>{{folder.containerId}}</strong> contains {{categories[folder.contains]}}
+                    <a class="pull-right" ng-click="removeLibraryContainer(folder)"><span class="glyphicon glyphicon-remove" /></a>
+                </accordion-heading>
+                <p>
+                    <label><input type="checkbox" ng-model="folder.scanAutomatically" /> Scan automatically</label>
+                </p>
+                <p>
+                    Contains <select ng-model="folder.contains">
+                        <option value="movies">Movies</option>
+                        <option value="tvshows">TV shows</option>
+                        <option value="music">Music</option>
+                    </select>
+                </p>
+            </accordion-group>
+        </accordion>
+        <button class="btn btn-primary" ng-click="addLibraryContainer()">Add folder</button>
     </div>
 </form></p>
