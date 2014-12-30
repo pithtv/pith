@@ -13,9 +13,13 @@ settingsModule.controller('mainSettingsController',
                     template: "templates/settings/media.html",
                     active: true
                 },
+                //{
+                //    title: "Players",
+                //    template: "templates/settings/players.html"
+                //},
                 {
-                    title: "Players",
-                    template: "templates/settings/players.html"
+                    title: "Advanced",
+                    template: "templates/settings/advanced.html"
                 }
             ];
 

@@ -1,12 +1,12 @@
-<p><form role="form well" ng-controller="mediaSettingsController">
+<p><form role="form well" ng-controller="mediaSettingsController" name="settingsForm">
     <div class="panel panel-default">
         <div class="panel-heading">
             General settings
         </div>
         <div class="panel-body">
-            <div class="form-group">
-                <label>Media root directory</label>
-                <input type="text" ng-model="settings.files.rootDir" class="form-control" />
+            <div class="form-group" ng-class="{'has-error': settingsForm.rootDir.$invalid}">
+                <label for="rootDir">Media root directory</label>
+                <input type="text" ng-model="settings.files.rootDir" class="form-control" required name="rootDir" id="rootDir" />
             </div>
             <div class="alert alert-danger alert-sm">
                 Changing this path will invalidate all file folders in your media folders. Be sure to remove any invalid folders and clean the library if you change this value.
