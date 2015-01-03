@@ -77,7 +77,7 @@ Pith.prototype = {
         var newTs = new Date().getTime();
         this.players.forEach(function(e) {
             try {
-                if(e.status.state.playing) {
+                if(e.status.state && e.status.state.playing) {
                     var delta = (newTs - e.status.serverTimestamp) / 1000;
                     e.status.position.time += delta;
                     e.status.serverTimestamp = newTs;
