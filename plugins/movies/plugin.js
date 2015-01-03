@@ -30,17 +30,21 @@ var rootDirectories = [
             });
         },
         _getItem: function(db, itemId, cb) {
-            db.getMovies({id: itemId}, function(err, result) {
-                if(err) {
-                    cb(err);
-                } else {
-                    if(result[0]) {
-                        cb(null, mapMovie(result[0]));
+            if(itemId === null) {
+                cb(null, {id: 'movies', title: 'All Movies'});
+            } else {
+                db.getMovies({id: itemId}, function (err, result) {
+                    if (err) {
+                        cb(err);
                     } else {
-                        cb(null, undefined);
+                        if (result[0]) {
+                            cb(null, mapMovie(result[0]));
+                        } else {
+                            cb(null, undefined);
+                        }
                     }
-                }
-            });
+                });
+            }
         }
     },
     {
@@ -180,6 +184,7 @@ MoviesChannel.prototype = {
         var channel = this;
 
         winston.info("Starting library scan");
+        var scanStartTime = new Date().getTime();
 
         global.settings.library.folders.forEach(function(dir) {
             var channelInstance = channel.pithApp.getChannelInstance(dir.channelId);
@@ -242,6 +247,8 @@ MoviesChannel.prototype = {
             
             channelInstance.getItem(dir.containerId, function(err, container) {
                 listContents(container, function() {
+                    var scanEndTime = new Date().getTime();
+                    winston.info("Library scan complete. Took %d ms", + (scanEndTime - scanStartTime));
                     setTimeout(function() {
                         channel.scan();
                     }, settings.scanInterval); 
