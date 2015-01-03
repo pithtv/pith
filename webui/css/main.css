@@ -4,6 +4,7 @@ body {
 
 #loading-bar .bar {
     top: 55px;
+    z-index: 1000;
 }
 
 @-webkit-keyframes rotation {
