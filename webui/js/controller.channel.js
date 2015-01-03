@@ -18,7 +18,7 @@ channelController.controller('channelController',
     function loadState(state) {
         $scope.currentContainer = state && state.channelpath[state.channelpath.length - 1].id || "";
         $scope.currentPath = state && state.channelpath || [];
-        $scope.search = state.search;
+        $scope.search = state && state.search;
         
         $scope.itemDetails = null;
         $scope.containerContents = null;
