@@ -251,7 +251,7 @@ MoviesChannel.prototype = {
                     winston.info("Library scan complete. Took %d ms", + (scanEndTime - scanStartTime));
                     setTimeout(function() {
                         channel.scan();
-                    }, settings.scanInterval); 
+                    }, global.settings.library.scanInterval);
                 });
             });
             
