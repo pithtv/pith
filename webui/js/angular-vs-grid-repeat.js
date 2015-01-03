@@ -101,8 +101,8 @@
 						'vsOffsetAfter': 'offsetAfter',
 						'vsExcess': 'excess'
 					},
-                    origItemWidth = ngRepeatChild[0].offsetWidth,
-                    origItemHeight = ngRepeatChild[0].offsetHeight;
+                    origItemWidth = $(ngRepeatChild[0]).outerWidth(true),
+                    origItemHeight = $(ngRepeatChild[0]).outerHeight(true);
                 
 				$element.empty();
                 
@@ -326,8 +326,8 @@
 							_prevEndIndex;
 						function reinitialize(){
                             var firstChild = $element.children().eq(0)[0],
-                                w = firstChild.offsetWidth,
-                                h = firstChild.offsetHeight;
+                                w = $(firstChild).outerWidth(true),
+                                h = $(firstChild).outerHeight(true);
                             if(w && h) {
                                 $scope.gridItemWidth = w;
                                 $scope.gridItemHeight = h;
