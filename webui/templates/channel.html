@@ -54,7 +54,7 @@
                 <span class="itemtitle">{{item.title}} <span ng-if="item.year" class="itemyear">{{item.year}}</span></span>
             </a>
             <span class="itemtagline" ng-if="item.tagline">{{item.tagline}}</span>
-            <span class="itemrating" data-rating="{{item.rating}}" ng-if="item.rating">{{item.rating}}</span>
+            <span class="itemrating" data-starrating="{{item.rating}}" ng-if="item.rating">{{item.rating}}</span>
             <span class="itemgenres" ng-if="item.genres &amp;&amp; item.genres.length">{{item.genres.join(", ")}}</span>
             <span class="itemplot" ng-if="item.plot">{{item.plot}}</span>
             <span ng-if="item.playable" class="actions">

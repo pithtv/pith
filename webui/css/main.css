@@ -180,7 +180,7 @@ span.itemyear:after {
     font-weight: bold;
 }
 
-.itemrating[data-rating] {
+.itemrating[data-starrating] {
     width: 80px;
     height: 16px;
     background-image: url(../static/staroutline.png);
@@ -201,37 +201,37 @@ span.itemyear:after {
     top: 0px;
 }
 
-.itemrating[data-rating^="0"]:after {
+.itemrating[data-starrating^="0"]:after {
     width: 0%;
 }
-.itemrating[data-rating^="1"]:after {
+.itemrating[data-starrating^="1"]:after {
     width: 10%;
 }
-.itemrating[data-rating^="2"]:after {
+.itemrating[data-starrating^="2"]:after {
     width: 20%;
 }
-.itemrating[data-rating^="3"]:after {
+.itemrating[data-starrating^="3"]:after {
     width: 30%;
 }
-.itemrating[data-rating^="4"]:after {
+.itemrating[data-starrating^="4"]:after {
     width: 40%;
 }
-.itemrating[data-rating^="5"]:after {
+.itemrating[data-starrating^="5"]:after {
     width: 50%;
 }
-.itemrating[data-rating^="6"]:after {
+.itemrating[data-starrating^="6"]:after {
     width: 60%;
 }
-.itemrating[data-rating^="7"]:after {
+.itemrating[data-starrating^="7"]:after {
     width: 70%;
 }
-.itemrating[data-rating^="8"]:after {
+.itemrating[data-starrating^="8"]:after {
     width: 80%;
 }
-.itemrating[data-rating^="9"]:after {
+.itemrating[data-starrating^="9"]:after {
     width: 90%;
 }
-.itemrating[data-rating="100"]:after {
+.itemrating[data-starrating="100"]:after {
     width: 100%;
 }
 
