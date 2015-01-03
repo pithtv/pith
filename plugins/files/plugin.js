@@ -74,16 +74,12 @@ FilesChannel.prototype = {
         var filepath = $path.resolve(this.rootDir, itemId);
         var channel = this;
         fs.stat(filepath, function(err, stats) {
-            if(err) {
-                cb(err);
-                return;
-            }
             var item = {
                 title: $path.basename(itemId),
                 id: itemId
             };
-    
-            if(stats.isDirectory()) {
+
+            if(stats && stats.isDirectory()) {
                 item.type = 'container';
             } else {
                 item.type = 'file';
@@ -91,9 +87,9 @@ FilesChannel.prototype = {
                 item.mimetype = mimetypes[extension];
                 item.playable = item.mimetype && true;
                 
-                item.fileSize = stats.size;
-                item.modificationTime = stats.mtime;
-                item.creationTime = stats.ctime;
+                item.fileSize = stats && stats.size;
+                item.modificationTime = stats && stats.mtime;
+                item.creationTime = stats && stats.ctime;
             }
             
             var applicableProviders = metaDataProviders.filter(function(f) {
