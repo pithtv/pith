@@ -115,6 +115,10 @@ FilesChannel.prototype = {
         var itemId = item.id;
         var itemPath = itemId.split($path.sep).map(encodeURIComponent).join("/");
         ff.ffprobe(this.getFile(item.id), function(err, metadata) {
+            if(err) {
+                cb(err);
+                return;
+            }
             var item = {
                 url: channel.pith.rootUrl + "stream/" + itemPath,
                 mimetype: item.mimetype

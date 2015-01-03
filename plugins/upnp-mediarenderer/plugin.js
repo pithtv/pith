@@ -96,6 +96,11 @@ MediaRenderer.prototype = {
         var renderer = this;
         
         channel.getStream(item, function(err, stream) {
+            if(err) {
+                cb(err);
+                return;
+            }
+
             var mediaUrl = stream.url;
             console.log("Loading " + mediaUrl);
             
