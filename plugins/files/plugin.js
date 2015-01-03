@@ -33,16 +33,11 @@ function FilesChannel(pith, statestore) {
 
 FilesChannel.prototype = {
     listContents: function(containerId, cb) {
-        var path = this.rootDir;
-        var matchRootDir = new RegExp("^" + path + "\\/");
+        var rootDir = this.rootDir, path;
         if(containerId) {
-            if(path.match(/\/$/)===null) {
-                path += "/";
-            }
-            path = path + containerId;
-            if(path.match(/\/$/)===null) {
-                path += "/";
-            }
+            path = $path.resolve(rootDir, containerId);
+        } else {
+            path = rootDir;
         }
         
         var filesChannel = this;
@@ -55,7 +50,7 @@ FilesChannel.prototype = {
                     return (e[0] != "." || settings.files.showHiddenFiles) && settings.files.excludeExtensions.indexOf($path.extname(e)) == -1;
                 }), function(file, cb) {
                     var filepath = $path.resolve(path, file);
-                    var itemId = filepath.replace(matchRootDir, "");
+                    var itemId = $path.relative(rootDir, filepath);
                     filesChannel.getItem(itemId, false,function(err, item) {
                         cb(err, item);
                     });
@@ -84,7 +79,7 @@ FilesChannel.prototype = {
                 return;
             }
             var item = {
-                title: itemId.replace(/.*\//, ""),
+                title: $path.basename(itemId),
                 id: itemId
             };
     
@@ -92,7 +87,7 @@ FilesChannel.prototype = {
                 item.type = 'container';
             } else {
                 item.type = 'file';
-                var extension = itemId.replace(/.*(\.[^.])/, '$1');
+                var extension = $path.extname(itemId);
                 item.mimetype = mimetypes[extension];
                 item.playable = item.mimetype && true;
                 
@@ -122,13 +117,18 @@ FilesChannel.prototype = {
     getStream: function(item, cb) {
         var channel = this;
         var itemId = item.id;
-        var itemPath = itemId.split("/").map(encodeURIComponent).join("/");
+        var itemPath = itemId.split($path.sep).map(encodeURIComponent).join("/");
         ff.ffprobe(this.getFile(item.id), function(err, metadata) {
-            cb(false, {
-                url: channel.pith.rootUrl +  "stream/" + itemPath,
-                duration: parseFloat(metadata.format.duration) * 1000,
+            var item = {
+                url: channel.pith.rootUrl + "stream/" + itemPath,
                 mimetype: item.mimetype
-            });
+            };
+
+            if(!err) {
+                item.duration = parseFloat(metadata.format.duration) * 1000;
+            }
+
+            cb(false, item);
         });
     },
     
