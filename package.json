@@ -25,7 +25,8 @@
     "tingodb": "*",
     "upnp-client-minimal": "*",
     "ws": "*",
-    "xml2js": "*"
+    "xml2js": "*",
+    "winston": "*"
   },
   "devDependencies": {
     "grunt-manifest": "^0.4.0"
