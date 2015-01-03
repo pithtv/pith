@@ -1,18 +1,8 @@
 var metadata = require("./metadata.tmdb.js");
 var db = require("./database");
 var async = require("async");
-
-var settings = {
-    containers: [
-        {
-            channel: 'files',
-            containerId: '/Movies HD',
-            oneMoviePerDirectory: true
-        }
-    ],
-    
-    scanInterval: 120 * 60 * 1000
-};
+var winston = require("winston");
+var global = require("../../lib/global")();
 
 function MoviesChannel(pithApp) {
     this.pithApp = pithApp;
@@ -188,9 +178,11 @@ var rootDirectories = [
 MoviesChannel.prototype = {
     scan: function() {
         var channel = this;
-        
-        settings.containers.forEach(function(dir) {
-            var channelInstance = channel.pithApp.getChannelInstance(dir.channel);
+
+        winston.info("Starting library scan");
+
+        global.settings.library.folders.forEach(function(dir) {
+            var channelInstance = channel.pithApp.getChannelInstance(dir.channelId);
             
             function listContents(container, done) {
                 if(container) {
@@ -204,16 +196,16 @@ MoviesChannel.prototype = {
                                     listContents(item, cb);
                                 } else if (item.playable && item.mimetype.match(/^video\//)) {
 
-                                    channel.db.findMovieByOriginalId(dir.channel, item.id, function (err, result) {
+                                    channel.db.findMovieByOriginalId(dir.channelId, item.id, function (err, result) {
                                         if (!result) {
-                                            console.log("Found new item " + item.id);
+                                            winston.info("Found new item " + item.id);
 
                                             item.modificationTime = container.modificationTime;
                                             item.creationTime = container.creationTime;
 
                                             function store(result) {
                                                 result.originalId = item.id;
-                                                result.channelId = dir.channel;
+                                                result.channelId = dir.channelId;
                                                 result.id = item.id;
                                                 result.dateScanned = new Date();
                                                 channel.db.storeMovie(result, function (err) {
