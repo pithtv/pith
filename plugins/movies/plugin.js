@@ -183,12 +183,14 @@ MoviesChannel.prototype = {
     scan: function() {
         var channel = this;
 
-        winston.info("Starting library scan");
+        winston.info("Starting movie library scan");
         var scanStartTime = new Date().getTime();
 
-        global.settings.library.folders.forEach(function(dir) {
+        async.eachSeries(global.settings.library.folders.filter(function(c) {
+            return c.contains === 'movies';
+        }), function(dir, cb) {
             var channelInstance = channel.pithApp.getChannelInstance(dir.channelId);
-            
+
             function listContents(container, done) {
                 if(container) {
                     channelInstance.listContents(container && container.id, function (err, contents) {
@@ -225,7 +227,6 @@ MoviesChannel.prototype = {
                                                         if (err) cb();
                                                         else store(result);
                                                     });
-                                                    cb();
                                                 } else {
                                                     store(result);
                                                 }
@@ -244,19 +245,17 @@ MoviesChannel.prototype = {
                     });
                 }
             }
-            
-            channelInstance.getItem(dir.containerId, function(err, container) {
-                listContents(container, function() {
-                    var scanEndTime = new Date().getTime();
-                    winston.info("Library scan complete. Took %d ms", + (scanEndTime - scanStartTime));
-                    setTimeout(function() {
-                        channel.scan();
-                    }, global.settings.library.scanInterval);
-                });
+
+            channelInstance.getItem(dir.containerId, function (err, container) {
+                listContents(container, cb);
             });
-            
+        }, function(err) {
+            var scanEndTime = new Date().getTime();
+            winston.info("Movie library scan complete. Took %d ms", (scanEndTime - scanStartTime));
+            setTimeout(function () {
+                channel.scan();
+            }, global.settings.library.scanInterval);
         });
-        this.pithApp.getChannelInstance;
     },
     
     scanItem: function(item, cb) {
