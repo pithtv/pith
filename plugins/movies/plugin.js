@@ -180,14 +180,14 @@ var rootDirectories = [
 ];
 
 MoviesChannel.prototype = {
-    scan: function() {
+    scan: function(manual) {
         var channel = this;
 
         winston.info("Starting movie library scan");
         var scanStartTime = new Date().getTime();
 
         async.eachSeries(global.settings.library.folders.filter(function(c) {
-            return c.contains === 'movies';
+            return c.contains === 'movies' && (c.scanAutomatically || manual === true);
         }), function(dir, cb) {
             var channelInstance = channel.pithApp.getChannelInstance(dir.channelId);
 
@@ -330,7 +330,7 @@ MoviesChannel.prototype = {
     putPlayState: function(itemId, state, cb) {
         var self = this;
         this.getItem(itemId, function(err, item) {
-            if(err) {
+            if(err || item === undefined) {
                 if(cb) cb(err);
                 return;
             }
