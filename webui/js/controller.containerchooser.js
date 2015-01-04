@@ -27,9 +27,9 @@ angular
             } else {
                 var p;
                 if(state.containerId === null) {
-                    p = $pithRest.channel.list(state.channelId);
+                    p = $pithRest.channel(state.channelId).list();
                 } else {
-                    p = $pithRest.channel.list(state.channelId, state.containerId);
+                    p = $pithRest.channel(state.channelId).list(state.containerId);
                 }
                 p.then(function(res) {
                     $scope.contents = res.data;
