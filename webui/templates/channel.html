@@ -28,7 +28,7 @@
     Loading.
 </div>
 
-<div class="contentdetail well well-sm" ng-if="itemDetails">
+<div class="contentdetail well well-sm" ng-if="itemDetails.tagline || itemDetails.plot || itemDetails.playable">
     <h3 ng-if="itemDetails.title">{{itemDetails.title}}</h3>
     <h4 ng-if="itemDetails.tagline">{{itemDetails.tagline}}</h4>
     <div ng-if="itemDetails.plot">{{itemDetails.plot}}</div>
