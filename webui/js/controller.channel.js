@@ -23,12 +23,12 @@ channelController.controller('channelController',
         $scope.itemDetails = null;
         $scope.containerContents = null;
         
-        $http.get("/rest/channel/detail/"+$scope.channelId+"/" + ($scope.currentContainer))
+        $http.get("/rest/channel/"+$scope.channelId+"/detail/" + ($scope.currentContainer))
         .then(function(res) {
             var item = res.data;
             $scope.itemDetails = item;
             if(!item.type || item.type == 'container') {
-                return $http.get("/rest/channel/list/"+$scope.channelId+"/" + ($scope.currentContainer||""), {params:{includePlayStates:true}}).then(function(res) {
+                return $http.get("/rest/channel/"+$scope.channelId+"/list/" + ($scope.currentContainer||""), {params:{includePlayStates:true}}).then(function(res) {
                     $scope.loading = false;
                     $scope.containerContents = res.data;
                 });
@@ -60,7 +60,7 @@ channelController.controller('channelController',
         } else {
             item.playState = { status: 'watched' };
         }
-        return $http.put("/rest/channel/playstate/" + $scope.channelId + "/" + item.id, item.playState);
+        return $http.put("/rest/channel/" + $scope.channelId + "/playstate/" + item.id, item.playState);
     };
     
     $scope.open = function(item) {

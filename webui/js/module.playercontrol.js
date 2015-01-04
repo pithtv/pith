@@ -59,7 +59,7 @@ angular.module("PlayerControlModule", ["WsEventsModule", "errorDialogModule"])
                 },
 
                 getLastPlayState: function(channelId, itemId) {
-                    return $http.get("/rest/channel/playstate/" + channelId + "/" + itemId).error(modalHttpError);
+                    return $http.get("/rest/channel/" + channelId + "/playstate/" + itemId).error(modalHttpError);
                 }
             };
 
