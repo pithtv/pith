@@ -1,10 +1,10 @@
 "use strict";
 
-var channelController = angular.module("ChannelControllers", []);
+var channelController = angular.module("ChannelControllers", ['pith.restApi']);
 
 channelController.controller('channelController', 
-        ['$scope','$http','$routeParams', '$rootScope',
-        function($scope, $http, $routeParams, $rootScope) {
+        ['$scope','$pithRest','$routeParams', '$rootScope',
+        function($scope, $pithRest, $routeParams, $rootScope) {
     
     $scope.containerContents = [];
     $scope.itemDetails = {};
@@ -16,19 +16,21 @@ channelController.controller('channelController',
     $scope.loading = true;
     
     function loadState(state) {
-        $scope.currentContainer = state && state.channelpath[state.channelpath.length - 1].id || "";
+        $scope.currentContainer = state && state.channelpath[state.channelpath.length - 1].id;
         $scope.currentPath = state && state.channelpath || [];
         $scope.search = state && state.search;
         
         $scope.itemDetails = null;
         $scope.containerContents = null;
-        
-        $http.get("/rest/channel/"+$scope.channelId+"/detail/" + ($scope.currentContainer))
+
+        var channel = $pithRest.channel($scope.channelId);
+
+        ($scope.currentContainer ? channel.detail($scope.currentContainer) : channel.detail())
         .then(function(res) {
             var item = res.data;
             $scope.itemDetails = item;
             if(!item.type || item.type == 'container') {
-                return $http.get("/rest/channel/"+$scope.channelId+"/list/" + ($scope.currentContainer||""), {params:{includePlayStates:true}}).then(function(res) {
+                return channel.list($scope.currentContainer, {includePlayStates:true}).then(function(res) {
                     $scope.loading = false;
                     $scope.containerContents = res.data;
                 });
@@ -60,7 +62,7 @@ channelController.controller('channelController',
         } else {
             item.playState = { status: 'watched' };
         }
-        return $http.put("/rest/channel/" + $scope.channelId + "/playstate/" + item.id, item.playState);
+        return $pithRest.channel($scope.channelId).playstate(item.id, item.playState);
     };
     
     $scope.open = function(item) {

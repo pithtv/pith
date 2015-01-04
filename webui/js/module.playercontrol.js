@@ -1,13 +1,12 @@
-angular.module("PlayerControlModule", ["WsEventsModule", "errorDialogModule"])
+angular.module("PlayerControlModule", ["WsEventsModule", "errorDialogModule", "pith.restApi"])
 .factory("PlayerControlService", 
-    ["$http", "WsEventsService", "$q", "modalHttpError",
-        function($http, WsEventsService, $q, modalHttpError) {
+    ["$pithRest", "WsEventsService", "$q", "modalHttpError",
+        function($pithRest, WsEventsService, $q, modalHttpError) {
             var players = [];
             var activePlayer = null;
 
             function refreshPlayers() {
-                $http
-                    .get('/rest/players')
+                $pithRest.players()
                     .then(function(res) {
                         var ts = new Date().getTime();
                         players = res.data;

@@ -8,7 +8,8 @@ var app = angular.module("PithApp",
         "SettingsControllers",
         "vs-repeat",
         "angular-loading-bar",
-        "ui.bootstrap"])
+        "ui.bootstrap",
+        "pith.restApi"])
     .config(['cfpLoadingBarProvider', function (cfpLoadingBarProvider) {
         cfpLoadingBarProvider.includeSpinner = false;
     }]);
@@ -33,7 +34,7 @@ app.config(['$routeProvider',
             })
     }]);
 
-app.controller("MainController", ['$scope','$http','PlayerControlService', "$modal", function($scope, $http, playerControl, $modal) {
+app.controller("MainController", ['$scope','$pithRest','PlayerControlService', "$modal", function($scope, $pithRest, playerControl, $modal) {
     var main = this;
     
     this.channels = [];
@@ -74,10 +75,9 @@ app.controller("MainController", ['$scope','$http','PlayerControlService', "$mod
         });
     });
     
-    $http.get('/rest/channels')
-        .then(function(res) {
-            $scope.main.channels = res.data;
-        });
+    $pithRest.channels().then(function(res) {
+        $scope.main.channels = res.data;
+    });
     
     this.getPlayers = function() {
         return playerControl.getAvailablePlayers();
