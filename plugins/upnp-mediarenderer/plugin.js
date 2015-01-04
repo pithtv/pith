@@ -156,7 +156,7 @@ MediaRenderer.prototype = {
                             if(err) {
                                 renderer.once('statechange', waitForSeek);
                             } else {
-                                cb();
+                                cb && cb();
                             }
                         }, { time: time });
                     } else if(new Date().getTime() < timeout) {
