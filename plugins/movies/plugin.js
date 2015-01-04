@@ -3,8 +3,11 @@ var db = require("./database");
 var async = require("async");
 var winston = require("winston");
 var global = require("../../lib/global")();
+var Channel = require("../../lib/channel");
 
 function MoviesChannel(pithApp) {
+    Channel.apply(this);
+
     this.pithApp = pithApp;
     this.db = db(pithApp.db);
     var self = this;

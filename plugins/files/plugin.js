@@ -6,6 +6,7 @@ var $path = require("path");
 var settings = require("../../lib/global")().settings;
 var playstate = require("./playstate");
 var ff = require("fluent-ffmpeg");
+var Channel = require("../../lib/channel");
 
 var metaDataProviders = [
     require("./movie-nfo"),
@@ -15,6 +16,8 @@ var metaDataProviders = [
 ];
 
 function FilesChannel(pith, statestore) {
+    Channel.apply(this);
+
     this.rootDir = settings.files.rootDir;
     this.pith = pith;
     
