@@ -44,6 +44,7 @@
         ng-repeat="item in containerContents | filter:{title:(search||'')}"
         ng-class="
             {'withthumb': item.thumbnail || item.poster,
+             'withinfo': item.tagline || item.rating || (item.genres && item.genres.length) || item.plot,
              'watched': item.playState &amp;&amp; item.playState.status == 'watched',
              'inprogress': item.playState &amp;&amp; item.playState.status == 'inprogress',
              'alignleft': ($index % itemsPerRow) >= itemsPerRow / 2}">

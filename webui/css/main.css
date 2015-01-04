@@ -39,7 +39,7 @@ body {
     overflow: hidden;
 }
 
-.contentbrowser.poster .contentitem:hover {
+.contentbrowser.poster .contentitem.withinfo:hover {
     transition: 0.4s width ease, 0.4s margin-left ease, 0.4s background ease;
     background: rgba(255,255,255,0.95);
     width: 328px;
@@ -47,7 +47,7 @@ body {
     box-shadow: 0px 0px 10px rgba(0,0,0,0.3);
 }
 
-.contentbrowser.poster .contentitem.alignleft:hover {
+.contentbrowser.poster .contentitem.withinfo.alignleft:hover {
     margin-left: -220px;
 }
 
@@ -134,7 +134,6 @@ body {
     font-weight: bold;
     overflow: hidden;
     pointer-events: auto;
-    width: 220px;
     z-index: 3;
 }
 
@@ -151,7 +150,6 @@ body {
     font-size: 20px;
     left: 100px;
     border-top: 1px solid rgb(200,200,200);
-    width: 230px;
     padding-top: 3px;
     padding-left: 10px;
     padding-right: 10px;
@@ -162,23 +160,25 @@ body {
     height: 100%;
 }
 
-.contentbrowser.poster .contentitem.alignleft > a {
-    left: auto;
-    right: 10px;
-}
-
 .contentbrowser.poster .contentitem.withthumb .iteminfo {
     pointer-events: none;
+}
+
+.contentbrowser.poster .contentitem .actions {
+    left: 5px;
+    right: 5px;
 }
 
 .contentbrowser.poster .contentitem.withthumb .iteminfo,
 .contentbrowser.poster .contentitem.withthumb .actions {
     left: 100px;
+    right: 5px;
+    width: 220px;
 }
 
 .contentbrowser.poster .contentitem.withthumb.alignleft .iteminfo,
 .contentbrowser.poster .contentitem.withthumb.alignleft .actions {
-    left: auto;
+    left: 5px;
     right: 100px;
 }
 
