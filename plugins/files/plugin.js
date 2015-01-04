@@ -119,16 +119,16 @@ FilesChannel.prototype = {
                 cb(err);
                 return;
             }
-            var item = {
+            var desc = {
                 url: channel.pith.rootUrl + "stream/" + itemPath,
                 mimetype: item.mimetype
             };
 
             if(!err) {
-                item.duration = parseFloat(metadata.format.duration) * 1000;
+                desc.duration = parseFloat(metadata.format.duration) * 1000;
             }
 
-            cb(false, item);
+            cb(false, desc);
         });
     },
     
