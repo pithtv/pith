@@ -167,19 +167,24 @@ body {
 .contentbrowser.poster .contentitem .actions {
     left: 5px;
     right: 5px;
+    text-align: center;
 }
 
 .contentbrowser.poster .contentitem.withthumb .iteminfo,
 .contentbrowser.poster .contentitem.withthumb .actions {
     left: 100px;
-    right: 5px;
+    right: auto;
     width: 220px;
 }
 
 .contentbrowser.poster .contentitem.withthumb.alignleft .iteminfo,
 .contentbrowser.poster .contentitem.withthumb.alignleft .actions {
-    left: 5px;
+    left: auto;
     right: 100px;
+}
+
+.contentbrowser.poster .contentitem.withthumb .actions {
+    text-align: left;
 }
 
 .contentbrowser.poster .contentitem.withthumb.alignleft .actions {
