@@ -142,7 +142,7 @@ MediaRenderer.prototype = {
             Speed: 1
         }, function(err) {
             if(err) {
-                console.error(cb);
+                console.error(err);
                 if(cb) cb(err);
                 return;
             }
