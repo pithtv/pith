@@ -49,7 +49,7 @@
              'inprogress': item.playState &amp;&amp; item.playState.status == 'inprogress',
              'alignleft': ($index % itemsPerRow) >= itemsPerRow / 2}">
 
-        <a href="#/channel/{{channelId}}/{{item.id}}" ng-if="item.poster || item.thumbnail">
+        <a ng-click="open(item)" ng-if="item.poster || item.thumbnail">
             <img ng-src="{{'/scale/' + (item.poster || item.thumbnail) + '?size=100x150'}}" class="th"/>
         </a>
         <div class="iteminfo">
