@@ -28,9 +28,13 @@ var rootDirectories = [
         title: "All movies",
         type: "container",
         _getContents: function(db, containerId, cb) {
-            db.getMovies({}, function(err, result) {
-                cb(err, result.map(mapMovie));
-            });
+            if(containerId == '') {
+                db.getMovies({}, function (err, result) {
+                    cb(err, result.map(mapMovie));
+                });
+            } else {
+                cb(null, []);
+            }
         },
         _getItem: function(db, itemId, cb) {
             if(itemId === null) {
@@ -299,7 +303,7 @@ MoviesChannel.prototype = {
             }
             
             if(directory._getItem) {
-                directory._getItem(this.db, i > -1 ? itemId.substring(i+1) : null, cb);
+                directory._getItem(this.db, i > -1 ? itemId.substring(i+1).replace(/\/$/,'') : null, cb);
             } else {
                 cb(null, { id: itemId });
             }
