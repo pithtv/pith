@@ -1,0 +1,43 @@
+.contentbrowser.list {
+    list-style: none;
+    padding: 0;
+}
+
+.contentbrowser.list .contentitem {
+    list-style: none;
+    padding: 10px;
+    font-size: 90%;
+    height: 130px;
+    overflow: hidden;
+    width: 100%;
+    border-bottom: 1px solid rgb(200,200,200);
+}
+
+.contentbrowser.list .actions {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    font-size: 20px;
+}
+
+.contentbrowser.list .contentitem .itemplot {
+    padding-top: 7px;
+    overflow: auto;
+    font-size: 90%;
+}
+
+.contentbrowser.list .contentitem img.th {
+    max-width: 101px;
+    max-height: 110px;
+    float: left;
+    margin-right: 15px;
+}
+
+.contentbrowser.list .contentitem > .iteminfo > span {
+    display: block;
+    margin-left: 88px;
+}
+
+.contentbrowser.list .contentitem > .iteminfo > .itemtagline {
+    display: none;
+}

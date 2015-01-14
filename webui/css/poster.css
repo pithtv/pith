@@ -1,0 +1,167 @@
+.contentbrowser.poster .contentitem {
+    display: inline-block;
+    margin: 4px;
+    height: 152px;
+    width: 102px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.contentbrowser.poster .contentitem.withinfo:hover {
+    transition: 0.4s width ease, 0.4s margin-left ease, 0.4s background ease;
+    background: rgba(255,255,255,0.95);
+    width: 328px;
+    z-index: 2;
+    box-shadow: 0px 0px 10px rgba(0,0,0,0.3);
+}
+
+.contentbrowser.poster .contentitem.withinfo.alignleft:hover {
+    margin-left: -222px;
+}
+
+.contentbrowser.poster .contentitem.inprogress:after,
+.contentbrowser.poster .contentitem.watched:after {
+    display: block;
+    content: '';
+    border: 1px solid black;
+    width: 26px;
+    height: 26px;
+    bottom: 3px;
+    left: 74px;
+    position: absolute;
+    border-radius: 15px;
+    border: 2px solid white;
+    background-color: rgb(200,0,0);
+    box-shadow:
+    0px -5px 4px rgba(0,0,0,0.2) inset,
+    0px 3px 4px rgba(255,255,255,0.8) inset,
+    0px 2px 4px black;
+    font-family: 'Glyphicons Halflings';
+    color: white;
+    text-align: center;
+    z-index: 5;
+}
+
+.contentbrowser.poster .contentitem.alignleft.inprogress:after,
+.contentbrowser.poster .contentitem.alignleft.watched:after {
+    left: auto;
+    right: 2px;
+}
+
+.contentbrowser.poster .contentitem.inprogress:after {
+    content: '\e073';
+}
+
+.contentbrowser.poster .contentitem.watched:after {
+    content: '\e013';
+}
+
+.contentbrowser.poster .contentitem img.th {
+    left: 0px;
+    padding: 4px;
+    -webkit-transition: all .2s ease-in-out;
+    -o-transition: all .2s ease-in-out;
+    transition: all .2s ease-in-out;
+    background-color: rgba(255,255,255,0.8);
+
+    width: 100px;
+    height: 150px;
+    pointer-events: auto;
+
+    z-index: 4;
+    position: absolute;
+}
+
+.contentbrowser.poster .contentitem.alignleft img.th {
+    left: auto;
+    right: 0px;
+}
+
+.contentbrowser.poster .contentitem.withthumb:not(:hover) .iteminfo,
+.contentbrowser.poster .contentitem .itemplot,
+.contentbrowser.poster .contentitem .itemgenres
+{
+    display: none;
+}
+
+.contentbrowser.poster .contentitem .itemtagline {
+    display: block;
+    font-size: 80%;
+    font-weight: normal;
+}
+
+
+.contentbrowser.poster .contentitem .iteminfo {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    right: 5px;
+    text-align: left;
+    bottom: 37px;
+    padding: 4px;
+    font-weight: bold;
+    overflow: hidden;
+    pointer-events: auto;
+    z-index: 3;
+}
+
+.contentbrowser.poster .contentitem .itemrating {
+    display: block;
+}
+
+.contentbrowser.poster .contentitem .actions {
+    display: block;
+    position: absolute;
+    bottom: 5px;
+    pointer-events: auto;
+    z-index: 2;
+    font-size: 20px;
+    left: 100px;
+    border-top: 1px solid rgb(200,200,200);
+    padding-top: 3px;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.contentbrowser.poster .contentitem .thumbnail {
+    width: 150px;
+    height: 100%;
+}
+
+.contentbrowser.poster .contentitem.withthumb .iteminfo {
+    pointer-events: none;
+}
+
+.contentbrowser.poster .contentitem .actions {
+    left: 5px;
+    right: 5px;
+    text-align: center;
+}
+
+.contentbrowser.poster .contentitem.withthumb .iteminfo,
+.contentbrowser.poster .contentitem.withthumb .actions {
+    left: 100px;
+    right: auto;
+    width: 220px;
+}
+
+.contentbrowser.poster .contentitem.withthumb.alignleft .iteminfo,
+.contentbrowser.poster .contentitem.withthumb.alignleft .actions {
+    left: auto;
+    right: 100px;
+}
+
+.contentbrowser.poster .contentitem.withthumb .actions {
+    text-align: left;
+}
+
+.contentbrowser.poster .contentitem.withthumb.alignleft .actions {
+    text-align: right;
+}
+
+.contentbrowser.poster img.th {
+    max-width: 101px;
+    max-height: 150px;
+}
