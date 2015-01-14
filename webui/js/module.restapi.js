@@ -35,7 +35,7 @@ angular
                     query = null;
                 }
                 var path = this.root.concat(relpath).concat(args);
-                return $http.get(path.join("/") + "/", {params: query});
+                return $http.get(path.join("/"), {params: query});
             }
         }
 
@@ -76,8 +76,8 @@ angular
             channels: get("channels"),
 
             channel: Module("channel", {
-                list: noempty(get("list")),
-                detail: noempty(get("detail")),
+                list: get("list"),
+                detail: get("detail"),
                 playstate: putOrGet("playstate")
             }),
 

@@ -28,7 +28,7 @@ var rootDirectories = [
         title: "All movies",
         type: "container",
         _getContents: function(db, containerId, cb) {
-            if(containerId == '') {
+            if(containerId == null) {
                 db.getMovies({}, function (err, result) {
                     cb(err, result.map(mapMovie));
                 });

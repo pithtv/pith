@@ -25,8 +25,7 @@ channelController.controller('channelController',
 
         var channel = $pithRest.channel($scope.channelId);
 
-        ($scope.currentContainer ? channel.detail($scope.currentContainer) : channel.detail())
-        .then(function(res) {
+        channel.detail($scope.currentContainer).then(function(res) {
             var item = res.data;
             $scope.itemDetails = item;
             if(!item.type || item.type == 'container') {
