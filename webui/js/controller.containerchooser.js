@@ -25,13 +25,7 @@ angular
                     $scope.goBack = null;
                 });
             } else {
-                var p;
-                if(state.containerId === null) {
-                    p = $pithRest.channel(state.channelId).list();
-                } else {
-                    p = $pithRest.channel(state.channelId).list(state.containerId);
-                }
-                p.then(function(res) {
+                $pithRest.channel(state.channelId).list(state.containerId).then(function(res) {
                     $scope.contents = res.data;
                     $scope.go = function(id, title) {
                         channelHistory.push(state);

@@ -27,7 +27,7 @@ angular
             var relpath = slice(arguments);
             return function() {
                 var args,query;
-                if(typeof arguments[arguments.length-1] === 'object') {
+                if(arguments[arguments.length-1] !== null && typeof arguments[arguments.length-1] === 'object') {
                     args = slice(arguments, 0, -1);
                     query = slice(arguments, -1)[0];
                 } else {
@@ -43,7 +43,7 @@ angular
             var relpath = slice(arguments);
             return function() {
                 var args,obj;
-                if(typeof arguments[arguments.length-1] === 'object') {
+                if(arguments[arguments.length-1] != null && typeof arguments[arguments.length-1] === 'object') {
                     args = slice(arguments, 0, -1);
                     obj = slice(arguments, -1)[0];
                 } else {
