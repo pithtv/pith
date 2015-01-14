@@ -228,20 +228,20 @@
 						childClone.attr('ng-repeat', lhs + ' in ' + collectionName + (rhsSuffix ? ' ' + rhsSuffix : ''))
 								.addClass('vs-repeat-repeated-element');
 
-						var offsetCalculationString = '( floor(($index + startIndex) / itemsPerRow) * gridItemHeight + offsetBefore)';
-						var oppositeOffsetCalculationString = '((floor($index) % itemsPerRow) * gridItemWidth)';
+						var offsetCalculationString = '( floor(($index + startIndex) / itemsPerRow) * gridItemHeight + offsetBefore) + "px"';
+						var oppositeOffsetCalculationString = '(($index % itemsPerRow) * gridItemWidth) + "px"';
+						var widthCorrectionPosition = '"calc( ( 100% - " + (gridItemWidth * itemsPerRow) + "px ) / (" + (itemsPerRow - 1) + " / " + ($index % itemsPerRow) + "))"';
 
 						if(typeof document.documentElement.style.transform !== "undefined"){ // browser supports transform css property
-							childClone.attr('ng-style', '{ "transform": "' + positioningPropertyTransform + '(" + ' + offsetCalculationString + ' + "px) '+
-                                             oppositePositioningPropertyTransform + '(" + ' + oppositeOffsetCalculationString + ' + "px)"}');
+							childClone.attr('ng-style', '{ "left" : ' + widthCorrectionPosition + ', "transform": "' + positioningPropertyTransform + '(" + ' + offsetCalculationString + ' + ") '+
+                                             oppositePositioningPropertyTransform + '(" + ' + oppositeOffsetCalculationString + ' + ")"}');
 						}
 						else if(typeof document.documentElement.style.webkitTransform !== "undefined"){ // browser supports -webkit-transform css property
-							childClone.attr('ng-style', '{ "-webkit-transform": "' + positioningPropertyTransform + '(" + ' + offsetCalculationString + ' + "px) ' + 
-							                 oppositePositioningPropertyTransform + '(" + ' + oppositeOffsetCalculationString + ' + "px)"}');
+							childClone.attr('ng-style', '{ "left" : ' + widthCorrectionPosition + ', "-webkit-transform": "' + positioningPropertyTransform + '(" + ' + offsetCalculationString + ' + ") ' +
+							                 oppositePositioningPropertyTransform + '(" + ' + oppositeOffsetCalculationString + ' + ")"}');
 						}
 						else{
-							childClone.attr('ng-style', '{' + positioningProperty + ': ' + offsetCalculationString + ' + "px"}');
-							childClone.attr('ng-style', '{' + oppositePositioningProperty + ': ' + oppositeOffsetCalculationString + ' + "px"}');
+							childClone.attr('ng-style', '{' + positioningProperty + ': ' + offsetCalculationString + ', ' + oppositePositioningProperty + ': ' + oppositeOffsetCalculationString + '}');
 						}
 
 						$compile(childClone)($scope);
