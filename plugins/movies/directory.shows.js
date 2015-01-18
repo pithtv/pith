@@ -26,7 +26,8 @@ function mapEpisode(m) {
         episodeId: m.id,
         type: 'item',
         mediatype: 'season',
-        playable: (m.originalId != null)
+        playable: (m.originalId != null),
+        unavailable: (m.originalId == null)
     });
 }
 

@@ -46,6 +46,10 @@ app.controller("MainController", ['$scope','$pithRest','PlayerControlService', "
     $scope.$on('cfpLoadingBar:completed', function() {
         $scope.loading = false;
     });
+
+    $scope.prescale = function(url, size) {
+        return '/scale/' + (url) + '?size=' + size;
+    };
     
     $scope.$on('player:load', function(event, channelId, itemId) {
         playerControl.getLastPlayState(channelId, itemId)

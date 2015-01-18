@@ -179,7 +179,8 @@ span.itemyear:after {
     margin-top: 3px;
 }
 
-.contentbrowser.poster {
+.contentbrowser.poster,
+.contentbrowser.still {
     padding: 0;
 }
 
@@ -250,4 +251,23 @@ span.itemyear:after {
 
 .itemseason + .itemepisode:before {
     content: "x"
+}
+
+.breadcrumb {
+    background: rgba(245,245,245,0.9);
+}
+
+.contentdetail {
+    background: rgba(255,255,255,0.7);
+    border: 1px solid rgba(0,0,0,0.3);
+    margin: 0.2em;
+    margin-bottom: 1.5em;
+}
+
+.contentdetail img {
+    max-height: 200px;
+}
+
+.th {
+    background-size: cover;
 }

@@ -58,7 +58,7 @@
     content: '\e013';
 }
 
-.contentbrowser.poster .contentitem img.th {
+.contentbrowser.poster .contentitem .th {
     left: 0px;
     padding: 4px;
     -webkit-transition: all .2s ease-in-out;
@@ -74,7 +74,7 @@
     position: absolute;
 }
 
-.contentbrowser.poster .contentitem.alignleft img.th {
+.contentbrowser.poster .contentitem.alignleft .th {
     left: auto;
     right: 0px;
 }
@@ -162,7 +162,11 @@
     text-align: right;
 }
 
-.contentbrowser.poster img.th {
+.contentbrowser.poster .th {
     max-width: 101px;
     max-height: 150px;
+}
+
+.contentbrowser.poster .stillimg {
+    display: none;
 }

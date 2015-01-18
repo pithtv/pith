@@ -116,8 +116,9 @@ module.exports = function(opts) {
             function scan(container, done) {
                 if(container) {
                     channelInstance.listContents(container.id, function(err, contents) {
-                        if(err) {
+                        if(err || !contents) {
                             done(err);
+                            return;
                         }
 
                         async.eachSeries(contents, function(item, cb) {

@@ -26,7 +26,7 @@
     font-size: 90%;
 }
 
-.contentbrowser.list .contentitem img.th {
+.contentbrowser.list .contentitem .th {
     max-width: 101px;
     max-height: 110px;
     float: left;
@@ -39,5 +39,9 @@
 }
 
 .contentbrowser.list .contentitem > .iteminfo > .itemtagline {
+    display: none;
+}
+
+.contentbrowser.list .stillimg {
     display: none;
 }
