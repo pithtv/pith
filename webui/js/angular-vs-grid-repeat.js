@@ -394,7 +394,7 @@
 						function updateInnerCollection(){
                             $scope.startIndex = Math.max(
                                 (Math.floor(
-                                    ($scrollParent[0][scrollPos] - $scope.offsetBefore) / $scope.gridItemHeight + $scope.excess/2
+                                    ($scrollParent[0][scrollPos] - $scope.offsetBefore - $element.offset().top) / $scope.gridItemHeight + $scope.excess/2
                                 ) - $scope.excess) * $scope.itemsPerRow,
                                 0
                             );
