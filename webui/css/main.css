@@ -239,3 +239,15 @@ span.itemyear:after {
     border-bottom-right-radius: 0;
     border-bottom-width: 0;
 }
+
+.itemseason + .itemtitle:before {
+    content: ". "
+}
+
+.itemepisode + .itemtitle:before {
+    content: " - "
+}
+
+.itemseason + .itemepisode:before {
+    content: "x"
+}

@@ -93,6 +93,7 @@ FilesChannel.prototype = {
                 item.fileSize = stats && stats.size;
                 item.modificationTime = stats && stats.mtime;
                 item.creationTime = stats && stats.ctime;
+                item.fsPath = filepath;
             }
             
             var applicableProviders = metaDataProviders.filter(function(f) {

@@ -6,12 +6,24 @@ var uuid = require("node-uuid").v1;
 
 module.exports = function(db) {
     var movies = db.collection('movies');
-    var episodes = db.collection('episodes');
-    var shows = db.collection('shows');
     var people = db.collection('people');
     var keywords = db.collection('keywords');
     var genres = db.collection('genres');
-    
+    var shows = db.collection('shows');
+    var seasons = db.collection('seasons');
+    var episodes = db.collection('episodes');
+
+    function insertOrUpdate(collection, entity, callback) {
+        if(entity._id) {
+            collection.update({_id: entity._id}, entity, callback);
+        } else {
+            if(!entity.id) {
+                entity.id = uuid();
+            }
+            collection.insert(entity, callback);
+        }
+    }
+
     function findOrCreate(collection, query, constructor, callback) {
         if(typeof callback != 'function') {
             callback = constructor;
@@ -104,10 +116,29 @@ module.exports = function(db) {
             });
         });
     }
-    
+
+    function storeShow(item, callback) {
+        insertOrUpdate(shows, item, callback);
+    }
+
+    function findSeason(item, callback) {
+        seasons.findOne(item, callback);
+    }
+
+    function storeSeason(item, callback) {
+        insertOrUpdate(seasons, item, callback);
+    }
+
+    function findEpisode(item, callback) {
+        episodes.findOne(item, callback);
+    }
+
     function storeEpisode(item, callback) {
-        var episode = {};
-        for(var x in item) episode[x] = item[x];
+        insertOrUpdate(episodes, item, callback);
+    }
+
+    function findShow(query, callback) {
+        shows.findOne(query, callback);
     }
     
     function getKeywords(callback) {
@@ -133,6 +164,10 @@ module.exports = function(db) {
     function getMovies(selector, callback) {
         movies.find(selector).toArray(callback);
     }
+
+    function getShows(selector, callback) {
+        shows.find(selector).toArray(callback);
+    }
     
     function findMovieByOriginalId(channelId, itemId, callback) {
         movies.findOne({channelId: channelId, originalId: itemId}, callback);
@@ -141,7 +176,19 @@ module.exports = function(db) {
     function getMovie(itemId, callback) {
         movies.findOne({id: itemId}, callback);
     }
-    
+
+    function findAll(query, opts, callback) {
+        if(typeof opts === 'function') {
+            callback = opts;
+            opts = undefined;
+        }
+        var cursor = this.find(query);
+        if(opts) {
+            cursor.sort(opts);
+        }
+        return cursor.toArray(callback);
+    }
+
     return {
         getPerson: getPerson,
         
@@ -154,6 +201,16 @@ module.exports = function(db) {
         getWriters: getWriters,
         getMovies: getMovies,
         findMovieByOriginalId: findMovieByOriginalId,
-        getMovie: getMovie
+        getMovie: getMovie,
+
+        findShow: shows.findOne.bind(shows),
+        findShows: findAll.bind(shows),
+        storeShow: storeShow,
+        findSeason: findSeason,
+        findSeasons: findAll.bind(seasons),
+        storeSeason: storeSeason,
+        findEpisode: findEpisode,
+        findEpisodes: findAll.bind(episodes),
+        storeEpisode: storeEpisode
     };
 };

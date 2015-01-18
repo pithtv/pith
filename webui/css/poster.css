@@ -86,7 +86,8 @@
     display: none;
 }
 
-.contentbrowser.poster .contentitem .itemtagline {
+.contentbrowser.poster .contentitem .itemtagline,
+.contentbrowser.poster .contentitem .itemoverview {
     display: block;
     font-size: 80%;
     font-weight: normal;

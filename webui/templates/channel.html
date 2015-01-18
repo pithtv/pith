@@ -28,10 +28,11 @@
     Loading.
 </div>
 
-<div class="contentdetail well well-sm" ng-if="itemDetails.tagline || itemDetails.plot || itemDetails.playable">
+<div class="contentdetail well well-sm" ng-if="itemDetails.tagline || itemDetails.plot || itemDetails.playable || itemDetails.overview">
     <h3 ng-if="itemDetails.title">{{itemDetails.title}}</h3>
     <h4 ng-if="itemDetails.tagline">{{itemDetails.tagline}}</h4>
     <div ng-if="itemDetails.plot">{{itemDetails.plot}}</div>
+    <div ng-if="itemDetails.overview">{{itemDetails.overview}}</div>
     <div class="btn-group" ng-if="itemDetails.playable">
          <button class="btn glyphicon glyphicon-play" ng-click="load(itemDetails.id)"></button>        
     </div>
@@ -44,7 +45,7 @@
         ng-repeat="item in containerContents | filter:{title:(search||'')}"
         ng-class="
             {'withthumb': item.thumbnail || item.poster,
-             'withinfo': item.tagline || item.rating || (item.genres && item.genres.length) || item.plot,
+             'withinfo': item.tagline || item.rating || (item.genres && item.genres.length) || item.plot || item.overview,
              'watched': item.playState &amp;&amp; item.playState.status == 'watched',
              'inprogress': item.playState &amp;&amp; item.playState.status == 'inprogress',
              'alignleft': ($index % itemsPerRow) >= itemsPerRow / 2}">
@@ -54,12 +55,13 @@
         </a>
         <div class="iteminfo">
             <a ng-click="open(item)">
-                <span class="itemtitle">{{item.title}} <span ng-if="item.year" class="itemyear">{{item.year}}</span></span>
+                <span class="itemseason" ng-if="item.season">{{item.season}}</span><span class="itemepisode" ng-if="item.episode">{{item.episode}}</span><span class="itemtitle">{{item.title}} <span ng-if="item.year" class="itemyear">{{item.year}}</span></span>
             </a>
             <span class="itemtagline" ng-if="item.tagline">{{item.tagline}}</span>
             <span class="itemrating" data-starrating="{{item.rating}}" ng-if="item.rating">{{item.rating}}</span>
             <span class="itemgenres" ng-if="item.genres &amp;&amp; item.genres.length">{{item.genres.join(", ")}}</span>
             <span class="itemplot" ng-if="item.plot">{{item.plot}}</span>
+            <span class="itemoverview" ng-if="item.overview">{{item.overview}}</span>
         </div>
         <span ng-if="item.playable" class="actions">
             <a ng-click="load(item)" class="glyphicon glyphicon-play action-play" title="Play"></a>

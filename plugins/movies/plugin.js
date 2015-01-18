@@ -5,279 +5,28 @@ var winston = require("winston");
 var global = require("../../lib/global")();
 var Channel = require("../../lib/channel");
 
-function MoviesChannel(pithApp) {
+var moviesDirectory = require("./directory.movies");
+var showsDirectory = require("./directory.shows");
+
+function LibraryChannel(pithApp, directory) {
     Channel.apply(this);
 
     this.pithApp = pithApp;
     this.db = db(pithApp.db);
-    var self = this;
-    setTimeout(function() {
-        self.scan();
-    }, 10000);
+
+    this.directory = directory;
 }
 
-function mapMovie(e) {
-    e.movieId = e.id;
-    e.id = "movies/" + e.id;
-    return e;
-}
-
-var rootDirectories = [
-    {
-        id: "movies",
-        title: "All movies",
-        type: "container",
-        _getContents: function(db, containerId, cb) {
-            if(containerId == null) {
-                db.getMovies({}, function (err, result) {
-                    cb(err, result.map(mapMovie));
-                });
-            } else {
-                cb(null, []);
-            }
-        },
-        _getItem: function(db, itemId, cb) {
-            if(itemId === null) {
-                cb(null, {id: 'movies', title: 'All Movies'});
-            } else {
-                db.getMovies({id: itemId}, function (err, result) {
-                    if (err) {
-                        cb(err);
-                    } else {
-                        if (result[0]) {
-                            cb(null, mapMovie(result[0]));
-                        } else {
-                            cb(null, undefined);
-                        }
-                    }
-                });
-            }
-        }
-    },
-    {
-        id: "actors",
-        title: "By actor",
-        type: "container",
-        _getContents: function(db, containerId, cb) {
-            if(containerId) {
-                db.getMovies({actorIds: containerId}, function(err, result){
-                    cb(err, result.map(mapMovie));
-                });
-            } else {
-                db.getActors(function(err, result) {
-                    if(err) {
-                        cb(err);
-                    } else {
-                        cb(null, result.map(function(e) {
-                            return {
-                                id: "actors/" + e._id,
-                                title: e.name,
-                                type: "container"
-                            };
-                        }));
-                    }
-                });
-            }
-        }
-    },
-    {
-        id: "directors",
-        title: "By director",
-        type: "container",
-        _getContents: function(db, containerId, cb) {
-            if(containerId) {
-                db.getMovies({directorIds: containerId}, function(err, result){
-                    cb(err, result.map(mapMovie));
-                });
-            } else {
-                db.getDirectors(function(err, result) {
-                    if(err) {
-                        cb(err);
-                    } else {
-                        cb(null, result.map(function(e) {
-                            return {
-                                id: "directors/" + e._id,
-                                title: e.name,
-                                type: "container"
-                            };
-                        }));
-                    }
-                });
-            }
-        }
-    },
-    {
-        id: "writers",
-        title: "By writer",
-        type: "container",
-        _getContents: function(db, containerId, cb) {
-            if(containerId) {
-                db.getMovies({writerIds: containerId}, function(err, result){
-                    cb(err, result.map(mapMovie));
-                });
-            } else {
-                db.getWriters(function(err, result) {
-                    if(err) {
-                        cb(err);
-                    } else {
-                        cb(null, result.map(function(e) {
-                            return {
-                                id: "writers/" + e._id,
-                                title: e.name,
-                                type: "container"
-                            };
-                        }));
-                    }
-                });
-            }
-        }
-    },
-    {
-        id: "keywords",
-        title: "By keyword",
-        type: "container",
-        _getContents: function(db, containerId, cb) {
-            if(containerId) {
-                db.getMovies({keywordIds: containerId}, function(err, result) {
-                    cb(err, result.map(mapMovie));
-                });
-            } else {
-                db.getKeywords(function(err, result) {
-                    if(err) {
-                        cb(err);
-                    } else {
-                        cb(null, result.map(function(e) {
-                            return {
-                                id: "keywords/" + e._id,
-                                title: e.name,
-                                type: "container"
-                            };
-                        }));
-                    }
-                });
-            }
-        }
-    },
-    {
-        id: "genres",
-        title: "By genre",
-        type: "container",
-        _getContents: function(db, containerId, cb) {
-            if(containerId) {
-                db.getMovies({genreIds: containerId}, function(err, result) {
-                    cb(err, result.map(mapMovie));
-                });
-            } else {
-                db.getGenres(function(err, result) {
-                    if(err) {
-                        cb(err);
-                    } else {
-                        cb(null, result.map(function(e) {
-                            return {
-                                id: "genre/" + e._id,
-                                title: e.name,
-                                type: "container"
-                            };
-                        }));
-                    }
-                });
-            }
-        }
-    }
-];
-
-MoviesChannel.prototype = {
-    scan: function(manual) {
-        var channel = this;
-
-        winston.info("Starting movie library scan");
-        var scanStartTime = new Date().getTime();
-
-        async.eachSeries(global.settings.library.folders.filter(function(c) {
-            return c.contains === 'movies' && (c.scanAutomatically || manual === true);
-        }), function(dir, cb) {
-            var channelInstance = channel.pithApp.getChannelInstance(dir.channelId);
-
-            function listContents(container, done) {
-                if(container) {
-                    channelInstance.listContents(container && container.id, function (err, contents) {
-                        if (err) {
-                            done(err);
-                        }
-                        if (contents && contents.length) {
-                            async.eachSeries(contents, function (item, cb) {
-                                if (item.type == 'container') {
-                                    listContents(item, cb);
-                                } else if (item.playable && item.mimetype.match(/^video\//)) {
-
-                                    channel.db.findMovieByOriginalId(dir.channelId, item.id, function (err, result) {
-                                        if (!result) {
-                                            winston.info("Found new item " + item.id);
-
-                                            item.modificationTime = container.modificationTime;
-                                            item.creationTime = container.creationTime;
-
-                                            function store(result) {
-                                                result.originalId = item.id;
-                                                result.channelId = dir.channelId;
-                                                result.id = item.id;
-                                                result.dateScanned = new Date();
-                                                channel.db.storeMovie(result, function (err) {
-                                                    cb();
-                                                });
-                                            }
-
-                                            channel.scanItem(item, function (err, result) {
-                                                if (err) {
-                                                    item.title = container.title;
-                                                    channel.scanItem(item, function (err, result) {
-                                                        if (err) cb();
-                                                        else store(result);
-                                                    });
-                                                } else {
-                                                    store(result);
-                                                }
-                                            });
-                                        } else {
-                                            cb();
-                                        }
-                                    });
-                                } else {
-                                    cb();
-                                }
-                            }, done);
-                        } else {
-                            done();
-                        }
-                    });
-                }
-            }
-
-            channelInstance.getItem(dir.containerId, function (err, container) {
-                listContents(container, cb);
-            });
-        }, function(err) {
-            var scanEndTime = new Date().getTime();
-            winston.info("Movie library scan complete. Took %d ms", (scanEndTime - scanStartTime));
-            setTimeout(function () {
-                channel.scan();
-            }, global.settings.library.scanInterval);
-        });
-    },
-    
-    scanItem: function(item, cb) {
-        metadata(item, cb);
-    },
-    
+LibraryChannel.prototype = {
     listContents: function(containerId, cb) {
         if(!containerId) {
-            cb(null, rootDirectories);
+            cb(null, this.directory);
         } else {
             var i = containerId.indexOf('/');
             
             var directoryId = i > -1 ? containerId.substring(0,i) : containerId;
             
-            var directory = rootDirectories.filter(function(e) {
+            var directory = this.directory.filter(function(e) {
                 return e.id == directoryId; 
             })[0];
             
@@ -293,7 +42,7 @@ MoviesChannel.prototype = {
             
             var directoryId = i > -1 ? itemId.substring(0,i) : itemId;
             
-            var directory = rootDirectories.filter(function(e) {
+            var directory = this.directory.filter(function(e) {
                 return e.id == directoryId; 
             })[0];
             
@@ -349,16 +98,61 @@ MoviesChannel.prototype = {
 
 module.exports = {
     init: function(opts) {
-        var instance = new MoviesChannel(opts.pith);
+        var self = this, pith = opts.pith;
+        var moviesChannel = new LibraryChannel(opts.pith, moviesDirectory);
+        var showsChannel = new LibraryChannel(opts.pith, showsDirectory);
+
+        // set up scanners
+        var scannerOpts = {
+            db: db(opts.pith.db)
+        };
+        var scanners = {
+            movies: require("./scanner.movie")(scannerOpts),
+            tvshows: require("./scanner.tvshow")(scannerOpts)
+        };
+        setTimeout(function() {
+            self.scan();
+        }, 10000);
+
+        this.scan = function(manual) {
+            var plug = this;
+
+            winston.info("Starting library scan");
+            var scanStartTime = new Date().getTime();
+
+            async.eachSeries(global.settings.library.folders.filter(function(c) {
+                return scanners[c.contains] !== undefined && (c.scanAutomatically || manual === true);
+            }), function(dir, cb) {
+                var channelInstance = pith.getChannelInstance(dir.channelId);
+                scanners[dir.contains].scan(channelInstance, dir, cb);
+            }, function(err) {
+                var scanEndTime = new Date().getTime();
+                winston.info("Library scan complete. Took %d ms", (scanEndTime - scanStartTime));
+                setTimeout(function () {
+                    plug.scan();
+                }, global.settings.library.scanInterval);
+            });
+        };
 
         opts.pith.registerChannel({
             id: 'movies',
             title: 'Movies',
             type: 'channel',
             init: function(opts) {
-                return instance;
+                return moviesChannel;
             },
             sequence: 2
         });
+
+        opts.pith.registerChannel({
+            id: 'shows',
+            title: 'Shows',
+            type: 'channel',
+            init: function(opts) {
+                "use strict";
+                return showsChannel;
+            }
+        });
+
     }
 };
