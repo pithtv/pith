@@ -86,7 +86,7 @@ LibraryChannel.prototype = {
     putPlayState: function(itemId, state, cb) {
         var self = this;
         this.getItem(itemId, function(err, item) {
-            if(err || item === undefined) {
+            if(err || item == undefined) {
                 if(cb) cb(err);
                 return;
             }
