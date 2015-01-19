@@ -8,7 +8,7 @@ tmdb.configuration(function(err, conf) {
 });
 
 function createUrl(path) {
-    return configuration.images.base_url + "original" + path;
+    return path && configuration.images.base_url + "original" + path;
 }
 
 function get(property) {
