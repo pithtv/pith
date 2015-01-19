@@ -105,7 +105,7 @@ MediaRenderer.prototype = {
             console.log("Loading " + mediaUrl);
             
             function doLoad() {
-                var type = item.mimetype.split('/')[0];
+                var type = stream.mimetype.split('/')[0];
                 
                 renderer._avTransport.SetAVTransportURI({
                     InstanceID: 0,
