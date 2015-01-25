@@ -20,7 +20,8 @@ module.exports = function(opts) {
             var seasonMetaData = {
                 season: season,
                 showTmdbId: show.tmdbId,
-                showId: show.id
+                showId: show.id,
+                showname: show.title
             };
             metadata(seasonMetaData, 'season', function(err, seasonMetaData) {
                 var episodes = seasonMetaData._children;
