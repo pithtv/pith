@@ -33,10 +33,12 @@ module.exports = function(opts) {
                                 for(var x in episodeMetaData) {
                                     episode[x] = episodeMetaData[x];
                                 }
+                                episode.showname = show.title;
                                 db.storeEpisode(episode, callback);
                             } else {
                                 episodeMetaData.showId = show.id;
                                 episodeMetaData.seasonId = seasonMetaData.id;
+                                episodeMetaData.showname = show.title;
                                 db.storeEpisode(episodeMetaData, callback);
                             }
                         });
