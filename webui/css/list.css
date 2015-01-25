@@ -27,8 +27,8 @@
 }
 
 .contentbrowser.list .contentitem .th {
-    max-width: 101px;
-    max-height: 110px;
+    width: 73px;
+    height: 110px;
     float: left;
     margin-right: 15px;
 }

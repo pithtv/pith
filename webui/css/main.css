@@ -241,16 +241,24 @@ span.itemyear:after {
     border-bottom-width: 0;
 }
 
+.itemshowname + .itemseason:before {
+    content: ' - ';
+}
+
 .itemseason + .itemtitle:before {
     content: ". "
 }
 
+.itemseason + .itemepisode + .itemtitle:before {
+    content: " - ";
+}
+
 .itemepisode + .itemtitle:before {
-    content: " - "
+    content: ". ";
 }
 
 .itemseason + .itemepisode:before {
-    content: "x"
+    content: "x";
 }
 
 .breadcrumb {
@@ -270,4 +278,15 @@ span.itemyear:after {
 
 .th {
     background-size: cover;
+    background-position: center;
+}
+
+a.link-imdb {
+    height: 2ex;
+    width:3ex;
+    background: url('../static/imdb.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center 0.5ex;
+    display: inline-block;
 }
