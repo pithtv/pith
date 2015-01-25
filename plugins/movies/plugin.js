@@ -1,3 +1,5 @@
+"use strict";
+
 var metadata = require("./metadata.tmdb.js");
 var db = require("./database");
 var async = require("async");
@@ -20,7 +22,9 @@ function LibraryChannel(pithApp, directory) {
 LibraryChannel.prototype = {
     listContents: function(containerId, cb) {
         if(!containerId) {
-            cb(null, this.directory);
+            cb(null, this.directory.filter(function(d) {
+                return d.visible !== false;
+            }));
         } else {
             var i = containerId.indexOf('/');
             

@@ -42,7 +42,7 @@ module.exports = [
                     cb(err, result.map(mapShow));
                 });
             } else {
-                db.findSeasons({showId: containerId}, {season: 1}, function(err, result) {
+                db.findSeasons({showId: containerId}, {order: {season: 1}}, function(err, result) {
                     cb(err, result.map(mapSeason));
                 });
             }
@@ -68,7 +68,7 @@ module.exports = [
                     cb(err, result.map(mapSeason()));
                 })
             } else {
-                db.findEpisodes({seasonId: containerId}, {episode: 1}, function(err, result) {
+                db.findEpisodes({seasonId: containerId}, {order: {episode: 1}}, function(err, result) {
                     cb(err, result.map(mapEpisode));
                 })
             }
@@ -94,6 +94,32 @@ module.exports = [
         _getItem: function(db, itemId, cb) {
             db.findEpisode({id: itemId}, function(err, episode) {
                 cb(err, episode && mapEpisode(episode));
+            });
+        }
+    },
+
+    {
+        id: "recentlyadded",
+        title: "Recently Added",
+        description: "Episodes added in the past 7 days",
+        visible: true,
+        type: "container",
+        _getContents: function(db, containerId, cb) {
+            db.findEpisodes({dateScanned: {$gt: new Date(new Date() - 7*24*60*60*1000)}}, {order: {scannedDate: -1}}, function(err, result) {
+                cb(err, result.map(mapEpisode));
+            });
+        }
+    },
+
+    {
+        id: "recentlyaired",
+        title: "Recently Aired",
+        description: "Episodes aired in the past 7 days",
+        visible: true,
+        type: "container",
+        _getContents: function(db, containerId, cb) {
+            db.findEpisodes({airDate: {$gt: new Date(new Date() - 7*24*60*60*1000)}}, {order: {scannedDate: -1}}, function(err, result) {
+                cb(err, result.map(mapEpisode));
             });
         }
     }

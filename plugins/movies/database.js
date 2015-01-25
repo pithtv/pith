@@ -14,11 +14,15 @@ module.exports = function(db) {
     var episodes = db.collection('episodes');
 
     function insertOrUpdate(collection, entity, callback) {
+        entity.modificationTime = new Date();
         if(entity._id) {
             collection.update({_id: entity._id}, entity, callback);
         } else {
             if(!entity.id) {
                 entity.id = uuid();
+            }
+            if(!entity.creationTime) {
+                entity.creationTime = new Date();
             }
             collection.insert(entity, callback);
         }
@@ -109,9 +113,7 @@ module.exports = function(db) {
                 movie.keywordIds = result;
                 async.mapSeries(movie.genres, getGenreId, function(err, result) {
                     movie.genreIds = result;
-                    movies.insert(movie, function() {
-                        callback();
-                    });
+                    insertOrUpdate(movies, movie, callback);
                 });
             });
         });
@@ -160,10 +162,6 @@ module.exports = function(db) {
     function getWriters(callback) {
         people.find({writer: true}).toArray(callback);
     }
-    
-    function getMovies(selector, callback) {
-        movies.find(selector).toArray(callback);
-    }
 
     function getShows(selector, callback) {
         shows.find(selector).toArray(callback);
@@ -183,8 +181,11 @@ module.exports = function(db) {
             opts = undefined;
         }
         var cursor = this.find(query);
-        if(opts) {
-            cursor.sort(opts);
+        if(opts && opts.order) {
+            cursor.sort(opts.order);
+        }
+        if(opts && opts.limit) {
+            cursor.limit(opts.limit);
         }
         return cursor.toArray(callback);
     }
@@ -199,7 +200,7 @@ module.exports = function(db) {
         getActors: getActors,
         getDirectors: getDirectors,
         getWriters: getWriters,
-        getMovies: getMovies,
+        findMovies: findAll.bind(movies),
         findMovieByOriginalId: findMovieByOriginalId,
         getMovie: getMovie,
 

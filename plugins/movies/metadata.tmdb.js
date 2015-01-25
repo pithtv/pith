@@ -1,6 +1,7 @@
 "use strict";
 
 var tmdb = require("moviedb")("a08cfd3b50689d40b46a078ecc7390bb");
+var dateParser = /(\d{4})-(\d{2})-(\d{2})/;
 
 var configuration;
 tmdb.configuration(function(err, conf) {
@@ -9,6 +10,11 @@ tmdb.configuration(function(err, conf) {
 
 function createUrl(path) {
     return path && configuration.images.base_url + "original" + path;
+}
+
+function parseDate(d) {
+    var p = d.match(dateParser);
+    return new Date(parseInt(p[1]),parseInt(p[2])-1,parseInt(p[3]));
 }
 
 function get(property) {
@@ -45,7 +51,7 @@ module.exports = function(item, mediatype, callback) {
                     item.imdbId = result.imdb_id;
                     item.poster = createUrl(result.poster_path);
                     item.backdrop = createUrl(result.backdrop_path);
-                    item.releaseDate = result.release_date;
+                    item.releaseDate = parseDate(result.release_date);
                     item.runtime = result.runtime;
                     item.tagline = result.tagline;
                     item.plot = result.overview;
@@ -98,7 +104,10 @@ module.exports = function(item, mediatype, callback) {
                     season: ep.season_number,
                     title: ep.name,
                     overview: ep.overview,
-                    still: createUrl(ep.still_path)
+                    still: createUrl(ep.still_path),
+                    airDate: parseDate(ep.air_date),
+                    tmdbRating: result.vote_average,
+                    tmdbVoteCount: result.vote_count
                 }
             }),
 

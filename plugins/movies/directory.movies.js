@@ -1,3 +1,5 @@
+"use strict";
+
 function mapMovie(e) {
     e.movieId = e.id;
     e.id = "movies/" + e.id;
@@ -11,7 +13,7 @@ module.exports = [
         type: "container",
         _getContents: function(db, containerId, cb) {
             if(containerId == null) {
-                db.getMovies({}, function (err, result) {
+                db.findMovies({}, function (err, result) {
                     cb(err, result.map(mapMovie));
                 });
             } else {
@@ -22,7 +24,7 @@ module.exports = [
             if(itemId === null) {
                 cb(null, {id: 'movies', title: 'All Movies'});
             } else {
-                db.getMovies({id: itemId}, function (err, result) {
+                db.findMovies({id: itemId}, function (err, result) {
                     if (err) {
                         cb(err);
                     } else {
@@ -42,7 +44,7 @@ module.exports = [
         type: "container",
         _getContents: function(db, containerId, cb) {
             if(containerId) {
-                db.getMovies({actorIds: containerId}, function(err, result){
+                db.findMovies({actorIds: containerId}, function(err, result){
                     cb(err, result.map(mapMovie));
                 });
             } else {
@@ -68,7 +70,7 @@ module.exports = [
         type: "container",
         _getContents: function(db, containerId, cb) {
             if(containerId) {
-                db.getMovies({directorIds: containerId}, function(err, result){
+                db.findMovies({directorIds: containerId}, function(err, result){
                     cb(err, result.map(mapMovie));
                 });
             } else {
@@ -94,7 +96,7 @@ module.exports = [
         type: "container",
         _getContents: function(db, containerId, cb) {
             if(containerId) {
-                db.getMovies({writerIds: containerId}, function(err, result){
+                db.findMovies({writerIds: containerId}, function(err, result){
                     cb(err, result.map(mapMovie));
                 });
             } else {
@@ -120,7 +122,7 @@ module.exports = [
         type: "container",
         _getContents: function(db, containerId, cb) {
             if(containerId) {
-                db.getMovies({keywordIds: containerId}, function(err, result) {
+                db.findMovies({keywordIds: containerId}, function(err, result) {
                     cb(err, result.map(mapMovie));
                 });
             } else {
@@ -146,7 +148,7 @@ module.exports = [
         type: "container",
         _getContents: function(db, containerId, cb) {
             if(containerId) {
-                db.getMovies({genreIds: containerId}, function(err, result) {
+                db.findMovies({genreIds: containerId}, function(err, result) {
                     cb(err, result.map(mapMovie));
                 });
             } else {
@@ -164,6 +166,30 @@ module.exports = [
                     }
                 });
             }
+        }
+    },
+    {
+        id: "recentlyadded",
+        title: "Recently Added",
+        description: "Movies added in the past 14 days",
+        visible: true,
+        type: "container",
+        _getContents: function(db, containerId, cb) {
+            db.findMovies({dateScanned: {$gt: new Date(new Date() - 14*24*60*60*1000)}}, {order: {scannedDate: -1}}, function(err, result) {
+                cb(err, result.map(mapMovie));
+            });
+        }
+    },
+    {
+        id: "recentlyreleased",
+        title: "Recently Released",
+        description: "Most recently released movies",
+        visible: true,
+        type: "container",
+        _getContents: function(db, containerId, cb) {
+            db.findMovies({}, {order: {scannedDate: -1}, limit: 50}, function(err, result) {
+                cb(err, result.map(mapMovie));
+            });
         }
     }
 ];

@@ -63,7 +63,8 @@ module.exports = function(opts) {
                             playable: true,
                             mediatype: 'episode',
                             originalId: item.originalId,
-                            channelId: item.channelId
+                            channelId: item.channelId,
+                            scannedDate: new Date()
                         };
                         db.storeEpisode(episode, cb);
                     } else {
@@ -89,23 +90,23 @@ module.exports = function(opts) {
             });
         },
 
-        updateInShow: function(item, cb) {
+        updateInShow: function(episode, cb) {
             var self = this;
-            db.findShow({originalTitle: item.showname}, function(err, showMetaData) {
+            db.findShow({originalTitle: episode.showname}, function(err, showMetaData) {
                 if(showMetaData == null) {
-                    winston.info("Found a new show", item.showname)
-                    self.loadShow(item.showname, function(err, showMetaData) {
+                    winston.info("Found a new show", episode.showname)
+                    self.loadShow(episode.showname, function(err, showMetaData) {
                         if(err) {
                             cb(err);
                         } else {
-                            showMetaData.originalTitle = item.showname; // use for reference later when querying again
+                            showMetaData.originalTitle = episode.showname; // use for reference later when querying again
                             db.storeShow(showMetaData, function(err) {
-                                self.updateInSeason(showMetaData, item, cb);
+                                self.updateInSeason(showMetaData, episode, cb);
                             });
                         }
                     });
                 } else {
-                    self.updateInSeason(showMetaData, item, cb);
+                    self.updateInSeason(showMetaData, episode, cb);
                 }
             });
         },
