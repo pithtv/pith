@@ -84,14 +84,16 @@ angular.module("PlayerControlModule", ["WsEventsModule", "errorDialogModule", "p
                 if(activePlayer && playerId == activePlayer.id) {
                     service.emit("playerstatechange", status);
                 }
-            }).on("playerregistered", function(player) {
+            }).on("playerregistered", function(event) {
+                var player = event.player;
                 players.push(player);
                 if(!activePlayer) {
                     service.setActivePlayer(player);
                     service.emit("playerstatechange", status);
                 }
                 service.emit("playerlistchanged");
-            }).on("playerdisappeared", function(player) {
+            }).on("playerdisappeared", function(event) {
+                var player = event.player;
                 players = players.filter(function(e) {
                     return e.id !== player.id;
                 });
