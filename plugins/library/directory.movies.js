@@ -175,7 +175,7 @@ module.exports = [
         visible: true,
         type: "container",
         _getContents: function(db, containerId, cb) {
-            db.findMovies({dateScanned: {$gt: new Date(new Date() - 14*24*60*60*1000)}}, {order: {scannedDate: -1}}, function(err, result) {
+            db.findMovies({dateScanned: {$gt: new Date(new Date() - 14*24*60*60*1000)}}, {order: {dateScanned: -1}}, function(err, result) {
                 cb(err, result.map(mapMovie));
             });
         }
@@ -187,7 +187,7 @@ module.exports = [
         visible: true,
         type: "container",
         _getContents: function(db, containerId, cb) {
-            db.findMovies({}, {order: {scannedDate: -1}, limit: 50}, function(err, result) {
+            db.findMovies({}, {order: {releaseDate: -1}, limit: 50}, function(err, result) {
                 cb(err, result.map(mapMovie));
             });
         }

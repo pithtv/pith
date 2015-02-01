@@ -38,7 +38,7 @@ module.exports = [
         type: "container",
         _getContents: function(db, containerId, cb) {
             if(containerId == null) {
-                db.findShows({}, {title: 1}, function (err, result) {
+                db.findShows({}, {order: {title: 1}}, function (err, result) {
                     cb(err, result.map(mapShow));
                 });
             } else {
@@ -105,7 +105,7 @@ module.exports = [
         visible: true,
         type: "container",
         _getContents: function(db, containerId, cb) {
-            db.findEpisodes({dateScanned: {$gt: new Date(new Date() - 7*24*60*60*1000)}}, {order: {scannedDate: -1}}, function(err, result) {
+            db.findEpisodes({dateScanned: {$gt: new Date(new Date() - 7*24*60*60*1000)}}, {order: {dateScanned: -1}}, function(err, result) {
                 cb(err, result.map(mapEpisode));
             });
         }
@@ -118,7 +118,7 @@ module.exports = [
         visible: true,
         type: "container",
         _getContents: function(db, containerId, cb) {
-            db.findEpisodes({airDate: {$gt: new Date(new Date() - 7*24*60*60*1000)}}, {order: {scannedDate: -1}}, function(err, result) {
+            db.findEpisodes({airDate: {$gt: new Date(new Date() - 7*24*60*60*1000), $lt:new Date()}}, {order: {airDate: -1}}, function(err, result) {
                 cb(err, result.map(mapEpisode));
             });
         }

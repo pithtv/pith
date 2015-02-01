@@ -176,7 +176,7 @@ Pith.prototype = {
     
     load: function() {
         require("./plugins/files/plugin").init({pith: this});
-        require("./plugins/movies/plugin").init({pith: this});
+        require("./plugins/library/plugin").init({pith: this});
         require("./plugins/upnp-mediarenderer/plugin").init({pith: this});
         require("./plugins/yamaha/plugin").init({pith: this});
     },

@@ -67,13 +67,14 @@ module.exports = function(opts) {
                             mediatype: 'episode',
                             originalId: item.originalId,
                             channelId: item.channelId,
-                            scannedDate: new Date()
+                            dateScanned: new Date()
                         };
                         db.storeEpisode(episode, cb);
                     } else {
                         winston.info("Episode found", item, episode);
                         episode.originalId = item.originalId;
                         episode.channelId = item.channelId;
+                        episode.dateScanned = new Date();
                         db.storeEpisode(episode, cb);
                     }
                 }
