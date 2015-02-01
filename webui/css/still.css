@@ -123,15 +123,20 @@ contentbrowser.still .contentitem.withstill:not(:hover) .iteminfo,
     display: block;
 }
 
+.contentbrowser.still .contentitem.withstill .actions {
+    top: 150px;
+    border-bottom: 1px solid rgb(200,200,200);
+}
+
 .contentbrowser.still .contentitem .actions {
     display: block;
     position: absolute;
-    top: 150px;
+    top: 117px;
     z-index: 2;
     font-size: 20px;
     left: 0px;
     right: 0px;
-    border-bottom: 1px solid rgb(200,200,200);
+    border-top: 1px solid rgb(200,200,200);
     padding-top: 3px;
     padding-left: 10px;
     padding-right: 10px;
