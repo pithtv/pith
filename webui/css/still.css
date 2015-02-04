@@ -107,7 +107,7 @@ contentbrowser.still .contentitem.withstill:not(:hover) .iteminfo,
     right: 5px;
     text-align: left;
     top: 4px;
-    bottom: 0px;
+    bottom: 32px;
     padding: 4px;
     font-weight: bold;
     overflow: hidden;
@@ -116,6 +116,7 @@ contentbrowser.still .contentitem.withstill:not(:hover) .iteminfo,
 
 .contentbrowser.still .contentitem.withstill .iteminfo {
     top: 182px;
+    bottom: 0px;
     pointer-events: none;
 }
 

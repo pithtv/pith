@@ -107,7 +107,7 @@
     left: 5px;
     right: 5px;
     text-align: left;
-    bottom: 37px;
+    bottom: 32px;
     padding: 4px;
     font-weight: bold;
     overflow: hidden;
@@ -122,11 +122,10 @@
 .contentbrowser.poster .contentitem .actions:not(:empty) {
     display: block;
     position: absolute;
-    bottom: 5px;
+    bottom: 0px;
     pointer-events: auto;
     z-index: 2;
     font-size: 20px;
-    left: 100px;
     border-top: 1px solid rgb(200,200,200);
     padding-top: 3px;
     padding-left: 10px;
