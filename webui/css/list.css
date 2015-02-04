@@ -27,6 +27,7 @@
 }
 
 .contentbrowser.list .contentitem .th {
+    position: relative;
     width: 73px;
     height: 110px;
     float: left;
@@ -35,6 +36,8 @@
 
 .contentbrowser.list .contentitem > .iteminfo > span {
     display: block;
+}
+.contentbrowser.list .contentitem.withthumb > .iteminfo > span {
     margin-left: 88px;
 }
 

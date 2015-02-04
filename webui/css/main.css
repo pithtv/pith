@@ -37,7 +37,8 @@ span.itemyear:after {
     content: ')';
 }
 
-.contentbrowser.list .contentitem span.itemtitle {
+.contentbrowser.list .contentitem .iteminfo span.itemtitle,
+.contentbrowser.list .contentitem .iteminfo span.contextinfo {
     font-size: 120%;
     font-weight: bold;
 }
@@ -245,20 +246,24 @@ span.itemyear:after {
     content: ' - ';
 }
 
-.itemseason + .itemtitle:before {
-    content: ". "
+.itemseason:before {
+    content: "Season ";
 }
 
-.itemseason + .itemepisode + .itemtitle:before {
-    content: " - ";
-}
-
-.itemepisode + .itemtitle:before {
-    content: ". ";
+.itemshowname + .itemseason:before {
+    content: ' - ';
 }
 
 .itemseason + .itemepisode:before {
-    content: "x";
+    content: 'x';
+}
+
+.itemepisode:before {
+    content: "Episode ";
+}
+
+.contextinfo:not(:empty) + .itemtitle:before {
+    content: ' - ';
 }
 
 .breadcrumb {
@@ -279,6 +284,7 @@ span.itemyear:after {
 .th {
     background-size: cover;
     background-position: center;
+    overflow: hidden;
 }
 
 a.link-imdb {
@@ -289,4 +295,21 @@ a.link-imdb {
     background-repeat: no-repeat;
     background-position: center 0.5ex;
     display: inline-block;
+}
+
+.contentbrowser .th .contextinfo {
+    background-color: rgba(0,0,0,0.6);
+    position: absolute;
+    left: 0px;
+    right: 0px;
+    color: white;
+    bottom: 0px;
+    text-align: center;
+    font-size: 80%;
+    padding: 2px;
+    transition: bottom 0.4s ease-in-out;
+}
+
+.contentbrowser :hover .th .contextinfo {
+    bottom: -100%;
 }

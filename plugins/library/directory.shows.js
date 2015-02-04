@@ -7,7 +7,8 @@ function mapShow(m) {
         id: 'shows/' + m.id,
         showId: m.id,
         type: 'container',
-        mediatype: 'show'
+        mediatype: 'show',
+        showname: m.title
     });
 }
 

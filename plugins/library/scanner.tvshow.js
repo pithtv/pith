@@ -164,6 +164,17 @@ module.exports = function(opts) {
             channelInstance.getItem(dir.containerId, function (err, container) {
                 scan(container, cb);
             });
+        },
+
+        updateAll: function(cb) {
+            db.findShows({status: {$ne: 'Ended'}}, function(err, shows) {
+                for(var x=0,l=shows.length; x<l; x++) {
+                    var show = shows[x];
+                    metadata.getChanges(show, function(err, changeset) {
+
+                    });
+                }
+            });
         }
     };
 };

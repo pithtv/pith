@@ -64,11 +64,17 @@
         <a ng-click="open(item)" ng-if="item.poster || item.thumbnail || item.still">
             <div ng-if="item.poster || item.still" ng-style="{ 'background-image': 'url(' + (
                 item.poster && prescale(item.poster, '100x150') ||
-                item.still && prescale(item.still, '266x150'))+ ')' }" class="th"></div>
+                item.still && prescale(item.still, '266x150'))+ ')' }" class="th">
+
+                <span class="contextinfo">
+                    <span class="itemshowname" ng-if="item.showname && item.showname != itemDetails.showname">{{item.showname}}</span><span class="itemseason" ng-if="item.season && (item.showname !== itemDetails.showname || item.season !== itemDetails.season)">{{item.season}}</span><span class="itemepisode" ng-if="item.episode">{{item.episode}}</span>
+                </span>
+            </div>
         </a>
         <div class="iteminfo">
             <a ng-click="open(item)">
-                <span class="itemshowname" ng-if="item.showname && item.showname != itemDetails.showname">{{item.showname}}</span><span class="itemseason" ng-if="item.season && (item.showname !== itemDetails.showname || item.season !== itemDetails.season)">{{item.season}}</span><span class="itemepisode" ng-if="item.episode">{{item.episode}}</span><span class="itemtitle">{{item.title}} <span ng-if="item.year" class="itemyear">{{item.year}}</span></span>
+                <span class="contextinfo"><span class="itemshowname" ng-if="item.showname && item.showname != itemDetails.showname">{{item.showname}}</span><span class="itemseason" ng-if="item.season && (item.showname !== itemDetails.showname || item.season !== itemDetails.season)">{{item.season}}</span><span class="itemepisode" ng-if="item.episode">{{item.episode}}</span></span>
+                <span class="itemtitle">{{item.title}} <span ng-if="item.year" class="itemyear">{{item.year}}</span></span>
             </a>
             <span class="itemtagline" ng-if="item.tagline">{{item.tagline}}</span>
             <span class="itemrating" data-starrating="{{item.rating}}" ng-if="item.rating">{{item.rating}}</span>
@@ -76,10 +82,6 @@
             <span class="itemplot" ng-if="item.plot">{{item.plot}}</span>
             <span class="itemoverview" ng-if="item.overview">{{item.overview}}</span>
         </div>
-        <span class="actions">
-            <a ng-click="load(item)" class="glyphicon glyphicon-play action-play" title="Play" ng-if="item.playable"></a>
-            <a ng-click="toggleWatched(item)" class="glyphicon glyphicon-ok action-markwatched" title="Mark watched" ng-if="item.playable"></a>
-            <a href="http://www.imdb.com/title/{{item.imdbId}}" ng-if="item.imdbId" class="link-imdb" target="_blank"></a>
-        </span>
+        <span class="actions"><a ng-click="load(item)" class="glyphicon glyphicon-play action-play" title="Play" ng-if="item.playable"></a><a ng-click="toggleWatched(item)" class="glyphicon glyphicon-ok action-markwatched" title="Mark watched" ng-if="item.playable"></a><a href="http://www.imdb.com/title/{{item.imdbId}}" ng-if="item.imdbId" class="link-imdb" target="_blank"></a></span>
     </li>
 </ul>
