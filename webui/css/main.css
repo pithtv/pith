@@ -307,9 +307,13 @@ a.link-imdb {
     text-align: center;
     font-size: 80%;
     padding: 2px;
-    transition: bottom 0.4s ease-in-out;
+    transition: transform 0.2s ease-in-out;
 }
 
 .contentbrowser :hover .th .contextinfo {
-    bottom: -100%;
+    transform: translate(0, 100%);
+}
+
+.contentbrowser .th .contextinfo:empty {
+    display: none;
 }

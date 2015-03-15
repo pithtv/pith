@@ -41,7 +41,7 @@
         <div ng-if="itemDetails.plot">{{itemDetails.plot}}</div>
         <div ng-if="itemDetails.overview">{{itemDetails.overview}}</div>
         <div class="btn-group" ng-if="itemDetails.playable">
-            <button class="btn glyphicon glyphicon-play" ng-click="load(itemDetails.id)"></button>
+            <button class="btn glyphicon glyphicon-play" ng-click="load(itemDetails)"></button>
         </div>
     </div>
 </div>
@@ -66,9 +66,7 @@
                 item.poster && prescale(item.poster, '100x150') ||
                 item.still && prescale(item.still, '266x150'))+ ')' }" class="th">
 
-                <span class="contextinfo">
-                    <span class="itemshowname" ng-if="item.showname && item.showname != itemDetails.showname">{{item.showname}}</span><span class="itemseason" ng-if="item.season && (item.showname !== itemDetails.showname || item.season !== itemDetails.season)">{{item.season}}</span><span class="itemepisode" ng-if="item.episode">{{item.episode}}</span>
-                </span>
+                <span class="contextinfo"><span class="itemshowname" ng-if="item.showname && item.showname != itemDetails.showname">{{item.showname}}</span><span class="itemseason" ng-if="item.season && (item.showname !== itemDetails.showname || item.season !== itemDetails.season)">{{item.season}}</span><span class="itemepisode" ng-if="item.episode">{{item.episode}}</span></span>
             </div>
         </a>
         <div class="iteminfo">
