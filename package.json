@@ -6,21 +6,30 @@
     "start": "node ./bin/www"
   },
   "dependencies": {
-    "express": "~4.2.0",
-    "static-favicon": "~1.0.0",
-    "moviedb": "*",
-    "plugin": "*",
-    "tingodb": "*",
-    "xml2js": "*",
-    "request": "*",
-    "ws": "*",
-    "async": "latest",
-    "nodeunit": "*",
-    "node-uuid": "*",
     "MD5": "*",
+    "async": "latest",
+    "body-parser": "^1.9.0",
     "easyimage": "*",
-    "ssdp-client": "*",
+    "entities": "*",
+    "express": "~4.2.0",
+    "fluent-ffmpeg": "^2.0.0-rc3",
     "mongodb": "*",
-    "entities": "*"
+    "moviedb": "*",
+    "node-uuid": "*",
+    "node.extend": "^1.1.3",
+    "nodeunit": "*",
+    "plugin": "*",
+    "request": "*",
+    "sprintf-js": "^1.0.2",
+    "ssdp-client": "*",
+    "static-favicon": "~1.0.0",
+    "tingodb": "*",
+    "upnp-client-minimal": "*",
+    "winston": "*",
+    "ws": "*",
+    "xml2js": "*"
+  },
+  "devDependencies": {
+    "grunt-manifest": "^0.4.0"
   }
 }

@@ -12,7 +12,7 @@ var tests = {
         { title: "death race 2000", year: 1975 },
         
     "/media/Series/Mad Men/Season 3/Mad Men - 3x07 - Seven Twenty Three.mkv":
-        {title: "Mad Men", season: 3, episode: 7}
+        {title: "Seven Twenty Three", season: 3, episode: 7, showname: "Mad Men" }
 };
 
 var cases = {};

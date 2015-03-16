@@ -1,0 +1,40 @@
+<p>
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            Database settings
+        </div>
+        <div class="panel-body">
+            <div class="form-group">
+                <label for="dbEngine">Database engine</label>
+                <select ng-model="settings.dbEngine" id="dbEngine" class="form-control">
+                    <option value="mongodb">MongoDB</option>
+                    <option value="tingodb">TingoDB</option>
+                </select>
+            </div>
+            <div class="form-group" ng-if="settings.dbEngine === 'mongodb'" ng-class="{'has-error': settingsForm.mongoUrl.$invalid}">
+                <label forId="mongoUrl">MongoDB Connection String</label>
+                <input type="text" ng-model="settings.mongoUrl" class="form-control" name="mongoUrl" id="mongoUrl" ng-disabled="settings.dbEngine !== 'mongodb'" ng-required="settings.dbEngine === 'mongodb'"/>
+            </div>
+            <div class="form-group" ng-if="settings.dbEngine === 'tingodb'" ng-class="{'has-error': settingsForm.tingoPath.$invalid}">
+                <label forId="tingoPath">TingoDB database filepath</label>
+                <input type="text" ng-model="settings.tingoPath" class="form-control" name="tingoPath" id="tingoPath" ng-disabled="settings.dbEngine !== 'tingodb'" ng-required="settings.dbEngine === 'tingodb'"/>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            Server settings
+        </div>
+        <div class="panel-body">
+            <div class="form-group" ng-class="{'has-error': settingsForm.httpPort.$invalid}">
+                <label for="httpPort">HTTP port</label>
+                <input type="number" required ng-model="settings.httpPort" class="form-control" id="httpPort" name="httpPort"/>
+            </div>
+            <div class="form-group">
+                <label for="bindAddress">Bind address</label>
+                <input type="text" ng-model="settings.bindAddress" class="form-control" id="bindAddress" placeholder="Leave empty for auto-detect" />
+            </div>
+        </div>
+    </div>
+</p>

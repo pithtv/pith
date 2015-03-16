@@ -1,0 +1,153 @@
+.contentbrowser.still .contentitem {
+    display: inline-block;
+    margin: 4px;
+    height: 152px;
+    width: 262px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    overflow: hidden;
+    transition: 0.4s height ease, 0.4s;
+}
+
+.contentbrowser.still .contentitem.withstill {
+    pointer-events: none;
+}
+
+.contentbrowser.still .th,
+.contentbrowser.still .actions,
+.contentbrowser.still a {
+    pointer-events: auto;
+}
+
+.contentbrowser.still .contentitem.withinfo.withstill:hover {
+    background: rgba(255,255,255,0.95);
+    z-index: 2;
+    box-shadow: 0px 0px 10px rgba(0,0,0,0.3);
+    height: 311px;
+}
+
+.contentbrowser.still .contentitem.inprogress:after,
+.contentbrowser.still .contentitem.watched:after {
+    display: block;
+    content: '';
+    border: 1px solid black;
+    width: 26px;
+    height: 26px;
+    top: 120px;
+    left: 232px;
+    position: absolute;
+    border-radius: 15px;
+    border: 2px solid white;
+    background-color: rgb(200,0,0);
+    box-shadow:
+    0px -5px 4px rgba(0,0,0,0.2) inset,
+    0px 3px 4px rgba(255,255,255,0.8) inset,
+    0px 2px 4px black;
+    font-family: 'Glyphicons Halflings';
+    color: white;
+    text-align: center;
+    z-index: 5;
+}
+
+.contentbrowser.still .contentitem.inprogress:after {
+    content: '\e073';
+}
+
+.contentbrowser.still .contentitem.watched:after {
+    content: '\e013';
+}
+
+.contentbrowser.still .contentitem .th {
+    left: 0px;
+    padding: 4px;
+    -webkit-transition: all .2s ease-in-out;
+    -o-transition: all .2s ease-in-out;
+    transition: all .2s ease-in-out;
+    background-color: rgba(255,255,255,0.8);
+
+    width: 100%;
+    height: 150px;
+
+    z-index: 4;
+    position: absolute;
+}
+
+.contentbrowser.still .contentitem.unavailable .th:after {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255,255,255,0.4);
+    transition: background .2s ease-in-out;
+    content: ''
+}
+
+.contentbrowser.still .contentitem.unavailable:hover .th:after {
+    background: none;
+}
+
+contentbrowser.still .contentitem.withstill:not(:hover) .iteminfo,
+.contentbrowser.still .contentitem .itemplot,
+.contentbrowser.still .contentitem .itemgenres
+{
+    display: none;
+}
+
+.contentbrowser.still .contentitem .itemtagline,
+.contentbrowser.still .contentitem .itemoverview {
+    display: block;
+    font-size: 80%;
+    font-weight: normal;
+}
+
+.contentbrowser.still .contentitem .iteminfo {
+    position: absolute;
+    left: 5px;
+    right: 5px;
+    text-align: left;
+    top: 4px;
+    bottom: 32px;
+    padding: 4px;
+    font-weight: bold;
+    overflow: hidden;
+    z-index: 3;
+}
+
+.contentbrowser.still .contentitem.withstill .iteminfo {
+    top: 182px;
+    bottom: 0px;
+    pointer-events: none;
+}
+
+.contentbrowser.still .contentitem .itemrating {
+    display: block;
+}
+
+.contentbrowser.still .contentitem.withstill .actions {
+    top: 150px;
+    border-bottom: 1px solid rgb(200,200,200);
+}
+
+.contentbrowser.still .contentitem .actions {
+    display: block;
+    position: absolute;
+    top: 117px;
+    z-index: 2;
+    font-size: 20px;
+    left: 0px;
+    right: 0px;
+    border-top: 1px solid rgb(200,200,200);
+    padding-top: 3px;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.contentbrowser.still .contentitem .thumbnail {
+    width: 150px;
+    height: 100%;
+}
+
+.contentbrowser.still .posterimg {
+    display: none;
+}

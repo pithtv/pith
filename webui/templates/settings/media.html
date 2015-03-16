@@ -1,0 +1,35 @@
+<p><div ng-controller="mediaSettingsController">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            General settings
+        </div>
+        <div class="panel-body">
+            <div class="form-group" ng-class="{'has-error': settingsForm.rootDir.$invalid}">
+                <label for="rootDir">Media root directory</label>
+                <input type="text" ng-model="settings.files.rootDir" class="form-control" required name="rootDir" id="rootDir" />
+            </div>
+            <div class="alert alert-danger alert-sm">
+                Changing this path will invalidate all file folders in your media folders. Be sure to remove any invalid folders and clean the library if you change this value.
+            </div>
+
+            <div class="form-group" ng-class="{'has-error': settingsForm.scanInterval.$invalid}">
+                <label for="scanInterval">Scan for new library items every (ms):</label>
+                <input type="number" ng-model="settings.library.scanInterval" class="form-control" convert-ms required min="1" name="scanInterval" id="scanInterval" />
+            </div>
+        </div>
+    </div>
+
+    <div class="panel panel-default" ng-repeat="(type, title) in categories">
+        <div class="panel-heading">{{title}} folders
+        </div>
+        <ul class="list-group">
+            <li class="list-group-item" ng-repeat="folder in (settings.library.folders | filter : {contains: type})" ng-class="{ 'has-error': !folder.contains }">
+                <label><input type="checkbox" ng-model="folder.scanAutomatically" /> {{folder.containerId}}</label>
+                <a class="pull-right" ng-click="removeLibraryContainer(folder)" title="Remove folder"><span class="glyphicon glyphicon-remove" /></a>
+            </li>
+        </ul>
+        <div class="panel-footer">
+            <a ng-click="addLibraryContainer(type)" class=""><span class="glyphicon glyphicon-plus" /> Add folder</a>
+        </div>
+    </div>
+</div></p>

@@ -1,21 +1,37 @@
 "use strict";
 
 var async = require("async");
-var Global = require("../../lib/global");
+var Global = require("../../lib/global")();
 var uuid = require("node-uuid").v1;
 
-module.exports = function(db, id) {
+module.exports = function(db) {
     var movies = db.collection('movies');
-    var episodes = db.collection('episodes');
-    var shows = db.collection('shows');
     var people = db.collection('people');
     var keywords = db.collection('keywords');
     var genres = db.collection('genres');
-    
+    var shows = db.collection('shows');
+    var seasons = db.collection('seasons');
+    var episodes = db.collection('episodes');
+
+    function insertOrUpdate(collection, entity, callback) {
+        entity.modificationTime = new Date();
+        if(entity._id) {
+            collection.update({_id: entity._id}, entity, callback);
+        } else {
+            if(!entity.id) {
+                entity.id = uuid();
+            }
+            if(!entity.creationTime) {
+                entity.creationTime = new Date();
+            }
+            collection.insert(entity, callback);
+        }
+    }
+
     function findOrCreate(collection, query, constructor, callback) {
         if(typeof callback != 'function') {
             callback = constructor;
-            constructor = function(q) { return q; };
+            constructor = function(q, cb) { cb(undefined, q); };
         }
         collection.findOne(query, function(err, result) {
             if(result) {
@@ -61,7 +77,7 @@ module.exports = function(db, id) {
     
     function _id(callback) {
         return function(err, result) {
-            callback(err, result._id.toHexString());
+            callback(err, result && result._id.toHexString());
         };
     }
     
@@ -97,17 +113,34 @@ module.exports = function(db, id) {
                 movie.keywordIds = result;
                 async.mapSeries(movie.genres, getGenreId, function(err, result) {
                     movie.genreIds = result;
-                    movies.insert(movie, function() {
-                        callback();
-                    });
+                    insertOrUpdate(movies, movie, callback);
                 });
             });
         });
     }
-    
+
+    function storeShow(item, callback) {
+        insertOrUpdate(shows, item, callback);
+    }
+
+    function findSeason(item, callback) {
+        seasons.findOne(item, callback);
+    }
+
+    function storeSeason(item, callback) {
+        insertOrUpdate(seasons, item, callback);
+    }
+
+    function findEpisode(item, callback) {
+        episodes.findOne(item, callback);
+    }
+
     function storeEpisode(item, callback) {
-        var episode = {};
-        for(var x in item) episode[x] = item[x];
+        insertOrUpdate(episodes, item, callback);
+    }
+
+    function findShow(query, callback) {
+        shows.findOne(query, callback);
     }
     
     function getKeywords(callback) {
@@ -129,9 +162,9 @@ module.exports = function(db, id) {
     function getWriters(callback) {
         people.find({writer: true}).toArray(callback);
     }
-    
-    function getMovies(selector, callback) {
-        movies.find(selector).toArray(callback);
+
+    function getShows(selector, callback) {
+        shows.find(selector).toArray(callback);
     }
     
     function findMovieByOriginalId(channelId, itemId, callback) {
@@ -141,7 +174,22 @@ module.exports = function(db, id) {
     function getMovie(itemId, callback) {
         movies.findOne({id: itemId}, callback);
     }
-    
+
+    function findAll(query, opts, callback) {
+        if(typeof opts === 'function') {
+            callback = opts;
+            opts = undefined;
+        }
+        var cursor = this.find(query);
+        if(opts && opts.order) {
+            cursor.sort(opts.order);
+        }
+        if(opts && opts.limit) {
+            cursor.limit(opts.limit);
+        }
+        return cursor.toArray(callback);
+    }
+
     return {
         getPerson: getPerson,
         
@@ -152,8 +200,18 @@ module.exports = function(db, id) {
         getActors: getActors,
         getDirectors: getDirectors,
         getWriters: getWriters,
-        getMovies: getMovies,
+        findMovies: findAll.bind(movies),
         findMovieByOriginalId: findMovieByOriginalId,
-        getMovie: getMovie
+        getMovie: getMovie,
+
+        findShow: shows.findOne.bind(shows),
+        findShows: findAll.bind(shows),
+        storeShow: storeShow,
+        findSeason: findSeason,
+        findSeasons: findAll.bind(seasons),
+        storeSeason: storeSeason,
+        findEpisode: findEpisode,
+        findEpisodes: findAll.bind(episodes),
+        storeEpisode: storeEpisode
     };
 };

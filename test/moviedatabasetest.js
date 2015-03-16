@@ -14,7 +14,7 @@ module.exports = {
         
         db = new Tingodb.Db(targetdb, {});
         db.dropDatabase(callback);
-        moviedb = require("../plugins/movies/database.js")(db);
+        moviedb = require("./database.js")(db);
     },
     
     "Test actor getting": function(test) {

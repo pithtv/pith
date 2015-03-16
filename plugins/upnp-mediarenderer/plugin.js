@@ -1,11 +1,11 @@
 var ssdp = require("ssdp-client");
 var xml2js = require("xml2js").parseString;
-var request = require("request");
 var events = require("events");
-var $url = require("url");
 var entities = require("entities");
+var Device = require("upnp-client-minimal");
+var sprintf = require("sprintf-js").sprintf;
 
-var Global = require("../../lib/global");
+var Global = require("../../lib/global")();
 
 var client = ssdp({unicastHost: Global.bindAddress});
 
@@ -15,17 +15,38 @@ var iconTypePreference = [
     'image/gif',
     'image/png'];
 
-var sequence = 0;
-
 var players = {};
 
-function MediaRenderer(config) {
-    this.__config = config;
-    this.status = {};
+function MediaRenderer(device, opts) {
+    this._device = device;
+    this._opts = opts;
+
+    this.id = device.UDN;
     
-    for(var x in config.props) {
-        this[x] = config.props[x];
-    }
+    this.friendlyName = device.friendlyName;
+    
+    this.icons = {};
+    
+    var self = this;
+    
+    device.icons.forEach(function(e) {
+        var dimensions = e.width + "x" + e.height;
+        var icon = {
+            type: e.mimetype,
+            url: e.url,
+            width: e.width[0],
+            height: e.height[0]
+        };
+        if(!self.icons[dimensions] || // no icon of the given dimensions found yet
+            iconTypePreference.indexOf(icon.type) > iconTypePreference.indexOf(self.icons[dimensions].type) // or the new icon type has greater preference over existing one
+        ) {
+           self.icons[dimensions] = icon;
+        }
+    });
+    
+    this._avTransport = device.services['urn:upnp-org:serviceId:AVTransport'];
+    
+    this.status = {};
     
     this.startWatching();
 }
@@ -35,24 +56,33 @@ function parseTime(time) {
         return undefined;
     } else {
         return time.split(":").reduce(function(a,b) {
-           return a*60 + parseInt(b); 
+           return a*60 + parseInt(b,10); 
         }, 0);
     }
 }
 
-function formatTime(time) {
-    var out = [];
-    var t = time;
-    while(out.length < 2) {
-        var u = t%60;
-        t = (t-u) / 60;
-        out.unshift(u < 10 ? "0"+u : u);
+function format(n, parts, f) {
+    var out = [], nn = n;
+    while(parts.length) {
+        var p = parts.pop(), pn = nn % p;
+        out.unshift(pn);
+        nn = (nn - pn) / p;
     }
-    out.unshift(t);
-    return out.join(":");
+    out.unshift(nn);
+    out.unshift(f);
+    return sprintf.apply(null, out);
+}
+
+function formatTime(time) {
+    return format(time, [60, 60], "%02d:%02d:%02d");
+}
+
+function formatMsDuration(time) {
+    return format(time, [60, 60, 1000], "%d:%02d:%02d.%03d");
 }
 
 function _(t) {
+    if(!t) return t;
     var x = t._ || t;
     if(typeof x === 'string') {
         return x;
@@ -61,133 +91,103 @@ function _(t) {
     }
 }
 
-function sendCommand(service, command, parameters, cb) {
-    var url = service.url;
-    var soapAction = service.type + "#" + command;
-    var body = "<u:" + command + " xmlns:u=\"" + service.type + "\">";
-    for(var x in parameters) {
-        body += "<" + x + ">" + parameters[x] + "</" + x + ">";
-    }
-    body += "</u:" + command + ">";
-    
-    var contentType = "text/xml; charset=\"utf-8\"";
-    var postData=
-        "<s:Envelope s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\" xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\">" +
-        "<s:Body>" + body + "</s:Body>" +
-        "</s:Envelope>";
-        
-    var options = {
-        url: url,
-        headers: {
-            'Content-Type': contentType,
-            'SOAPAction': '"' + soapAction + '"',
-            'USER-AGENT': 'iPad/7.1.2, UPnP/1.0, Pith/0.0.1'
-        },
-        method: 'POST',
-        body: postData
-    };
-    
-    request(options, function(err, res, body) {
-        if(err) {
-            cb(err);
-        } else if(res.statusCode != 200) {
-            if(body) {
-                xml2js(body, function(err,upnpReply) {
-                    if(err) {
-                        cb(err);
-                    } else {
-                        var fault = upnpReply['s:Envelope']['s:Body'][0]['s:Fault'][0];
-                        console.log(fault.detail[0].UPnPError[0]);
-                        var error = {
-                            error: 'UPnP Error',
-                            code: _(fault.detail[0].UPnPError[0].errorCode[0]),
-                            message: _(fault.detail[0].UPnPError[0].errorDescription[0])
-                        };
-                        if(cb!==undefined) {
-                            cb(error);
-                        }
-                    }
-                });
-            } else {
-                cb("Empty response body");
-            }
-        } else {
-            if(cb!==undefined) {
-                if(body) {
-                    xml2js(body, function(err, bodyObject) {
-                        if(!err) {
-                            cb(null, bodyObject);
-                        } else {
-                            cb(err);
-                        }
-                    });
-                } else {
-                    cb(null);
-                }
-            }
-        }
-    });
-}
-
 MediaRenderer.prototype = {
-    load: function(item, mediaUrl, cb) {
+    load: function(channel, item, cb) {
         var renderer = this;
         
-        console.log("Loading " + mediaUrl);
-        
-        function doLoad() {
-            sendCommand(renderer.__config.avTransport, "SetAVTransportURI", {
-                InstanceID: 0,
-                CurrentURI: mediaUrl,
-                CurrentURIMetaData:
-'&lt;DIDL-Lite xmlns=&quot;urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/&quot; xmlns:dc=&quot;http://purl.org/dc/elements/1.1/&quot; xmlns:dlna=&quot;urn:schemas-dlna-org:metadata-1-0/&quot; xmlns:upnp=&quot;urn:schemas-upnp-org:metadata-1-0/upnp/&quot;&gt;'+
-'\n&lt;item id=&quot;' + entities.encodeXML(entities.encodeXML(item.id)) + '&quot; parentID=&quot;0&quot; restricted=&quot;1&quot;&gt;'+
-'\n&lt;dc:title&gt;&lt;![CDATA[' + entities.encodeXML(item.title) + ']]&gt;&lt;/dc:title&gt;'+
-'\n&lt;upnp:class&gt;object.item.videoItem&lt;/upnp:class&gt;'+
-'\n&lt;res ' + 
-        'protocolInfo=&quot;http-get:*:' + item.mimetype + '&quot; '+
-'&gt;' + mediaUrl + '&lt;/res&gt;'+
-'\n&lt;/item&gt;'+
-'\n&lt;/DIDL-Lite&gt;\n'
-            }, cb);
-        }
-        
-        if(this.status.actions.stop) {
-            this.stop(function(err) {
-                // if(err) {
-                //     cb(err);
-                // } else {
+        channel.getStream(item, function(err, stream) {
+            if(err) {
+                cb(err);
+                return;
+            }
+
+            var mediaUrl = stream.url;
+            console.log("Loading " + mediaUrl);
+            
+            function doLoad() {
+                var type = stream.mimetype.split('/')[0];
+                
+                renderer._avTransport.SetAVTransportURI({
+                    InstanceID: 0,
+                    CurrentURI: mediaUrl,
+                    CurrentURIMetaData:
+                        entities.encodeXML(
+                            '<DIDL-Lite xmlns="urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/" xmlns:pith="http://github.com/evinyatar/pith/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dlna="urn:schemas-dlna-org:metadata-1-0/" xmlns:upnp="urn:schemas-upnp-org:metadata-1-0/upnp/">'+
+                                '<item id="' + entities.encodeXML(item.id) + '" parentID="0" restricted="1">'+
+                                    '<dc:title>' + entities.encodeXML(item.title) + '</dc:title>'+
+                                    '<upnp:class>object.item.' + type + 'Item</upnp:class>'+
+                                    '<res duration="' + formatMsDuration(stream.duration) + '" protocolInfo="http-get:*:' + stream.mimetype + ':DLNA.ORG_OP=01;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=01500000000000000000000000000000">' + mediaUrl + '</res>'+
+                                    '<pith:itemId>' + entities.encodeXML(item.id) + '</pith:itemId>'+
+                                    '<pith:channelId>' + entities.encodeXML(channel.id) + '</pith:channelId>'+
+                                '</item>'+
+                            '</DIDL-Lite>\n')
+                }, cb);
+            }
+            
+            if(renderer.status.actions.stop) {
+                renderer.stop(function(err) {
                     doLoad();
-                // }
-            });
-        } else {
-            doLoad();
-        }
+                });
+            } else {
+                doLoad();
+            }
+        });
         
     },
     
-    play: function(cb) {
-        sendCommand(this.__config.avTransport, "Play", {
+    play: function(cb, time) {
+        var renderer = this;
+        this._avTransport.Play({
             InstanceID: 0,
             Speed: 1
-        }, cb);
+        }, function(err) {
+            if(err) {
+                console.error(err);
+                if(cb) cb(err);
+                return;
+            }
+            
+            if(time) {
+                var timeout = new Date().getTime() + 3000;
+                
+                function waitForSeek(status) {
+                    if(status.actions.seek) {
+                        renderer.seek(function(err) {
+                            if(err) {
+                                renderer.once('statechange', waitForSeek);
+                            } else {
+                                cb && cb();
+                            }
+                        }, { time: time });
+                    } else if(new Date().getTime() < timeout) {
+                        renderer.once('statechange', waitForSeek);
+                    } else if(cb) {
+                        cb("Seeking not available");
+                    }
+                }
+                
+                renderer.once('statechange', waitForSeek);
+            } else {
+                cb();
+            }
+        });
     },
     
     stop: function(cb) {
-        sendCommand(this.__config.avTransport, "Stop", {
+        this._avTransport.Stop({
             InstanceID: 0
         }, cb);
     },
     
     pause: function(cb) {
-        sendCommand(this.__config.avTransport, "Pause", {
+        this._avTransport.Pause({
             InstanceID: 0
         }, cb);
     },
     
     seek: function(cb, query) {
         var time = formatTime(query.time);
-        sendCommand(this.__config.avTransport, "Seek", {
+        this._avTransport.Seek({
             InstanceID: 0,
             Unit: "REL_TIME",
             Target: time
@@ -195,41 +195,40 @@ MediaRenderer.prototype = {
     },
     
     getPositionInfo: function(cb) {
-        sendCommand(this.__config.avTransport, "GetPositionInfo", {
-            InstanceID: 0
-        }, function(err, reply) {
-                if(err) { cb(err); return; }
+        this._avTransport.GetPositionInfo({InstanceID: 0}, function(err, positionInfo) {
+            if(err) {
+                cb(err); return;
+            }
+            
+            var pos = {
+                track: positionInfo.Track,
+                AbsCount: positionInfo.AbsCount,
+                RelCount: positionInfo.RelCount,
+                AbsTime: parseTime(_(positionInfo.AbsTime)),
+                time: parseTime(_(positionInfo.RelTime)),
+                uri: positionInfo.TrackURI,
+                duration: parseTime(_(positionInfo.TrackDuration))
+            };
                 
-                var positionInfo = reply['s:Envelope']['s:Body'][0]['u:GetPositionInfoResponse'][0];
-                var pos = {
-                    track: positionInfo.Track[0],
-                    AbsCount: positionInfo.AbsCount[0],
-                    RelCount: positionInfo.RelCount[0],
-                    AbsTime: parseTime(_(positionInfo.AbsTime[0])),
-                    time: parseTime(_(positionInfo.RelTime[0])),
-                    uri: positionInfo.TrackURI[0],
-                    duration: parseTime(_(positionInfo.TrackDuration[0]))
-                };
-
-                if(positionInfo.TrackMetaData && positionInfo.TrackMetaData[0]) {
-                    xml2js(positionInfo.TrackMetaData[0], function(err, meta) {
-                        if(!err) {
-                            var didlLite = meta['DIDL-Lite'].item[0];
-                            for(var x in didlLite) {
-                                var val = didlLite[x][0];
-                                switch(x) {
-                                    case 'dc:title': pos.title = val; break;
-                                    case 'upnp:genre': pos.genre = val; break;
-                                }
+            if(positionInfo.TrackMetaData && typeof positionInfo.TrackMetaData === 'string') {
+                xml2js(positionInfo.TrackMetaData, function(err, meta) {
+                    if(!err) {
+                        var didlLite = meta['DIDL-Lite'].item[0];
+                        for(var x in didlLite) {
+                            var val = didlLite[x][0];
+                            switch(x) {
+                                case 'dc:title': pos.title = val; break;
+                                case 'upnp:genre': pos.genre = val; break;
+                                case 'pith:itemId': pos.itemId = val; break;
+                                case 'pith:channelId': pos.channelId = val; break;
                             }
-                            cb(null, pos);
-                        } else {
-                            cb(err);
                         }
-                    });
-                } else {
-                    cb(null, pos);
-                }
+                        cb(null, pos);
+                    } else {
+                        cb(err);
+                    }
+                });
+            }
         });
     },
     
@@ -237,6 +236,10 @@ MediaRenderer.prototype = {
         var renderer = this;
         renderer.getPositionInfo(function(err, positionInfo) {
             if(!err) {
+                if(positionInfo.channelId) {
+                    renderer._opts.pith.putPlayState(positionInfo.channelId, positionInfo.itemId, {time: positionInfo.time, duration: positionInfo.duration});
+                }
+                
                 renderer.status.position = positionInfo;
                 renderer.emit('statechange', renderer.status);
             }
@@ -246,80 +249,42 @@ MediaRenderer.prototype = {
         });
     },
     
-    __processEventBody: function(data) {
-        var renderer = this;
-        xml2js(data, function(err, evt) {
-            for(var evtType in evt) {
-                var subEvt = evt[evtType];
-                switch(evtType) {
-                case 'e:propertyset':
-                    var props = subEvt['e:property'];
-                    props.forEach(function(e) {
-                        if(e.LastChange) {
-                            var changeEvent = e.LastChange[0];
-                            xml2js(changeEvent, function(err, body) {
-                                var didl = body.Event.InstanceID[0];
-                                
-                                if(didl.CurrentTransportActions) {
-                                    var actions = didl.CurrentTransportActions[0].$.val.match(/(([^,\\]|\\\\|\\,|\\)+)/g);
-                                    renderer.status.actions = {};
-                                    if(actions) actions.forEach(function(state) {
-                                        renderer.status.actions[state.toLowerCase()] = true;
-                                    });
-                                }
-                                if(didl.TransportState) {
-                                    var state = didl.TransportState[0];
-                                    var status;
-                                    switch(state.$.val) {
-                                            case 'PAUSED_PLAYBACK': status = {paused: true}; break;
-                                            case 'PLAYING': status = {playing: true}; break;
-                                            case 'STOPPED': status = {stopped: true}; break;
-                                            case 'TRANSITIONING': status = {transitioning: true}; break;
-                                    }
-                                    renderer.status.state = status;
-                                }
-                                
-                                renderer.updatePositionInfo();
-                            });
-                        }
-                    });
-                }
-            }
-        });
-    },
-    
     startWatching: function() {
-        var callbackUri = "/upnpevt/" + (sequence++) + "/"; 
         var self = this;
         
-        this.__config.pithApp.route.use(callbackUri, function(req,res) {
-            var data = '';
-            
-            res.status(100);
-            
-            req.on('data', function(chunk) {
-                data += chunk;
+        this._avTransport.on('LastChange', function(changeEvent) {
+            xml2js(changeEvent, function(err, body) {
+                if(!body) {
+                    console.error("Body empty?");
+                } else if(err) {
+                    console.error(err);
+                } else {
+                    var didl = body.Event.InstanceID[0];
+
+                    if(didl.CurrentTransportActions) {
+                        var actions = didl.CurrentTransportActions[0].$.val.match(/(([^,\\]|\\\\|\\,|\\)+)/g);
+                        self.status.actions = {};
+                        if(actions) actions.forEach(function(state) {
+                            self.status.actions[state.toLowerCase()] = true;
+                        });
+                    }
+                    if(didl.TransportState) {
+                        var state = didl.TransportState[0];
+                        var status;
+                        switch(state.$.val) {
+                                case 'PAUSED_PLAYBACK': status = {paused: true}; break;
+                                case 'PLAYING': status = {playing: true}; break;
+                                case 'STOPPED': status = {stopped: true}; break;
+                                case 'TRANSITIONING': status = {transitioning: true}; break;
+                        }
+                        self.status.state = status;
+                    }
+
+                    self.updatePositionInfo();
+
+                }
             });
-            req.on('end', function() {
-                self.__processEventBody(data);
-                res.status(200);
-                res.end();
-            });
-        });
-        
-        callbackUri = this.__config.pithApp.rootUrl + callbackUri;
-        
-        var options = {
-            method: "SUBSCRIBE",
-            url: this.__config.avTransport.eventUrl,
-            headers: {
-                CALLBACK: "<" + callbackUri + ">",
-                NT: "upnp:event",
-                TIMEOUT: "Second-300"
-            }
-        };
-        
-        request(options, function() {
+
         });
         
         this.positionTimer = setInterval(function() {
@@ -338,87 +303,50 @@ MediaRenderer.prototype = {
 
 MediaRenderer.prototype.__proto__ = events.EventEmitter.prototype;
 
-function createMediaRenderer(headers, rinfo, opts, cb) {
-    request(headers.LOCATION, function(err, res, body) {
-        if(err) return;
-        
-        xml2js(body, function(err, descriptor) {
-            var config = {pithApp: opts.pith, props: {
-                icons: {}
-            }};
-            
-            function fullUrl(url) {
-                return $url.resolve(headers.LOCATION, url);
+module.exports = {
+    init: function init(opts) {
+        var plugin = this;
+        function handlePresence(data, rinfo) {
+            if(!players[data.USN]) {
+                players[data.USN] = {}; // placeholder so we don't make them twice in case the alive is triggered before createMediaRenderer finishes
+                plugin.handlePlayerAppearance(data, rinfo, opts, function(err, renderer) {
+                    if(err) {
+                        console.log(err);
+                    } else {
+                        players[data.USN] = renderer;
+                        opts.pith.registerPlayer(renderer);
+                    }
+                });
             }
-            
-            var device = descriptor.root.device[0];
-            device.serviceList[0].service.forEach(function(e) {
-                var ctrlUrl = fullUrl(e.controlURL[0]);
-                var evtUrl = fullUrl(e.eventSubURL[0]);
-                var service = {
-                    url: ctrlUrl,
-                    eventUrl: evtUrl,
-                    type: e.serviceType[0]
-                };
-                    
-                switch(e.serviceType[0]) {
-                case 'urn:schemas-upnp-org:service:AVTransport:1':
-                    config.avTransport = service;
-                    break;
-                case 'urn:schemas-upnp-org:service:RenderingControl:1':
-                    config.renderingControl = service;
-                    break;
+        }
+        client.subscribe('urn:schemas-upnp-org:device:MediaRenderer:1')
+            .on('response', handlePresence)
+            .on('alive', handlePresence)
+            .on('byebye', function inByeBye(data, rinfo) {
+                if(players[data.USN]) {
+                    players[data.USN].offline();
+                    opts.pith.unregisterPlayer(players[data.USN]);
+                    players[data.USN] = undefined;
                 }
             });
-            
-            device.iconList[0].icon.forEach(function(e) {
-                var dimensions = e.width[0] + "x" + e.height[0];
-                var icon = {
-                    type: e.mimetype[0],
-                    url: fullUrl(e.url[0]),
-                    width: e.width[0],
-                    height: e.height[0]
-                };
-                if(!config.props.icons[dimensions] || // no icon of the given dimensions found yet
-                    iconTypePreference.indexOf(icon.type) > iconTypePreference.indexOf(config.props.icons[dimensions].type) // or the new icon type has greater preference over existing one
-                ) {
-                   config.props.icons[dimensions] = icon;
-                }
-            });
-            
-            config.props.friendlyName = device.friendlyName[0];
-            
-            config.props.id = headers.USN;
-            
-            cb(new MediaRenderer(config));
+    },
+
+    handlePlayerAppearance: function(headers, rinfo, opts, cb) {
+        var plugin = this;
+        Device({descriptorUrl: headers.LOCATION}, function(err, device) {
+            if(err) {
+                cb(err);
+            } else {
+                plugin.createRenderer(device, opts, function(err, renderer) {
+                    cb(false, renderer);
+                });
+            }
         });
-    });
-}
+    },
 
-function init(opts) {
-    function handlePresence(data, rinfo) {
-        if(!players[data.USN]) {
-            players[data.USN] = {}; // placeholder so we don't make them twice in case the alive is triggered before createMediaRenderer finishes
-            createMediaRenderer(data, rinfo, opts, function(renderer) {
-                players[data.USN] = renderer;
-                opts.pith.registerPlayer(renderer);
-            });
-        }
-    }
-    client.subscribe('urn:schemas-upnp-org:service:AVTransport:1')
-    .on('response', handlePresence)
-    .on('alive', handlePresence)
-    .on('byebye', function inByeBye(data, rinfo) {
-        if(players[data.USN]) {
-            players[data.USN].offline();
-            opts.pith.unregisterPlayer(players[data.USN]);
-            players[data.USN] = undefined;
-        }
-    });
-}
+    createRenderer: function(device, opts, callback) {
+        callback(false, new MediaRenderer(device, opts));
+    },
 
-module.exports.plugin = function() {
-    return {
-        init: init
-    };
+    MediaRenderer: MediaRenderer
 };

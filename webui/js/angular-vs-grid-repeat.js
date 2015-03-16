@@ -101,8 +101,8 @@
 						'vsOffsetAfter': 'offsetAfter',
 						'vsExcess': 'excess'
 					},
-                    origItemWidth = ngRepeatChild[0].offsetWidth,
-                    origItemHeight = ngRepeatChild[0].offsetHeight;
+                    origItemWidth = $(ngRepeatChild[0]).outerWidth(true),
+                    origItemHeight = $(ngRepeatChild[0]).outerHeight(true);
                 
 				$element.empty();
                 
@@ -228,20 +228,20 @@
 						childClone.attr('ng-repeat', lhs + ' in ' + collectionName + (rhsSuffix ? ' ' + rhsSuffix : ''))
 								.addClass('vs-repeat-repeated-element');
 
-						var offsetCalculationString = '( floor(($index + startIndex) / itemsPerRow) * gridItemHeight + offsetBefore)';
-						var oppositeOffsetCalculationString = '((floor($index) % itemsPerRow) * gridItemWidth)';
+						var offsetCalculationString = '( floor(($index + startIndex) / itemsPerRow) * gridItemHeight + offsetBefore) + "px"';
+						var oppositeOffsetCalculationString = '(($index % itemsPerRow) * gridItemWidth) + "px"';
+						var widthCorrectionPosition = '"calc( ( 100% - " + (gridItemWidth * itemsPerRow) + "px ) / (" + (itemsPerRow - 1) + " / " + ($index % itemsPerRow) + "))"';
 
 						if(typeof document.documentElement.style.transform !== "undefined"){ // browser supports transform css property
-							childClone.attr('ng-style', '{ "transform": "' + positioningPropertyTransform + '(" + ' + offsetCalculationString + ' + "px) '+
-                                             oppositePositioningPropertyTransform + '(" + ' + oppositeOffsetCalculationString + ' + "px)"}');
+							childClone.attr('ng-style', '{ "left" : ' + widthCorrectionPosition + ', "transform": "' + positioningPropertyTransform + '(" + ' + offsetCalculationString + ' + ") '+
+                                             oppositePositioningPropertyTransform + '(" + ' + oppositeOffsetCalculationString + ' + ")"}');
 						}
 						else if(typeof document.documentElement.style.webkitTransform !== "undefined"){ // browser supports -webkit-transform css property
-							childClone.attr('ng-style', '{ "-webkit-transform": "' + positioningPropertyTransform + '(" + ' + offsetCalculationString + ' + "px) ' + 
-							                 oppositePositioningPropertyTransform + '(" + ' + oppositeOffsetCalculationString + ' + "px)"}');
+							childClone.attr('ng-style', '{ "left" : ' + widthCorrectionPosition + ', "-webkit-transform": "' + positioningPropertyTransform + '(" + ' + offsetCalculationString + ' + ") ' +
+							                 oppositePositioningPropertyTransform + '(" + ' + oppositeOffsetCalculationString + ' + ")"}');
 						}
 						else{
-							childClone.attr('ng-style', '{' + positioningProperty + ': ' + offsetCalculationString + ' + "px"}');
-							childClone.attr('ng-style', '{' + oppositePositioningProperty + ': ' + oppositeOffsetCalculationString + ' + "px"}');
+							childClone.attr('ng-style', '{' + positioningProperty + ': ' + offsetCalculationString + ', ' + oppositePositioningProperty + ': ' + oppositeOffsetCalculationString + '}');
 						}
 
 						$compile(childClone)($scope);
@@ -326,8 +326,8 @@
 							_prevEndIndex;
 						function reinitialize(){
                             var firstChild = $element.children().eq(0)[0],
-                                w = firstChild.offsetWidth,
-                                h = firstChild.offsetHeight;
+                                w = $(firstChild).outerWidth(true),
+                                h = $(firstChild).outerHeight(true);
                             if(w && h) {
                                 $scope.gridItemWidth = w;
                                 $scope.gridItemHeight = h;
@@ -394,7 +394,7 @@
 						function updateInnerCollection(){
                             $scope.startIndex = Math.max(
                                 (Math.floor(
-                                    ($scrollParent[0][scrollPos] - $scope.offsetBefore) / $scope.gridItemHeight + $scope.excess/2
+                                    ($scrollParent[0][scrollPos] - $scope.offsetBefore - $element.offset().top) / $scope.gridItemHeight + $scope.excess/2
                                 ) - $scope.excess) * $scope.itemsPerRow,
                                 0
                             );

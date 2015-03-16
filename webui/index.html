@@ -2,7 +2,6 @@
 <html ng-app="PithApp">
     <head>
         <meta name="apple-mobile-web-app-capable" content="yes">
-        <meta name="apple-mobile-web-app-status-bar-style" content="translucent">
         <meta name="format-detection" content="telephone=no">
         
         <meta charset="utf-8">
@@ -11,32 +10,41 @@
 
         <title>Pith Media Server</title>
         
-        <link rel="apple-touch-icon" href="static/pith.png">
+        <link rel="apple-touch-icon" sizes="152x152" href="static/pith.png">
 
         <script src="lib/jquery/dist/jquery.min.js"></script>
         <script src="lib/angular/angular.js" lang="javascript"></script>
+        <script src="lib/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
         <script src="lib/angular-route/angular-route.min.js" lang="javascript"></script>
         <script src="lib/sprintf/dist/sprintf.min.js"></script>
         
         <script src="js/angular-vs-grid-repeat.js"></script>
+        <script src="lib/angular-loading-bar/build/loading-bar.min.js"></script>
 
         <link rel="stylesheet" href="lib/bootstrap/dist/css/bootstrap.min.css" />
         <link rel="stylesheet" href="lib/bootstrap/dist/css/bootstrap-theme.min.css" />
-        <script src="lib/bootstrap/dist/js/bootstrap.min.js"></script>
 
+        <link href="lib/angular-loading-bar/build/loading-bar.css" rel="stylesheet" />
         <link href="css/main.css" rel="stylesheet" />
-        
+        <link href="css/poster.css" rel="stylesheet" />
+        <link href="css/still.css" rel="stylesheet" />
+        <link href="css/list.css" rel="stylesheet" />
+        <link href="lib/angular-motion/dist/angular-motion.css" rel="stylesheet" />
+
         <script src="lib/eventEmitter/EventEmitter.min.js"></script>
         
-        <script src="js/error.js"></script>
-        <script src="js/ws-events.js"></script>
-        <script src="js/playercontrol.js"></script>
-        <script src="js/filters.js"></script>
+        <script src="js/module.errordialog.js"></script>
+        <script src="js/module.settings.js"></script>
+        <script src="js/module.ws-events.js"></script>
+        <script src="js/module.playercontrol.js"></script>
+        <script src="js/module.filters.js"></script>
         <script src="js/controller.channel.js"></script>
-        <script src="js/controllers.js"></script>
+        <script src="js/controller.settings.js"></script>
+        <script src="js/module.controllers.js"></script>
+        <script src="js/module.restapi.js"></script>
+        <script src="js/controller.containerchooser.js"></script>
         
         <script src="lib/veinjs/vein.min.js"></script>
-        <script src="js/extracss.js"></script>
     </head>
 
     <body ng-controller="MainController as main" vs-scroll-parent>
@@ -50,23 +58,62 @@
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                     </button>
-                    <a class="navbar-brand" href="#"><img src="static/pith.svg" /></a>
+                    <a class="navbar-brand" href="#" ng-class="loading &amp;&amp; 'loading'">
+                        <svg
+                           xmlns:dc="http://purl.org/dc/elements/1.1/"
+                           xmlns:cc="http://creativecommons.org/ns#"
+                           xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+                           xmlns:svg="http://www.w3.org/2000/svg"
+                           xmlns="http://www.w3.org/2000/svg"
+                           id="logo"
+                           version="1.1"
+                           viewbox="0 0 500 500">
+                          <defs
+                             id="defs4" />
+                          <g
+                             transform="translate(75,20)">
+                            <path
+                               style="fill:#000000"
+                               d="m 158.76732,213.54934 c 28.05632,13.15367 60.03353,4.41905 89.05487,-0.75698 37.76097,-7.26664 74.91942,-20.77789 113.75899,-20.06774 17.33557,-1.41437 30.60594,16.80728 22.77212,32.6522 -10.19991,17.57075 -34.61494,12.39159 -51.37352,10.76795 -50.88768,-7.34739 -100.26672,-27.60377 -152.28611,-24.98661 -26.57031,0.44741 -42.83454,24.68639 -51.93323,46.76515 -20.91003,46.33433 -27.30465,98.18977 -51.638121,143.03546 -6.647762,15.78857 -28.249994,22.31551 -39.881553,7.83812 -12.621407,-15.76046 2.995497,-35.4283 12.376454,-48.52208 32.106717,-41.89995 75.87716,-75.00878 100.26344,-122.58057 12.89767,-23.23427 0.0382,-49.43901 -14.5332,-68.35809 C 105.67578,128.06039 63.964951,96.594748 37.294182,53.0985 26.94477,39.447085 32.093389,17.475538 50.446951,14.641011 70.406608,11.590778 79.631012,34.94933 86.280086,49.62036 c 20.233044,48.755226 27.020934,103.21595 56.026164,148.12098 4.47957,6.17801 9.79787,11.9539 16.46107,15.808 z"
+                               id="path2997" />
+                            <path
+                               style="fill:#000000"
+                               id="path2995"
+                               d="m 539.99998,492.36218 c 0,124.65856 -101.05572,225.71428 -225.71427,225.71428 -124.65856,0 -225.714284,-101.05572 -225.714284,-225.71428 0,-124.65855 101.055724,-225.71428 225.714284,-225.71428 124.65855,0 225.71427,101.05573 225.71427,225.71428 z"
+                               transform="matrix(0.70011743,0,0,0.70011743,-46.965337,-141.28114)" />
+                            <path
+                               style="fill:#ffffff"
+                               id="path2993"
+                               d="m 342.85713,338.07648 c 0,107.30104 -88.26386,194.28572 -197.14285,194.28572 -108.878992,0 -197.142854,-86.98468 -197.142854,-194.28572 0,-107.30104 88.263862,-194.28572 197.142854,-194.28572 108.87899,0 197.14285,86.98468 197.14285,194.28572 z"
+                               transform="matrix(0.72487031,0,0,0.73553012,67.447611,-45.235234)" />
+                            <path
+                               style="fill:#241c1c;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+                               id="path2985"
+                               d="m 457.14285,503.79074 c 0,69.43008 -56.28421,125.71429 -125.71429,125.71429 -69.43009,0 -125.71429,-56.28421 -125.71429,-125.71429 0,-69.43008 56.2842,-125.71429 125.71429,-125.71429 69.43008,0 125.71429,56.28421 125.71429,125.71429 z"
+                               transform="matrix(0.95246182,0,0,0.95246182,-142.60148,-276.41125)" />
+                            <path
+                               style="fill:#ffffff"
+                               id="path2989"
+                               d="M 316.65716,177.39076 C 215.53706,249.01749 197.20836,240.59157 185.73783,117.20564 174.26731,-6.1803014 190.72872,-17.840467 303.31934,33.918737 415.90996,85.67794 417.77725,105.76402 316.65716,177.39076 z"       transform="matrix(0.56629988,0.04570557,-0.04242499,0.52565355,22.633571,129.44604)" />
+                          </g>
+                        </svg>
+                    </a>
                     <ul class="nav navbar-nav">
-                        <li class="dropdown">
-                            <a class="dropdown-toggle" data-toggle="dropdown"><span class="glyphicon glyphicon-list"></span> <span class="caret"></span></a>
+                        <li class="dropdown" dropdown>
+                            <a class="dropdown-toggle" dropdown-toggle data-toggle="dropdown"><span class="glyphicon glyphicon-list"></span> <span class="caret"></span></a>
                             <ul class="dropdown-menu" role="menu">
                                 <li ng-repeat="channel in main.channels"><a href="#/channel/{{channel.id}}/">{{channel.title}}</a></li>
                                 <li class="divider"></li>
                                 <li><a href="#">Play Queue</a></li>
                                 <li class="divider"></li>
-                                <li><a href="#">Settings</a></li>
+                                <li><a href="#/settings">Settings</a></li>
                             </ul>
                         </li>
                     </ul>
                 </div>
 
                 <!-- Collect the nav links, forms, and other content for toggling -->
-                <div class="collapse navbar-box">
+                <div class="navbar-box">
                     <ul class="nav navbar-nav" ng-if="main.control.getSelectedPlayer()">
                         <li ng-show="main.currentStatus.actions.pause">
                             <a class="navbar-link" ng-click="main.control.pause()"><span class="glyphicon glyphicon-pause"></span></a>
@@ -95,10 +142,10 @@
                         No player selected
                     </div>
                     <ul class="nav navbar-nav">
-                        <li class="dropdown">
-                            <a class="dropdown-toggle" data-toggle="dropdown"><img ng-src="{{main.getSelectedPlayer().icons.48x48.url}}" height="24"/> <span class="caret"></span></a>
+                        <li class="dropdown" dropdown>
+                            <a class="dropdown-toggle" dropdown-toggle data-toggle="dropdown"><img ng-src="{{main.getSelectedPlayer().icons['48x48'].url}}" height="24"/> <span class="caret"></span></a>
                             <ul class="dropdown-menu dropdown-menu-right" role="menu">
-                                <li ng-repeat="player in main.getPlayers()" role="presentation"><a ng-click="main.selectPlayer(player.id)"><img ng-src="{{player.icons.48x48.url}}" height="24" /> {{player.friendlyName}}</a></li>
+                                <li ng-repeat="player in main.getPlayers()" role="presentation"><a ng-click="main.selectPlayer(player.id)"><img ng-src="{{player.icons['48x48'].url}}" height="24" /> {{player.friendlyName}}</a></li>
                                 <li ng-if="!main.getPlayers().length" role="presentation" class="dropdown-header dropdown-header-empty">
                                     No players available
                                 </li>
@@ -106,26 +153,21 @@
                         </li>
                     </ul>
                 </div><!-- /.navbar-collapse -->
-                
             </div><!-- /.container-fluid -->
         </nav>
 
         <div ng-view>
             <h1>Welcome to Pith</h1>
         </div>
-        
-        <div class="modal fade" id="errormodal" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true">
-          <div class="modal-dialog modal-sm">
-            <div class="modal-content">
-              <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+
+        <script type="text/ng-template" id="errordialog.html">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" ng-click="$dismiss()"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
                 <h4 class="modal-title" id="myModalLabel">An error occured :-(</h4>
-              </div>
-              <div class="modal-body">
-                ...
-              </div>
             </div>
-          </div>
-        </div>
+            <div class="modal-body">
+                {{message}}
+            </div>
+        </script>
     </body>
 </html>

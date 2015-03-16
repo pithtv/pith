@@ -2,116 +2,31 @@ body {
     padding: 70px 10px 0 10px;
 }
 
-.navbar-brand > img {
-  max-height: 37px;
+#loading-bar .bar {
+    top: 55px;
+    z-index: 999;
+}
+
+@-webkit-keyframes rotation {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.loading #path2997 {
+    -webkit-animation: rotation 1.5s linear infinite;
+    transform-origin: 38% 50%;
+    transition: 0.5s;
+}
+
+#logo {
     margin-top: -6px;
+    height: 37px;
+    width: 37px;
     opacity: 0.1;
-}
-
-.contentbrowser.poster .contentitem {
-    display: inline-block;
-    margin: 4px;
-    height: 160px;
-    text-align: center;
-}
-
-.contentbrowser.poster .contentitem img.th {    
-    padding: 4px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    -webkit-transition: all .2s ease-in-out;
-    -o-transition: all .2s ease-in-out;
-    transition: all .2s ease-in-out;
-    background-color: rgba(255,255,255,0.8);
-    
-    width: 110px;
-    height: 150px;
-}
-
-.contentbrowser.poster .contentitem.withthumb:not(:hover) .iteminfo,
-.contentbrowser.poster .contentitem .itemplot,
-.contentbrowser.poster .contentitem .itemtagline,
-.contentbrowser.poster .contentitem .itemgenres
-{
-    display: none;
-}
-
-.contentbrowser.poster .contentitem .iteminfo {
-    position: absolute;
-    top: 5px;
-    left: -webkit-calc(50% - 46px);
-    right: -webkit-calc(50% - 46px);
-    text-align: left;
-    background: rgba(240,240,240,0.9);
-    bottom: 17px;
-    padding: 4px;
-    font-weight: bold;
-}
-
-.contentbrowser.poster .contentitem .itemrating {
-    display: block;   
-}
-
-.contentbrowser.poster .contentitem .actions {
-    position: absolute;
-    bottom: 2px;
-    left: -webkit-calc(50% - 45px);
-}
-
-.contentbrowser.poster .contentitem .thumbnail {
-    width: 100%;
-    height: 100%;
-}
-
-.contentbrowser.poster img.th {
-    max-width: 101px;
-    max-height: 150px;
-}
-
-.contentbrowser.list {
-    list-style: none;
-    padding: 0;
-}
-
-.contentbrowser.list .contentitem {
-    list-style: none;
-    padding: 10px;
-    font-size: 90%;
-    height: 130px;
-    overflow: hidden;
-    width: 100%;
-}
-
-.contentbrowser.list .actions {
-    position: absolute;
-    right: 10px;
-    top: 10px;
-}
-
-.contentbrowser.list .contentitem .itemplot {
-    padding-top: 7px;
-    overflow: auto;
-    font-size: 90%;
-}
-
-.contentbrowser.list .contentitem:nth-child(even) {
-    background-color: rgba(0,0,0,0.11);   
-}
-
-.contentbrowser.list .contentitem img.th {
-    max-width: 101px;
-    max-height: 110px;
-    float: left;
-    margin-right: 15px;
-}
-
-.contentbrowser.list .contentitem > .iteminfo > span {
-    display: block;
-    margin-left: 88px;
-}
-
-.contentbrowser.list .contentitem > .iteminfo > .itemtagline {
-    display: none;
 }
 
 span.itemyear:before {
@@ -122,12 +37,13 @@ span.itemyear:after {
     content: ')';
 }
 
-.contentbrowser.list .contentitem span.itemtitle {
+.contentbrowser.list .contentitem .iteminfo span.itemtitle,
+.contentbrowser.list .contentitem .iteminfo span.contextinfo {
     font-size: 120%;
     font-weight: bold;
 }
 
-.itemrating[data-rating] {
+.itemrating[data-starrating] {
     width: 80px;
     height: 16px;
     background-image: url(../static/staroutline.png);
@@ -148,38 +64,38 @@ span.itemyear:after {
     top: 0px;
 }
 
-.itemrating[data-rating^="0"]:after {
+.itemrating[data-starrating^="0"]:after {
     width: 0%;
 }
-.itemrating[data-rating^="1"]:after {
+.itemrating[data-starrating^="1"]:after {
     width: 10%;
 }
-.itemrating[data-rating^="2"]:after {
+.itemrating[data-starrating^="2"]:after {
     width: 20%;
 }
-.itemrating[data-rating^="3"]:after {
+.itemrating[data-starrating^="3"]:after {
     width: 30%;
 }
-.itemrating[data-rating^="4"]:after {
+.itemrating[data-starrating^="4"]:after {
     width: 40%;
 }
-.itemrating[data-rating^="5"]:after {
+.itemrating[data-starrating^="5"]:after {
     width: 50%;
 }
-.itemrating[data-rating^="6"]:after {
+.itemrating[data-starrating^="6"]:after {
     width: 60%;
 }
-.itemrating[data-rating^="7"]:after {
+.itemrating[data-starrating^="7"]:after {
     width: 70%;
 }
-.itemrating[data-rating^="8"]:after {
-    width: 70%;
+.itemrating[data-starrating^="8"]:after {
+    width: 80%;
 }
-.itemrating[data-rating^="9"]:after {
-    width: 70%;
+.itemrating[data-starrating^="9"]:after {
+    width: 90%;
 }
-.itemrating[data-rating="10"]:after {
-    width: 70%;
+.itemrating[data-starrating="100"]:after {
+    width: 100%;
 }
 
 .navbar-box {
@@ -245,7 +161,7 @@ span.itemyear:after {
 }
 .noplayer {
     text-align: center;
-    margin-top: 15px;    
+    margin-top: 15px;
 }
 
 .dropdown-header-empty {
@@ -264,7 +180,8 @@ span.itemyear:after {
     margin-top: 3px;
 }
 
-.contentbrowser.poster {
+.contentbrowser.poster,
+.contentbrowser.still {
     padding: 0;
 }
 
@@ -272,11 +189,127 @@ span.itemyear:after {
     background: rgba(245,245,245,0.9);
 }
 
-.fanart {
+.backdrop {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
     z-index: -1;
     background-position: center;
     background-repeat: no-repeat;
     background-size: cover;
+}
+
+.modal-footer-btn {
+    padding: 0;
+}
+
+.modal-body-lg {
+    padding: 1em;
+    font-size: 130%;
+    text-align: center;
+}
+
+.modal-footer-btn > button {
+    border: none;
+    background: none;
+    font-size: 130%;
+    display: block;
+    text-align: center;
+    padding: 0.6em;
+    width: 100%;
+    color: rgb(50,120,255);
+}
+
+.modal-footer-btn > button+button {
+    border-top: 1px solid rgba(0,0,0,0.1);
+}
+
+.modal-content > .list-group {
+    margin-bottom: 0;
+}
+
+.modal-header+.list-group .list-group-item:first-child {
+    border-top-width: 0;
+}
+
+.modal-content > .list-group .list-group-item {
+    border-left: none;
+    border-right: none;
+}
+
+.modal-content>.list-group .list-group-item {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    border-bottom-width: 0;
+}
+
+.itemshowname + .itemseason:before {
+    content: ' - ';
+}
+
+.itemseason:before {
+    content: "Season ";
+}
+
+.itemshowname + .itemseason:before {
+    content: ' - ';
+}
+
+.itemseason + .itemepisode:before {
+    content: 'x';
+}
+
+.itemepisode:before {
+    content: "Episode ";
+}
+
+.contextinfo:not(:empty) + .itemtitle:before {
+    content: ' - ';
+}
+
+.breadcrumb {
+    background: rgba(245,245,245,0.9);
+}
+
+.contentdetail {
+    background: rgba(255,255,255,0.7);
+    border: 1px solid rgba(0,0,0,0.3);
+    margin: 0.2em;
+    margin-bottom: 1.5em;
+}
+
+.contentdetail img {
+    max-height: 200px;
+}
+
+.th {
+    background-size: cover;
+    background-position: center;
+    overflow: hidden;
+}
+
+a.link-imdb {
+    height: 2ex;
+    width:3ex;
+    background: url('../static/imdb.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center 0.5ex;
+    display: inline-block;
+}
+
+.contentbrowser .th .contextinfo {
+    background-color: rgba(0,0,0,0.6);
+    position: absolute;
+    left: 0px;
+    right: 0px;
+    color: white;
+    bottom: 0px;
+    text-align: center;
+    font-size: 80%;
+    padding: 2px;
+    transition: bottom 0.4s ease-in-out;
+}
+
+.contentbrowser :hover .th .contextinfo {
+    bottom: -100%;
 }

@@ -2,7 +2,9 @@
 
 var express = require("express");
 var plugin = require("plugin")();
-var events = require("events");
+var EventEmitter = require("./lib/events");
+var async = require("async");
+var global = require("./lib/global")();
 
 var route = express.Router();
 
@@ -34,6 +36,7 @@ Pith.prototype = {
         if (channelInstance === undefined) {
             var channel = this.channelMap[channelId];
             channelInstance = this.channelInstances[channelId] = channel.init({pith: this});
+            channelInstance.id = channelId;
         }
         return channelInstance;
     },
@@ -46,18 +49,19 @@ Pith.prototype = {
             else if(a.sequence < b.sequence) return -1;
             else return 1;
         });
-        this.emit("channelRegistered", channel);
+        this.emit("channelRegistered", {channel: channel});
     },
     
     registerPlayer: function (player) {
         if(!player.id) player.id = newId();
         this.players.push(player);
         this.playerMap[player.id] = player;
-        this.emit("playerregistered", player);
+        this.emit("playerregistered", {player: player});
+
         var self = this;
         player.on("statechange", function(status) {
             status.serverTimestamp = new Date().getTime();
-            self.emit("playerstatechange", player.id, status);
+            self.emit("playerstatechange", {player: player, status: status});
         });
     },
     
@@ -66,14 +70,14 @@ Pith.prototype = {
             return e.id !== player.id;
         });
         this.playerMap[player.id] = undefined;
-        this.emit("playerdisappeared", player);
+        this.emit("playerdisappeared", {player: player});
     },
     
     updatePlayerStates: function() {
         var newTs = new Date().getTime();
         this.players.forEach(function(e) {
             try {
-                if(e.status.state.playing) {
+                if(e.status.state && e.status.state.playing) {
                     var delta = (newTs - e.status.serverTimestamp) / 1000;
                     e.status.position.time += delta;
                     e.status.serverTimestamp = newTs;
@@ -97,34 +101,66 @@ Pith.prototype = {
         this.getChannelInstance(channelId).getItem(containerId, cb);
     },
     
-    listChannelContents: function (channelId, containerId, cb) {
-        this.getChannelInstance(channelId).listContents(containerId, cb);
+    listChannelContents: function (channelId, containerId, cb, options) {
+        var ci = this.getChannelInstance(channelId);
+        ci.listContents(containerId, function(err, contents) {
+            if(!err && options.includePlayStates) {
+                async.map(contents, function(item, m) {
+                    ci.getLastPlayState(item.id, function(err, state) {
+                        item.playState = state;
+                        m(err, item);
+                    });
+                }, function(err, result) {
+                    cb(err, result);
+                });
+            } else {
+                cb(err, contents);
+            }
+        });
+        
     },
     
     getStream: function (channelId, itemId, cb) {
         var channelInstance = this.getChannelInstance(channelId);
-        channelInstance.getStreamUrl(itemId, cb);
+        channelInstance.getStream(itemId, cb);
     },
     
-    loadMedia: function(channelId, itemId, playerId, cb) {
+    getLastPlayState: function(channelId, itemId, cb) {
+        var channelInstance = this.getChannelInstance(channelId);
+        channelInstance.getLastPlayState(itemId, cb);
+    },
+    
+    putPlayState: function(channelId, itemId, state, cb) {
+        var channelInstance = this.getChannelInstance(channelId);
+        if(state.status !== undefined || state.duration > 600) {
+            if(!state.status) {
+                if(state.time > Math.max(state.duration - 300, state.duration * 11 / 12)) {
+                    state.status = 'watched';
+                } else {
+                    state.status = 'inprogress';
+                }
+            }
+            channelInstance.putPlayState(itemId, state, cb);
+        }
+    },
+    
+    loadMedia: function(channelId, itemId, playerId, cb, opts) {
         var self = this;
         var player = this.playerMap[playerId];
+        if(!player) {
+            cb(new Error("Unknown player", playerId));
+            return;
+        }
         var channel = self.getChannelInstance(channelId);
         channel.getItem(itemId, function(err, item) {
-            channel.getStreamUrl(item, function(url) {
-                player.load(item, url, function(err) {
-                    if(err) {
+            player.load(channel, item, function(err) {
+                if(err) {
+                    cb(err);
+                } else {
+                    player.play(function(err) {
                         cb(err);
-                    } else {
-                        player.play(function(err) {
-                            if(err) {
-                                cb(err);
-                            } else {
-                                cb();
-                            }
-                        });
-                    }
-                });
+                    }, opts && opts.time);
+                }
             });
         });
     },
@@ -139,14 +175,23 @@ Pith.prototype = {
     },
     
     load: function() {
-        require("./plugins/files/plugin").plugin().init({pith: this});
-        require("./plugins/movies/plugin").plugin().init({pith: this});
-        require("./plugins/upnp-mediarenderer/plugin").plugin().init({pith: this});
+        require("./plugins/files/plugin").init({pith: this});
+        require("./plugins/library/plugin").init({pith: this});
+        require("./plugins/upnp-mediarenderer/plugin").init({pith: this});
+        require("./plugins/yamaha/plugin").init({pith: this});
+    },
+
+    settings: function(settings) {
+        if(arguments.length === 0) {
+            return global.settings;
+        } else {
+            global.storeSettings(settings);
+        }
     },
     
     handle: route
 };
 
-Pith.prototype.__proto__ = events.EventEmitter.prototype;
+Pith.prototype.__proto__ = EventEmitter.prototype;
 
 module.exports = Pith;
