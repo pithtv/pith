@@ -94,22 +94,38 @@ module.exports = function(item, mediatype, callback) {
         callback(undefined, item);
     }
 
+    function episodeParser(ep, item) {
+        if(!ep) {
+            return item;
+        }
+
+        var metadata = {
+            mediatype: 'episode',
+            tmdbId: ep.id,
+            episode: ep.episode_number,
+            season: ep.season_number,
+            title: ep.name,
+            overview: ep.overview,
+            still: createUrl(ep.still_path),
+            airDate: parseDate(ep.air_date),
+            tmdbRating: ep.vote_average,
+            tmdbVoteCount: ep.vote_count
+        };
+
+        if(item) {
+            for (var x in metadata) {
+                item[x] = metadata[x];
+            }
+
+            return item;
+        } else {
+            return metadata;
+        }
+    }
+
     function seasonParser(err, result) {
         var metadata = {
-            _children: result.episodes.map(function(ep) {
-                return {
-                    mediatype: 'episode',
-                    tmdbId: ep.id,
-                    episode: ep.episode_number,
-                    season: ep.season_number,
-                    title: ep.name,
-                    overview: ep.overview,
-                    still: createUrl(ep.still_path),
-                    airDate: parseDate(ep.air_date),
-                    tmdbRating: result.vote_average,
-                    tmdbVoteCount: result.vote_count
-                }
-            }),
+            _children: result.episodes.map(episodeParser),
 
             title: result.name,
             overview: result.overview,
@@ -160,6 +176,15 @@ module.exports = function(item, mediatype, callback) {
         case "season":
             if (item.showTmdbId) {
                 tmdb.tvSeasonInfo({id: item.showTmdbId, season_number: item.season}, seasonParser);
+            } else {
+                callback(Error("Need show tmdb id"));
+            }
+            break;
+        case "episode":
+            if (item.showTmdbId) {
+                tmdb.tvEpisodeInfo({id: item.showTmdbId, season_number: item.season, episode_number: item.episode}, function(err, ep) {
+                    callback(undefined, episodeParser(ep, item));
+                });
             } else {
                 callback(Error("Need show tmdb id"));
             }

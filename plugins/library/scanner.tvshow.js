@@ -56,20 +56,31 @@ module.exports = function(opts) {
                     cb(err);
                 } else {
                     if(!episode) {
-                        winston.info("Episode found but no meta data exists for it.", item.title);
-                        var episode = {
-                            title: item.title,
-                            showId: show.id,
-                            showname: show.title,
-                            season: season.season,
-                            seasonId: season.id,
-                            playable: true,
-                            mediatype: 'episode',
-                            originalId: item.originalId,
-                            channelId: item.channelId,
-                            dateScanned: new Date()
-                        };
-                        db.storeEpisode(episode, cb);
+                        item.showTmdbId = show.tmdbId;
+                        item.seasonId = season.id;
+                        item.showId = show.id;
+                        item.season = season.season;
+                        metadata(item, 'episode', function(err, episodeMetaData) {
+                            if(err) {
+                                winston.info("Episode found but no meta data exists for it.", item.title);
+                                var episode = {
+                                    title: item.title,
+                                    showId: show.id,
+                                    showname: show.title,
+                                    season: season.season,
+                                    seasonId: season.id,
+                                    episode: item.episode,
+                                    playable: true,
+                                    mediatype: 'episode',
+                                    originalId: item.originalId,
+                                    channelId: item.channelId,
+                                    dateScanned: new Date()
+                                };
+                                db.storeEpisode(episode, cb);
+                            } else {
+                                db.storeEpisode(episodeMetaData, cb);
+                            }
+                        });
                     } else {
                         winston.info("Episode found", item, episode);
                         episode.originalId = item.originalId;
