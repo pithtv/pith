@@ -143,9 +143,9 @@
                     </div>
                     <ul class="nav navbar-nav">
                         <li class="dropdown" dropdown>
-                            <a class="dropdown-toggle" dropdown-toggle data-toggle="dropdown"><img ng-src="{{main.getSelectedPlayer().icons['48x48'].url}}" height="24"/> <span class="caret"></span></a>
+                            <a class="dropdown-toggle" dropdown-toggle data-toggle="dropdown"><img ng-src="{{prescale(main.getSelectedPlayer().icons['48x48'].url, 'original')}}" height="24"/> <span class="caret"></span></a>
                             <ul class="dropdown-menu dropdown-menu-right" role="menu">
-                                <li ng-repeat="player in main.getPlayers()" role="presentation"><a ng-click="main.selectPlayer(player.id)"><img ng-src="{{player.icons['48x48'].url}}" height="24" /> {{player.friendlyName}}</a></li>
+                                <li ng-repeat="player in main.getPlayers()" role="presentation"><a ng-click="main.selectPlayer(player.id)"><img ng-src="{{prescale(player.icons['48x48'].url,'original')}}" height="24" /> {{player.friendlyName}}</a></li>
                                 <li ng-if="!main.getPlayers().length" role="presentation" class="dropdown-header dropdown-header-empty">
                                     No players available
                                 </li>
