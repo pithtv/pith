@@ -1,4 +1,7 @@
-var crypto = require("crypto");
+var crypto = require("crypto"),
+    async = require("async");
+
+"use strict";
 
 module.exports = function(db, callback) {
     function md5(string) {
@@ -10,10 +13,10 @@ module.exports = function(db, callback) {
     var collection = db.collection('playstates');
     
     var cache = {};
-    var queue = {};
+    var queue = [];
     
     function get(id) {
-        return cache[md5(id)];
+        return cache[id];
     }
     
     function put(object) {
@@ -21,22 +24,35 @@ module.exports = function(db, callback) {
         if(existing) {
             object._id = existing._id;
         }
-        queue[object.id] = object;
-        cache[md5(object.id)] = object;
+
+        cache[object.id] = object;
+
+        for(var x= 0,l=queue.length;x<l;x++) {
+            if(queue[x].id == object.id) {
+                queue[x] = object;
+                return;
+            }
+        }
+        queue.push(object);
     }
     
     function scheduleFlush() {
         setTimeout(function() {
 
-            for(var x in queue) {
-                var state = queue[x];
-                if(state._id) {
-                    collection.update({_id: state._id}, state, scheduleFlush);
+            function next() {
+                if(queue.length) {
+                    var state = queue.pop();
+                    if(state._id) {
+                        collection.update({_id: state._id}, state, next);
+                    } else {
+                        collection.insert(state, next);
+                    }
                 } else {
-                    collection.insert(state, scheduleFlush);
+                    scheduleFlush();
                 }
             }
-            queue = {};
+
+            next();
 
         }, 10000);
     }
@@ -54,7 +70,7 @@ module.exports = function(db, callback) {
                 callback(false, playstate);
                 scheduleFlush();
             } else {
-                cache[md5(doc.id)] = doc;
+                cache[doc.id] = doc;
             }
         });
     });
