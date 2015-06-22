@@ -1,6 +1,8 @@
 pith
 ====
 
+[![Join the chat at https://gitter.im/Evinyatar/pith](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/Evinyatar/pith?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 The Pith media hub at the center of your entertainment network.
 
 The aim of this project is to create a media server for videos and music that can be controlled through a web browser and will stream the media to a variety of renderers such as UPnP MediaRenderers (most TV's and blu-ray players), AirPlay devices, or just through the web browser.
