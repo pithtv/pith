@@ -41,13 +41,13 @@ channelController.controller('channelController',
 
             function pushState(state) {
                 history.state.search = $scope.search;
-                history.replaceState(history.state);
-                history.pushState(state);
+                history.replaceState(history.state, history.state.title);
+                history.pushState(state, state.title);
                 loadState(state);
             }
 
             function replaceState(state) {
-                history.replaceState(state);
+                history.replaceState(state, state.title);
                 loadState(state);
             }
 
@@ -98,7 +98,7 @@ channelController.controller('channelController',
                     channelpath: newpath,
                     id: item.id
                 };
-                pushState(newState);
+                pushState(newState, newState.title);
             };
 
             replaceState({channelpath: [{title: "Contents", id: ""}]});
