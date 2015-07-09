@@ -35,8 +35,10 @@ Pith.prototype = {
         var channelInstance = this.channelInstances[channelId];
         if (channelInstance === undefined) {
             var channel = this.channelMap[channelId];
-            channelInstance = this.channelInstances[channelId] = channel.init({pith: this});
-            channelInstance.id = channelId;
+            if(channel !== undefined) {
+                channelInstance = this.channelInstances[channelId] = channel.init({pith: this});
+                channelInstance.id = channelId;
+            }
         }
         return channelInstance;
     },

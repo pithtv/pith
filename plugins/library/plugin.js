@@ -128,7 +128,9 @@ module.exports = {
                 return scanners[c.contains] !== undefined && (c.scanAutomatically || manual === true);
             }), function(dir, cb) {
                 var channelInstance = pith.getChannelInstance(dir.channelId);
-                scanners[dir.contains].scan(channelInstance, dir, cb);
+                if(channelInstance !== undefined) {
+                    scanners[dir.contains].scan(channelInstance, dir, cb);
+                }
             }, function(err) {
                 var scanEndTime = new Date().getTime();
                 winston.info("Library scan complete. Took %d ms", (scanEndTime - scanStartTime));
