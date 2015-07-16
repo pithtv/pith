@@ -12,6 +12,7 @@ channelController.controller('channelController',
             $scope.channelId = $routeParams.channelId;
             $scope.currentContainer = $routeParams.containerId;
             $scope.currentPath = [];
+            $scope.expanded = null;
 
             $scope.loading = true;
 
@@ -65,17 +66,28 @@ channelController.controller('channelController',
             };
 
             $scope.open = function (item) {
-                var currentState = history.state;
-                var path = [item];
-                if (currentState && currentState.channelpath) {
-                    path = currentState.channelpath.concat(path);
-                }
-                var newState = {
-                    channelpath: path,
-                    id: item.id
-                };
+                switch(item.type) {
+                    case 'container':
+                        var currentState = history.state;
+                        var path = [item];
+                        if (currentState && currentState.channelpath) {
+                            path = currentState.channelpath.concat(path);
+                        }
+                        var newState = {
+                            channelpath: path,
+                            id: item.id
+                        };
 
-                pushState(newState);
+                        pushState(newState);
+                        break;
+                    default:
+                        if($scope.expanded == item) {
+                            $scope.expanded = null;
+                        } else {
+                            $scope.expanded = item;
+                        }
+                        break;
+                }
             };
 
             $scope.view = function view(v) {
@@ -99,6 +111,10 @@ channelController.controller('channelController',
                     id: item.id
                 };
                 pushState(newState, newState.title);
+            };
+
+            $scope.expand = function expand(item) {
+                $scope.expanded = item;
             };
 
             replaceState({channelpath: [{title: "Contents", id: ""}]});

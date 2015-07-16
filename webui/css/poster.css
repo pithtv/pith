@@ -1,30 +1,16 @@
 .contentbrowser.poster .contentitem {
     display: inline-block;
     margin: 4px;
+    border-radius: 4px;
+    overflow: hidden;
+    vertical-align: top;
     height: 152px;
     width: 102px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    pointer-events: none;
-    overflow: hidden;
+    padding: 0px 10px;
 }
 
-.contentbrowser.poster .contentitem.withinfo:hover {
-    transition: 0.4s width ease, 0.4s margin-left ease, 0.4s background ease;
-    background: rgba(255,255,255,0.95);
-    width: 328px;
-    z-index: 2;
-    box-shadow: 0px 0px 10px rgba(0,0,0,0.3);
-}
-
-.contentbrowser.poster .contentitem.withinfo.alignleft:hover {
-    margin-left: -222px;
-}
-
-.contentbrowser.poster .contentitem.inprogress:hover:after,
-.contentbrowser.poster .contentitem.watched:hover:after {
-    transition: opacity 0.4s ease-in-out;
-    opacity: 1;
+.contentbrowser.poster .contentitem.expanded {
+    height: 500px;
 }
 
 .contentbrowser.poster .contentitem.inprogress:after,
@@ -51,12 +37,6 @@
     z-index: 5;
 }
 
-.contentbrowser.poster .contentitem.alignleft.inprogress:after,
-.contentbrowser.poster .contentitem.alignleft.watched:after {
-    left: auto;
-    right: 2px;
-}
-
 .contentbrowser.poster .contentitem.inprogress:after {
     content: '\e073';
 }
@@ -75,10 +55,9 @@
 
     width: 100px;
     height: 150px;
-    pointer-events: auto;
 
     z-index: 4;
-    position: absolute;
+    border: 1px solid #ddd;
 }
 
 .contentbrowser.poster .contentitem.alignleft .th {
@@ -86,10 +65,12 @@
     right: 0px;
 }
 
-.contentbrowser.poster .contentitem.withthumb:not(:hover) .iteminfo,
-.contentbrowser.poster .contentitem .itemplot,
-.contentbrowser.poster .contentitem .itemgenres
+.contentbrowser.poster .contentitem.withthumb .iteminfo
 {
+    display: none;
+}
+
+.contentbrowser.poster .contentitem.withthumb .title {
     display: none;
 }
 
@@ -100,19 +81,24 @@
     font-weight: normal;
 }
 
-
 .contentbrowser.poster .contentitem .iteminfo {
     position: absolute;
-    top: 5px;
-    left: 5px;
-    right: 5px;
     text-align: left;
-    bottom: 32px;
     padding: 4px;
     font-weight: bold;
     overflow: hidden;
-    pointer-events: auto;
     z-index: 3;
+}
+
+.contentbrowser.poster .contentitem .iteminfo img.bigthumb {
+    height: 100%;
+    float: left;
+    margin-right: 20px;
+}
+
+.contentbrowser.poster .contentitem .itemplot {
+    display: block;
+    font-weight: normal;
 }
 
 .contentbrowser.poster .contentitem .itemrating {
@@ -121,15 +107,7 @@
 
 .contentbrowser.poster .contentitem .actions:not(:empty) {
     display: block;
-    position: absolute;
-    bottom: 0px;
-    pointer-events: auto;
-    z-index: 2;
     font-size: 20px;
-    border-top: 1px solid rgb(200,200,200);
-    padding-top: 3px;
-    padding-left: 10px;
-    padding-right: 10px;
 }
 
 .contentbrowser.poster .contentitem .thumbnail {
@@ -137,34 +115,9 @@
     height: 100%;
 }
 
-.contentbrowser.poster .contentitem.withthumb .iteminfo {
-    pointer-events: none;
-}
-
-.contentbrowser.poster .contentitem .actions {
-    left: 0px;
-    right: 0px;
-}
-
-.contentbrowser.poster .contentitem.withthumb .iteminfo,
-.contentbrowser.poster .contentitem.withthumb .actions {
-    left: 100px;
-    right: auto;
-    width: 220px;
-}
-
-.contentbrowser.poster .contentitem.withthumb.alignleft .iteminfo,
-.contentbrowser.poster .contentitem.withthumb.alignleft .actions {
+.contentbrowser.poster .contentitem.withthumb.alignleft .iteminfo {
     left: auto;
     right: 100px;
-}
-
-.contentbrowser.poster .contentitem.withthumb .actions {
-    text-align: left;
-}
-
-.contentbrowser.poster .contentitem.withthumb.alignleft .actions {
-    text-align: right;
 }
 
 .contentbrowser.poster .th {
@@ -174,4 +127,42 @@
 
 .contentbrowser.poster .stillimg {
     display: none;
+}
+
+.contentbrowser.poster .contentitem > a {
+    position: relative;
+    width: 102px;
+    height: 152px;
+    display: inline-block;
+}
+
+.contentbrowser.poster .contentitem.expanded > a::after {
+    display: block;
+    content: '';
+    border: 15px solid transparent;
+    border-bottom-color: #777;
+    width: 0;
+    height: 0;
+    box-sizing: content-box;
+    left: 50%;
+    position: absolute;
+    margin-left: -15px;
+    margin-top: -10px;
+    top: 100%;
+}
+
+.contentbrowser.poster .contentitem.expanded .iteminfo {
+    display: block;
+    position: absolute;
+    left: 0px;
+    right: 0px;
+    height: 300px;
+    background: rgb(220,220,220);
+    padding: 30px;
+    margin-top: 15px;
+    background: linear-gradient(to bottom, #777, #bbb 15px);
+}
+
+.contentbrowser.poster .contentitem.expanded .iteminfo .itemtitle {
+    display: block;
 }

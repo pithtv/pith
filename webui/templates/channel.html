@@ -48,7 +48,7 @@
 
 <div ng-if="itemDetails.backdrop" ng-style="{ 'background-image': 'url(\'' + itemDetails.backdrop + '\')' }" class="backdrop"></div>
 
-<ul class="contentbrowser" ng-repeat-class="view()" vs-repeat vs-scroll-parent="window" vs-excess="2" vs-autoresize="true">
+<ul class="contentbrowser poster" vs-repeat vs-scroll-parent="window" vs-excess="2" vs-autoresize="true">
     <li class="contentitem"
         ng-repeat="item in containerContents | filter:{title:(search||'')}"
         ng-class="
@@ -58,18 +58,18 @@
              'withinfo': item.tagline || item.rating || (item.genres && item.genres.length) || item.plot || item.overview,
              'watched': item.playState &amp;&amp; item.playState.status == 'watched',
              'inprogress': item.playState &amp;&amp; item.playState.status == 'inprogress',
-             'alignleft': ($index % itemsPerRow) >= itemsPerRow / 2,
-             'unavailable': item.unavailable}">
+             'unavailable': item.unavailable,
+             'expanded': expanded == item}">
 
-        <a ng-click="open(item)" ng-if="item.poster || item.thumbnail || item.still">
+        <a ng-click="open(item)">
             <div ng-if="item.poster || item.still" ng-style="{ 'background-image': 'url(' + (
                 item.poster && prescale(item.poster, '100x150') ||
                 item.still && prescale(item.still, '266x150'))+ ')' }" class="th">
-
-                <span class="contextinfo"><span class="itemshowname" ng-if="item.showname && item.showname != itemDetails.showname">{{item.showname}}</span><span class="itemseason" ng-if="item.season && (item.showname !== itemDetails.showname || item.season !== itemDetails.season)">{{item.season}}</span><span class="itemepisode" ng-if="item.episode">{{item.episode}}</span></span>
             </div>
+            <span class="contextinfo"><span class="title" ng-if="item.title">{{item.title}}</span><span class="itemshowname" ng-if="item.showname && item.showname != itemDetails.showname">{{item.showname}}</span><span class="itemseason" ng-if="item.season && (item.showname !== itemDetails.showname || item.season !== itemDetails.season)">{{item.season}}</span><span class="itemepisode" ng-if="item.episode">{{item.episode}}</span></span>
         </a>
-        <div class="iteminfo">
+        <div class="iteminfo" ng-if="expanded == item">
+            <img ng-if="item.poster || item.still" ng-src="{{ item.poster && prescale(item.poster, '200x300') || item.still && prescale(item.still, '532x300') }}" class="bigthumb"/>
             <a ng-click="open(item)">
                 <span class="contextinfo"><span class="itemshowname" ng-if="item.showname && item.showname != itemDetails.showname">{{item.showname}}</span><span class="itemseason" ng-if="item.season && (item.showname !== itemDetails.showname || item.season !== itemDetails.season)">{{item.season}}</span><span class="itemepisode" ng-if="item.episode">{{item.episode}}</span></span>
                 <span class="itemtitle">{{item.title}} <span ng-if="item.year" class="itemyear">{{item.year}}</span></span>
@@ -79,7 +79,7 @@
             <span class="itemgenres" ng-if="item.genres &amp;&amp; item.genres.length">{{item.genres.join(", ")}}</span>
             <span class="itemplot" ng-if="item.plot">{{item.plot}}</span>
             <span class="itemoverview" ng-if="item.overview">{{item.overview}}</span>
+            <span class="actions"><a ng-click="load(item)" class="glyphicon glyphicon-play action-play" title="Play" ng-if="item.playable"></a><a ng-click="toggleWatched(item)" class="glyphicon glyphicon-ok action-markwatched" title="Mark watched" ng-if="item.playable"></a><a href="http://www.imdb.com/title/{{item.imdbId}}" ng-if="item.imdbId" class="link-imdb" target="_blank"></a></span>
         </div>
-        <span class="actions"><a ng-click="load(item)" class="glyphicon glyphicon-play action-play" title="Play" ng-if="item.playable"></a><a ng-click="toggleWatched(item)" class="glyphicon glyphicon-ok action-markwatched" title="Mark watched" ng-if="item.playable"></a><a href="http://www.imdb.com/title/{{item.imdbId}}" ng-if="item.imdbId" class="link-imdb" target="_blank"></a></span>
     </li>
 </ul>

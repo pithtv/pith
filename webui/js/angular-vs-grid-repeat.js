@@ -118,6 +118,7 @@
 							$$horizontal = typeof $attrs.vsHorizontal !== "undefined",
 							$wheelHelper,
 							$fillElement,
+							$preFillElement,
 							autoSize = !$attrs.vsRepeat,
 							sizesPropertyExists = !!$attrs.vsSizeProperty,
                             parentIsWindow = $attrs.vsScrollParent == 'window',
@@ -228,22 +229,6 @@
 						childClone.attr('ng-repeat', lhs + ' in ' + collectionName + (rhsSuffix ? ' ' + rhsSuffix : ''))
 								.addClass('vs-repeat-repeated-element');
 
-						var offsetCalculationString = '( floor(($index + startIndex) / itemsPerRow) * gridItemHeight + offsetBefore) + "px"';
-						var oppositeOffsetCalculationString = '(($index % itemsPerRow) * gridItemWidth) + "px"';
-						var widthCorrectionPosition = '"calc( ( 100% - " + (gridItemWidth * itemsPerRow) + "px ) / (" + (itemsPerRow - 1) + " / " + ($index % itemsPerRow) + "))"';
-
-						if(typeof document.documentElement.style.transform !== "undefined"){ // browser supports transform css property
-							childClone.attr('ng-style', '{ "left" : ' + widthCorrectionPosition + ', "transform": "' + positioningPropertyTransform + '(" + ' + offsetCalculationString + ' + ") '+
-                                             oppositePositioningPropertyTransform + '(" + ' + oppositeOffsetCalculationString + ' + ")"}');
-						}
-						else if(typeof document.documentElement.style.webkitTransform !== "undefined"){ // browser supports -webkit-transform css property
-							childClone.attr('ng-style', '{ "left" : ' + widthCorrectionPosition + ', "-webkit-transform": "' + positioningPropertyTransform + '(" + ' + offsetCalculationString + ' + ") ' +
-							                 oppositePositioningPropertyTransform + '(" + ' + oppositeOffsetCalculationString + ' + ")"}');
-						}
-						else{
-							childClone.attr('ng-style', '{' + positioningProperty + ': ' + offsetCalculationString + ', ' + oppositePositioningProperty + ': ' + oppositeOffsetCalculationString + '}');
-						}
-
 						$compile(childClone)($scope);
 						$element.append(childClone);
 
@@ -253,9 +238,12 @@
 								'min-height': '100%',
 								'min-width': '100%'
 							});
-						$element.append($fillElement);
+						$preFillElement = angular.element('<div class="vs-repeat-fill-element"></div>');
+
+						$element.prepend($preFillElement).append($fillElement);
 						$compile($fillElement)($scope);
 						$scope.$fillElement = $fillElement;
+						$scope.$preFillElement = $preFillElement;
 
 						var _prevMouse = {};
 						if(isMacOS){
@@ -399,7 +387,7 @@
                                 0
                             );
 
-                            $scope.endIndex = Math.min(
+							$scope.endIndex = Math.min(
                                 $scope.startIndex + Math.ceil(
                                     $scrollParent[0][scrollSize] / $scope.elementSize
                                      + $scope.excess
@@ -418,6 +406,8 @@
 
 							_prevStartIndex = $scope.startIndex;
 							_prevEndIndex = $scope.endIndex;
+
+							$preFillElement.css('height', Math.floor($scope.startIndex / $scope.itemsPerRow) * $scope.gridItemHeight);
 
 							return digestRequired;
 						}
@@ -439,8 +429,8 @@
 			'background: rgba(0, 0, 0, 0);' +
 		'}' +
 		'.vs-repeat-repeated-element{' +
-			'position: absolute;' +
-			'z-index: 1;' +
+			//'position: absolute;' +
+			//'z-index: 1;' +
 		'}' +
 		'</style>'
 	].join(''));
