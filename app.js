@@ -62,7 +62,11 @@ require("./lib/global")(function(err, Global) {
                         switch(message.action) {
                         case 'on':
                                 var listener = function() {
-                                    ws.send(JSON.stringify({event: message.event, arguments: Array.prototype.slice.apply(arguments)}, jsonReplacer));
+                                    try {
+                                        ws.send(JSON.stringify({event: message.event, arguments: Array.prototype.slice.apply(arguments)}, jsonReplacer));
+                                    } catch(e) {
+                                        console.error(e);
+                                    }
                                 };
                                 listeners.push({event: message.event, listener: listener});
                                 pithApp.on(message.event, listener);

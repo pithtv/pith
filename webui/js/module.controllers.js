@@ -7,6 +7,7 @@ var app = angular.module("PithApp",
         "PlayerControlModule",
         "SettingsControllers",
         "vs-repeat",
+        "gallery",
         "angular-loading-bar",
         "ui.bootstrap",
         "pith.restApi"])

@@ -66,28 +66,17 @@ channelController.controller('channelController',
             };
 
             $scope.open = function (item) {
-                switch(item.type) {
-                    case 'container':
-                        var currentState = history.state;
-                        var path = [item];
-                        if (currentState && currentState.channelpath) {
-                            path = currentState.channelpath.concat(path);
-                        }
-                        var newState = {
-                            channelpath: path,
-                            id: item.id
-                        };
-
-                        pushState(newState);
-                        break;
-                    default:
-                        if($scope.expanded == item) {
-                            $scope.expanded = null;
-                        } else {
-                            $scope.expanded = item;
-                        }
-                        break;
+                var currentState = history.state;
+                var path = [item];
+                if (currentState && currentState.channelpath) {
+                    path = currentState.channelpath.concat(path);
                 }
+                var newState = {
+                    channelpath: path,
+                    id: item.id
+                };
+
+                pushState(newState);
             };
 
             $scope.view = function view(v) {
