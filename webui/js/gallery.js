@@ -4,7 +4,9 @@
     angular.module('gallery', []).directive('ptGalleryItem', function() {
         return {
             scope: {
-                'itemid': '=ptGalleryItem'
+                'itemid': '=ptGalleryItemId',
+                'item': '=ptGalleryItem',
+                'itemidx': '=ptGalleryItemIndex'
             },
             link: function($scope, element, attrs) {
                 var scope = $scope.$parent,
@@ -30,6 +32,7 @@
                         containerScope.$showdetailsIdx = null;
                         containerScope.$expandedId = null;
                         containerScope.$expandedElement = null;
+                        containerScope.$expandedItem = null;
                         scope.$showdetails = false;
                     } else {
                         var switchExpand = true;
@@ -51,7 +54,8 @@
 
                     if(scope.$showdetails) {
                         containerScope.$showdetailsId = $scope.itemid;
-                        containerScope.$showdetailsIdx = scope.$index + containerScope.startIndex;
+                        containerScope.$showdetailsIdx = scope.itemidx;
+                        containerScope.$expandedItem = scope.item;
                     }
                     if(scope.$expanded) {
                         containerScope.$expandedId = $scope.itemid;

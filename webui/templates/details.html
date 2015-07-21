@@ -1,0 +1,11 @@
+<img ng-if="$expandedItem.poster || $expandedItem.still" ng-src="{{ $expandedItem.poster && prescale($expandedItem.poster, '200x300') || $expandedItem.still && prescale($expandedItem.still, '532x300') }}" class="bigthumb"/>
+<a ng-click="open($expandedItem)">
+    <span class="contextinfo"><span class="itemshowname" ng-if="$expandedItem.showname && $expandedItem.showname != itemDetails.showname">{{$expandedItem.showname}}</span><span class="itemseason" ng-if="$expandedItem.season && ($expandedItem.showname !== itemDetails.showname || $expandedItem.season !== itemDetails.season)">{{$expandedItem.season}}</span><span class="itemepisode" ng-if="$expandedItem.episode">{{$expandedItem.episode}}</span></span>
+    <span class="itemtitle">{{$expandedItem.title}} <span ng-if="$expandedItem.year" class="itemyear">{{$expandedItem.year}}</span></span>
+</a>
+<span class="itemtagline" ng-if="$expandedItem.tagline">{{$expandedItem.tagline}}</span>
+<span class="itemrating" data-starrating="{{$expandedItem.rating}}" ng-if="$expandedItem.rating">{{$expandedItem.rating}}</span>
+<span class="itemgenres" ng-if="$expandedItem.genres &amp;&amp; $expandedItem.genres.length">{{$expandedItem.genres.join(", ")}}</span>
+<span class="itemplot" ng-if="$expandedItem.plot">{{$expandedItem.plot}}</span>
+<span class="itemoverview" ng-if="$expandedItem.overview">{{$expandedItem.overview}}</span>
+<span class="actions"><a ng-click="load(item)" class="glyphicon glyphicon-play action-play" title="Play" ng-if="$expandedItem.playable"></a><a ng-click="toggleWatched(item)" class="glyphicon glyphicon-ok action-markwatched" title="Mark watched" ng-if="$expandedItem.playable"></a><a href="http://www.imdb.com/title/{{$expandedItem.imdbId}}" ng-if="$expandedItem.imdbId" class="link-imdb" target="_blank"></a></span>

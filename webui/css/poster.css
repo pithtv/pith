@@ -5,7 +5,6 @@
     vertical-align: top;
     height: 152px;
     width: 102px;
-    padding: 0px 10px;
 }
 
 .contentbrowser.poster .contentitem,
@@ -158,12 +157,13 @@
     margin: 30px;
 }
 
-.contentbrowser.poster .contentitem.showdetails .iteminfo {
+.contentbrowser.poster .contentitem.expanded .iteminfo.ng-enter,
+.contentbrowser.poster .contentitem.expanded .iteminfo.ng-leave.ng-enter-active {
     height: 360px;
     background: rgb(220,220,220);
     background: linear-gradient(to bottom, #777, #bbb 15px);
 }
 
-.contentbrowser.poster .contentitem.showdetails .iteminfo .itemtitle {
+.contentbrowser.poster .contentitem .iteminfo .itemtitle {
     display: block;
 }

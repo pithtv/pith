@@ -10,7 +10,8 @@ var app = angular.module("PithApp",
         "gallery",
         "angular-loading-bar",
         "ui.bootstrap",
-        "pith.restApi"])
+        "pith.restApi",
+        "ngAnimate"])
     .config(['cfpLoadingBarProvider', function (cfpLoadingBarProvider) {
         cfpLoadingBarProvider.includeSpinner = false;
     }]);

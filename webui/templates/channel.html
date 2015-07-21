@@ -60,7 +60,7 @@
              'inprogress': item.playState &amp;&amp; item.playState.status == 'inprogress',
              'unavailable': item.unavailable,
              'expanded': $expanded,
-             'showdetails': $showdetails}" pt-gallery-item="item.id">
+             'showdetails': $showdetails}" pt-gallery-item-id="item.id" pt-gallery-item="item" pt-gallery-item-index="$indeex + startIndex">
 
         <a ng-click="item.type == 'container' ? open(item) : $toggle()">
             <div ng-if="item.poster || item.still" ng-style="{ 'background-image': 'url(' + (
@@ -69,19 +69,9 @@
             </div>
             <span class="contextinfo"><span class="title" ng-if="item.title">{{item.title}}</span><span class="itemshowname" ng-if="item.showname && item.showname != itemDetails.showname">{{item.showname}}</span><span class="itemseason" ng-if="item.season && (item.showname !== itemDetails.showname || item.season !== itemDetails.season)">{{item.season}}</span><span class="itemepisode" ng-if="item.episode">{{item.episode}}</span></span>
         </a>
-        <div class="iteminfo">
-            <div ng-if="$showdetails">
-                <img ng-if="item.poster || item.still" ng-src="{{ item.poster && prescale(item.poster, '200x300') || item.still && prescale(item.still, '532x300') }}" class="bigthumb"/>
-                <a ng-click="open(item)">
-                    <span class="contextinfo"><span class="itemshowname" ng-if="item.showname && item.showname != itemDetails.showname">{{item.showname}}</span><span class="itemseason" ng-if="item.season && (item.showname !== itemDetails.showname || item.season !== itemDetails.season)">{{item.season}}</span><span class="itemepisode" ng-if="item.episode">{{item.episode}}</span></span>
-                    <span class="itemtitle">{{item.title}} <span ng-if="item.year" class="itemyear">{{item.year}}</span></span>
-                </a>
-                <span class="itemtagline" ng-if="item.tagline">{{item.tagline}}</span>
-                <span class="itemrating" data-starrating="{{item.rating}}" ng-if="item.rating">{{item.rating}}</span>
-                <span class="itemgenres" ng-if="item.genres &amp;&amp; item.genres.length">{{item.genres.join(", ")}}</span>
-                <span class="itemplot" ng-if="item.plot">{{item.plot}}</span>
-                <span class="itemoverview" ng-if="item.overview">{{item.overview}}</span>
-                <span class="actions"><a ng-click="load(item)" class="glyphicon glyphicon-play action-play" title="Play" ng-if="item.playable"></a><a ng-click="toggleWatched(item)" class="glyphicon glyphicon-ok action-markwatched" title="Mark watched" ng-if="item.playable"></a><a href="http://www.imdb.com/title/{{item.imdbId}}" ng-if="item.imdbId" class="link-imdb" target="_blank"></a></span>
+        <div class="iteminfo animate-if" ng-if="$expanded">
+            <div>
+                <ng-include src="'templates/details.html'"/>
             </div>
         </div>
     </li>
