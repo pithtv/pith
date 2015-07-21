@@ -87,7 +87,7 @@
 				this.$fillElement = $scope.$fillElement;
 			}],
 			compile: function($element, $attrs){
-				var ngRepeatChild = $element.children().eq(0),
+				var ngRepeatChild = $element.children(":not(.vs-repeat-fill-element)").eq(0),
 					ngRepeatExpression = ngRepeatChild.attr('ng-repeat'),
 					childCloneHtml = ngRepeatChild[0].outerHTML,
 					expressionMatches = /^\s*(\S+)\s+in\s+([\S\s]+?)(track\s+by\s+\S+)?$/.exec(ngRepeatExpression),
@@ -238,10 +238,11 @@
 								'min-height': '100%',
 								'min-width': '100%'
 							});
-						$preFillElement = angular.element('<div class="vs-repeat-fill-element"></div>');
+						$preFillElement = angular.element('<div class="vs-repeat-fill-element" ng-class="{ expanded: $showdetailsIdx < startIndex }"></div>');
 
 						$element.prepend($preFillElement).append($fillElement);
 						$compile($fillElement)($scope);
+                        $compile($preFillElement)($scope);
 						$scope.$fillElement = $fillElement;
 						$scope.$preFillElement = $preFillElement;
 
@@ -380,9 +381,14 @@
 						});
 
 						function updateInnerCollection(){
-                            $scope.startIndex = Math.max(
+                            if($scope.$expandedElement && $scope.$showdetailsIdx >= $scope.startIndex) {
+                                $scope.$expandedHeight = $scope.$expandedElement.outerHeight(true) - $scope.gridItemHeight;
+                            }
+
+                            var margin = $preFillElement.outerHeight(true) - $preFillElement.outerHeight(false);
+							$scope.startIndex = Math.max(
                                 (Math.floor(
-                                    ($scrollParent[0][scrollPos] - $scope.offsetBefore - $element.offset().top) / $scope.gridItemHeight + $scope.excess/2
+                                    ($scrollParent[0][scrollPos] - $scope.offsetBefore - $element.offset().top - ($scope.startIndex > $scope.$showdetailsIdx ? $scope.$expandedHeight || 0 : 0)) / $scope.gridItemHeight + $scope.excess/2
                                 ) - $scope.excess) * $scope.itemsPerRow,
                                 0
                             );

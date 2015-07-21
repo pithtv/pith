@@ -182,7 +182,7 @@ span.itemyear:after {
 
 .contentbrowser.poster,
 .contentbrowser.still {
-    padding: 0;
+    padding: 0px 10px;
 }
 
 .navbar-default, .well {

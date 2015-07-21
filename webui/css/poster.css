@@ -2,17 +2,21 @@
     display: inline-block;
     margin: 4px;
     border-radius: 4px;
-    overflow: hidden;
     vertical-align: top;
     height: 152px;
     width: 102px;
     padding: 0px 10px;
-    transition: height 0.6s ease;
+}
+
+.contentbrowser.poster .contentitem,
+.contentbrowser.poster .vs-repeat-fill-element:not(.expanded) {
+    transition: margin-bottom 0.6s ease;
 }
 
 .contentbrowser.poster .contentitem.expanded,
-.contentbrowser.poster .contentitem.showdetails {
-    height: 545px;
+.contentbrowser.poster .contentitem.showdetails,
+.contentbrowser.poster .vs-repeat-fill-element.expanded {
+    margin-bottom: 392px;
 }
 
 .contentbrowser.poster .contentitem.inprogress:after,

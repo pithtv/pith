@@ -17,11 +17,19 @@
                 scope.$expanded = containerScope.$expandedId == $scope.itemid;
                 scope.$showdetails = containerScope.$showdetailsId == $scope.itemid;
 
+                if(scope.$expanded) {
+                    containerScope.$expandedElement = element;
+                }
+
                 scope.$toggle = function() {
                     if(scope.$showdetails) {
                         containerScope.$expandedScope.$expanded = false;
                         containerScope.$expandedScope = null;
                         containerScope.$detailScope = null;
+                        containerScope.$showdetailsId = null;
+                        containerScope.$showdetailsIdx = null;
+                        containerScope.$expandedId = null;
+                        containerScope.$expandedElement = null;
                         scope.$showdetails = false;
                     } else {
                         var switchExpand = true;
@@ -41,8 +49,14 @@
                         containerScope.$detailScope = scope;
                     }
 
-                    if(scope.$showdetails) containerScope.$showdetailsId = $scope.itemid;
-                    if(scope.$expanded) containerScope.$expandedId = $scope.itemid;
+                    if(scope.$showdetails) {
+                        containerScope.$showdetailsId = $scope.itemid;
+                        containerScope.$showdetailsIdx = scope.$index + containerScope.startIndex;
+                    }
+                    if(scope.$expanded) {
+                        containerScope.$expandedId = $scope.itemid;
+                        containerScope.$expandedElement = element;
+                    }
                 };
             }
         };
