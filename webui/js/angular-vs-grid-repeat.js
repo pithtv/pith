@@ -171,7 +171,6 @@
 							if(!originalCollection || originalCollection.length < 1){
 								$scope[collectionName] = [];
 								originalLength = 0;
-								resizeFillElement(0);
 								$scope.sizesCumulative = [0];
 								return;
 							}
@@ -232,13 +231,13 @@
 						$compile(childClone)($scope);
 						$element.append(childClone);
 
-						$fillElement = angular.element('<div class="vs-repeat-fill-element"></div>')
+						$fillElement = angular.element('<div class="vs-repeat-fill-element" ng-style="{height: fillHeight}"></div>')
 							.css({
 								'position':'relative',
 								'min-height': '100%',
 								'min-width': '100%'
 							});
-						$preFillElement = angular.element('<div class="vs-repeat-fill-element" ng-class="{ expanded: $showdetailsIdx != null && $showdetailsIdx < startIndex }" ng-style="{ height: preFillHeight }"></div>');
+						$preFillElement = angular.element('<div class="vs-repeat-fill-element" ng-class="{ expanded: $showdetailsIdx != null && $showdetailsIdx < startIndex, animate: animateFill }" ng-style="{ height: preFillHeight }"></div>');
 
 						$element.prepend($preFillElement).append($fillElement);
 						$compile($fillElement)($scope);
@@ -326,40 +325,12 @@
 							_prevStartIndex = void 0;
 							_prevEndIndex = void 0;
 							updateInnerCollection();
-							resizeFillElement(sizesPropertyExists ?
-												$scope.sizesCumulative[originalLength] / $scope.itemsPerRow :
-												$scope.elementSize* Math.ceil(originalLength / $scope.itemsPerRow)
-											);
+							resizeFillElement();
 							$scope.$emit('vsRepeatReinitialized');
 						}
 
-						function resizeFillElement(size){
-							if($$horizontal){
-								$fillElement.css({
-									'width': $scope.offsetBefore + size + $scope.offsetAfter + 'px',
-									'height': '100%'
-								});
-								if($ctrl && $ctrl.$fillElement){
-									var referenceElement = $ctrl.$fillElement[0].parentNode.querySelector('[ng-repeat]');
-									if(referenceElement)
-										$ctrl.$fillElement.css({
-											'width': referenceElement.scrollWidth + 'px'
-										});
-								}
-							}
-							else{
-								$fillElement.css({
-									'height': $scope.offsetBefore + size + $scope.offsetAfter + 'px',
-									'width': '100%'
-								});
-								if($ctrl && $ctrl.$fillElement){
-									referenceElement = $ctrl.$fillElement[0].parentNode.querySelector('[ng-repeat]');
-									if(referenceElement)
-										$ctrl.$fillElement.css({
-											'height': referenceElement.scrollHeight + 'px'
-										});
-								}
-							}
+						function resizeFillElement(){
+							$scope.fillHeight = Math.ceil((originalLength - $scope.endIndex) / $scope.itemsPerRow) * $scope.gridItemHeight;
 						}
 
 						var _prevClientSize;
@@ -381,14 +352,14 @@
 						});
 
 						function updateInnerCollection(){
-                            if($scope.$expandedElement && $scope.$showdetailsIdx >= $scope.startIndex) {
-                                $scope.$expandedHeight = $scope.$expandedElement.outerHeight(true) - $scope.gridItemHeight;
+                            if($scope.$showdetailsIdx != null && !$scope.$expandedHeight) {
+								var expandedChild = $element.children('.expanded').eq(0);
+                                $scope.$expandedHeight = expandedChild.outerHeight(true) - expandedChild.outerHeight(false);
                             }
 
-                            var margin = $preFillElement.outerHeight(true) - $preFillElement.outerHeight(false);
-							$scope.startIndex = Math.max(
+                            $scope.startIndex = Math.max(
                                 (Math.floor(
-                                    ($scrollParent[0][scrollPos] - $scope.offsetBefore - $element.offset().top - ($scope.$expandedHeight || 0)) / $scope.gridItemHeight + $scope.excess/2
+                                    ($scrollParent[0][scrollPos] - $scope.offsetBefore - $element.offset().top) / $scope.gridItemHeight + $scope.excess/2
                                 ) - $scope.excess) * $scope.itemsPerRow,
                                 0
                             );
@@ -400,6 +371,11 @@
                                 ) * $scope.itemsPerRow,
                                 originalLength
                             );
+
+							if($scope.$showdetailsIdx != null && $scope.startIndex > $scope.$showdetailsIdx) {
+								$scope.startIndex = Math.max(0, $scope.startIndex - Math.ceil($scope.$expandedHeight / $scope.gridItemHeight) * $scope.itemsPerRow);
+								//$scope.endIndex = Math.min(originalLength, $scope.endIndex + Math.floor($scope.$expandedHeight / $scope.gridItemHeight) * $scope.itemsPerRow);
+							}
                             
                             if($scope.startIndex & 1 && $scope.itemsPerRow == 1) {
                                 $scope.startIndex--; // always begin on an even index to keep odd/even classes working in CSS
@@ -415,8 +391,10 @@
 
 // 							$preFillElement.css('height', );
 							$scope.preFillHeight = Math.floor($scope.startIndex / $scope.itemsPerRow) * $scope.gridItemHeight;
+							$scope.fillHeight = Math.ceil((originalLength - $scope.endIndex) / $scope.itemsPerRow) * $scope.gridItemHeight;
+							$scope.animateFill = false;
 
-							
+							console.log($scope.startIndex, $scope.endIndex);
 
 							return digestRequired;
 						}

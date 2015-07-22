@@ -18,7 +18,6 @@
                 scope.$showdetails = containerScope.$showdetailsId == $scope.itemid;
 
                 if(scope.$expanded) {
-                    containerScope.$expandedElement = element;
                     containerScope.$expandedScope = scope;
                 }
 
@@ -30,7 +29,6 @@
                         containerScope.$showdetailsId = null;
                         containerScope.$showdetailsIdx = null;
                         containerScope.$expandedId = null;
-                        containerScope.$expandedElement = null;
                         containerScope.$expandedItem = null;
                         scope.$showdetails = false;
                     } else {
@@ -58,8 +56,9 @@
                     }
                     if(scope.$expanded) {
                         containerScope.$expandedId = $scope.itemid;
-                        containerScope.$expandedElement = element;
                     }
+
+                    containerScope.animateFill = true;
                 };
             }
         };

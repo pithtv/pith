@@ -9,7 +9,7 @@
 
 .contentbrowser.poster .contentitem.expanded-add,
 .contentbrowser.poster .contentitem.expanded-remove,
-.contentbrowser.poster .vs-repeat-fill-element:not(.expanded) {
+.contentbrowser.poster .vs-repeat-fill-element.animate {
     transition: margin-bottom 0.6s ease;
 }
 
