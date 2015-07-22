@@ -103,7 +103,7 @@
 					},
                     origItemWidth = $(ngRepeatChild[0]).outerWidth(true),
                     origItemHeight = $(ngRepeatChild[0]).outerHeight(true);
-                
+
 				$element.empty();
                 
 				
@@ -238,7 +238,7 @@
 								'min-height': '100%',
 								'min-width': '100%'
 							});
-						$preFillElement = angular.element('<div class="vs-repeat-fill-element" ng-class="{ expanded: $showdetailsIdx < startIndex }"></div>');
+						$preFillElement = angular.element('<div class="vs-repeat-fill-element" ng-class="{ expanded: $showdetailsIdx != null && $showdetailsIdx < startIndex }" ng-style="{ height: preFillHeight }"></div>');
 
 						$element.prepend($preFillElement).append($fillElement);
 						$compile($fillElement)($scope);
@@ -314,7 +314,7 @@
 						var _prevStartIndex,
 							_prevEndIndex;
 						function reinitialize(){
-                            var firstChild = $element.children().eq(0)[0],
+                            var firstChild = $element.children(":not(.vs-repeat-fill-element)").eq(0)[0],
                                 w = $(firstChild).outerWidth(true),
                                 h = $(firstChild).outerHeight(true);
                             if(w && h) {
@@ -388,7 +388,7 @@
                             var margin = $preFillElement.outerHeight(true) - $preFillElement.outerHeight(false);
 							$scope.startIndex = Math.max(
                                 (Math.floor(
-                                    ($scrollParent[0][scrollPos] - $scope.offsetBefore - $element.offset().top - ($scope.startIndex > $scope.$showdetailsIdx ? $scope.$expandedHeight || 0 : 0)) / $scope.gridItemHeight + $scope.excess/2
+                                    ($scrollParent[0][scrollPos] - $scope.offsetBefore - $element.offset().top - ($scope.$expandedHeight || 0)) / $scope.gridItemHeight + $scope.excess/2
                                 ) - $scope.excess) * $scope.itemsPerRow,
                                 0
                             );
@@ -413,7 +413,10 @@
 							_prevStartIndex = $scope.startIndex;
 							_prevEndIndex = $scope.endIndex;
 
-							$preFillElement.css('height', Math.floor($scope.startIndex / $scope.itemsPerRow) * $scope.gridItemHeight);
+// 							$preFillElement.css('height', );
+							$scope.preFillHeight = Math.floor($scope.startIndex / $scope.itemsPerRow) * $scope.gridItemHeight;
+
+							
 
 							return digestRequired;
 						}

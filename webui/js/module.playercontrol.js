@@ -42,7 +42,7 @@ angular.module("PlayerControlModule", ["WsEventsModule", "errorDialogModule", "p
 
                 setActivePlayer: function(player) {
                     activePlayer = player;
-                    activePlayerInterface = $pithRest.player(player.id);
+                    activePlayerInterface = player && $pithRest.player(player.id);
                 },
 
                 load: function(channelId, itemId, time) {

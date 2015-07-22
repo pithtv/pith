@@ -12,8 +12,6 @@
                 var scope = $scope.$parent,
                     containerScope = scope.$parent;
 
-                scope.$expanded = false;
-                scope.$showdetails = false;
                 scope.$$element = element;
 
                 scope.$expanded = containerScope.$expandedId == $scope.itemid;
@@ -21,6 +19,7 @@
 
                 if(scope.$expanded) {
                     containerScope.$expandedElement = element;
+                    containerScope.$expandedScope = scope;
                 }
 
                 scope.$toggle = function() {
@@ -54,8 +53,8 @@
 
                     if(scope.$showdetails) {
                         containerScope.$showdetailsId = $scope.itemid;
-                        containerScope.$showdetailsIdx = scope.itemidx;
-                        containerScope.$expandedItem = scope.item;
+                        containerScope.$showdetailsIdx = $scope.itemidx;
+                        containerScope.$expandedItem = $scope.item;
                     }
                     if(scope.$expanded) {
                         containerScope.$expandedId = $scope.itemid;

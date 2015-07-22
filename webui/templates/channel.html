@@ -60,7 +60,7 @@
              'inprogress': item.playState &amp;&amp; item.playState.status == 'inprogress',
              'unavailable': item.unavailable,
              'expanded': $expanded,
-             'showdetails': $showdetails}" pt-gallery-item-id="item.id" pt-gallery-item="item" pt-gallery-item-index="$indeex + startIndex">
+             'showdetails': $showdetails}" pt-gallery-item-id="item.id" pt-gallery-item="item" pt-gallery-item-index="$index + startIndex">
 
         <a ng-click="item.type == 'container' ? open(item) : $toggle()">
             <div ng-if="item.poster || item.still" ng-style="{ 'background-image': 'url(' + (
