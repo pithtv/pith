@@ -310,6 +310,26 @@
 							setAutoSize();
 						});
 
+						$scope.$on('vsItemExpanded', function() {
+							var body = $('html, body'),
+								eh = 392,
+								vpt = body.scrollTop() + $element.offset().top,
+								vpb = body.scrollTop() + $(window).height(),
+								ert = $scope.gridItemHeight * Math.floor($scope.$showdetailsIdx / $scope.itemsPerRow) + $element.offset().top,
+								erb = ert + $scope.gridItemHeight + eh,
+								tt;
+
+							if(vpb < erb) {
+								tt = erb - $(window).height();
+							} else if(vpt < ert) {
+								tt = vpt;
+							}
+
+							if(tt !== undefined) {
+								body.animate({scrollTop: tt}, 600);
+							}
+						});
+
 						var _prevStartIndex,
 							_prevEndIndex;
 						function reinitialize(){
@@ -393,8 +413,6 @@
 							$scope.preFillHeight = Math.floor($scope.startIndex / $scope.itemsPerRow) * $scope.gridItemHeight;
 							$scope.fillHeight = Math.ceil((originalLength - $scope.endIndex) / $scope.itemsPerRow) * $scope.gridItemHeight;
 							$scope.animateFill = false;
-
-							console.log($scope.startIndex, $scope.endIndex);
 
 							return digestRequired;
 						}

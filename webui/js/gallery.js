@@ -56,6 +56,7 @@
                     }
                     if(scope.$expanded) {
                         containerScope.$expandedId = $scope.itemid;
+                        containerScope.$emit('vsItemExpanded');
                     }
 
                     containerScope.animateFill = true;
