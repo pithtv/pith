@@ -21,9 +21,14 @@
                     containerScope.$expandedScope = scope;
                 }
 
+                if(scope.$showdetails) {
+                    containerScope.detailScope = scope;
+                }
+
                 scope.$toggle = function() {
                     if(scope.$showdetails) {
-                        containerScope.$expandedScope.$expanded = false;
+                        if(containerScope.$expandedScope)
+                            containerScope.$expandedScope.$expanded = false;
                         containerScope.$expandedScope = null;
                         containerScope.$detailScope = null;
                         containerScope.$showdetailsId = null;
