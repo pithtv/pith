@@ -24,6 +24,10 @@ module.exports = function(opts) {
                 showname: show.title
             };
             metadata(seasonMetaData, 'season', function(err, seasonMetaData) {
+		if(err) {
+                    cb(err);
+		    return;
+		}
                 var episodes = seasonMetaData._children;
                 seasonMetaData._children = undefined;
                 winston.info(show.title + " season " + season + " has " + episodes.length + " episodes");
@@ -95,9 +99,11 @@ module.exports = function(opts) {
         updateInSeason: function(showMetaData, item, cb) {
             var self = this;
             db.findSeason({showId: showMetaData.id, season: item.season}, function(err, seasonMetaData) {
+		if(err) { cb(err); return; }
                 if(seasonMetaData == null) {
                     self.loadAndStoreSeason(showMetaData, item.season, function(err, season) {
-                        self.updateEpisode(showMetaData, season, item, cb);
+                        if(err) { cb(err); return; }
+			self.updateEpisode(showMetaData, season, item, cb);
                     })
                 } else {
                     self.updateEpisode(showMetaData, seasonMetaData, item, cb);
@@ -108,6 +114,7 @@ module.exports = function(opts) {
         updateInShow: function(episode, cb) {
             var self = this;
             db.findShow({originalTitle: episode.showname}, function(err, showMetaData) {
+		if(err) { cb(err); return; }
                 if(showMetaData == null) {
                     winston.info("Found a new show", episode.showname)
                     self.loadShow(episode.showname, function(err, showMetaData) {
@@ -173,12 +180,14 @@ module.exports = function(opts) {
             }
 
             channelInstance.getItem(dir.containerId, function (err, container) {
+		if(err) { cb(err); return; }
                 scan(container, cb);
             });
         },
 
         updateAll: function(cb) {
             db.findShows({status: {$ne: 'Ended'}}, function(err, shows) {
+		if(err) { cb(err); return; }
                 for(var x=0,l=shows.length; x<l; x++) {
                     var show = shows[x];
                     metadata.getChanges(show, function(err, changeset) {
