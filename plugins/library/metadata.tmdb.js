@@ -124,6 +124,10 @@ module.exports = function(item, mediatype, callback) {
     }
 
     function seasonParser(err, result) {
+	if(err) {
+	    callback(err);
+            return;
+	}
         var metadata = {
             _children: result.episodes.map(episodeParser),
 
