@@ -128,20 +128,6 @@
     display: inline-block;
 }
 
-.contentbrowser.poster .contentitem.showdetails > a::after {
-    display: block;
-    content: '';
-    border: 15px solid transparent;
-    border-bottom-color: #777;
-    width: 0;
-    height: 0;
-    box-sizing: content-box;
-    left: 50%;
-    position: absolute;
-    margin-left: -15px;
-    margin-top: -10px;
-    top: 100%;
-}
 .contentbrowser.poster .contentitem .iteminfo {
     font-weight: bold;
     overflow: hidden;
