@@ -48,7 +48,7 @@
 
 <div ng-if="itemDetails.backdrop" ng-style="{ 'background-image': 'url(\'' + itemDetails.backdrop + '\')' }" class="backdrop"></div>
 
-<ul class="contentbrowser poster" vs-repeat vs-scroll-parent="window" vs-excess="2" vs-autoresize="true">
+<ul class="contentbrowser poster" vs-repeat vs-scroll-parent="window" vs-excess="3" vs-autoresize="true">
     <li class="contentitem"
         ng-repeat="item in containerContents | filter:{title:(search||'')}"
         ng-class="
@@ -59,8 +59,8 @@
              'watched': item.playState &amp;&amp; item.playState.status == 'watched',
              'inprogress': item.playState &amp;&amp; item.playState.status == 'inprogress',
              'unavailable': item.unavailable,
-             'expanded': $expanded,
-             'showdetails': $showdetails}" pt-gallery-item-id="item.id" pt-gallery-item="item" pt-gallery-item-index="$index + startIndex">
+             'expanded': $expandedId == item.id,
+             'showdetails': $showdetailsId == item.id}" pt-gallery-item-id="item.id" pt-gallery-item="item" pt-gallery-item-index="$index + startIndex">
 
         <a ng-click="item.type == 'container' ? open(item) : $toggle()">
             <div ng-if="item.poster || item.still" ng-style="{ 'background-image': 'url(' + (
