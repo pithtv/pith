@@ -105,6 +105,7 @@ span.itemyear:after {
     -webkit-box-orient: horizontal;
     -ms-box-orient: horizontal;
     -moz-box-orient: horizontal;
+    padding-right: 5px;
 }
 
 .navbar-box > .navbar-nav {
