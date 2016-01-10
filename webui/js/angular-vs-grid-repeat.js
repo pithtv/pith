@@ -137,7 +137,7 @@
                             
                             gridItemHeight = $attrs.vsGridItemHeight || origItemHeight,
                             gridItemWidth = $attrs.vsGridItemWidth || origItemWidth,
-                            itemsPerRow = gridItemWidth > 0 ? Math.floor($scrollParent[0][clientBreadth] / gridItemWidth) : 1;
+                            itemsPerRow = gridItemWidth > 0 ? Math.floor( ($$horizontal ? $element.height() : $element.width()) / gridItemWidth) : 1;
 
 						if($scrollParent.length === 0) throw 'Specified scroll parent selector did not match any element';
 						$scope.$scrollParent = $scrollParent;
@@ -339,7 +339,7 @@
                             if(w && h) {
                                 $scope.gridItemWidth = w;
                                 $scope.gridItemHeight = h;
-                                $scope.itemsPerRow = Math.floor($scrollParent[0][clientBreadth] / w);
+                                $scope.itemsPerRow = Math.floor($$horizontal ? $element.height() : $element.width() / w);
                             }
                             
 							_prevStartIndex = void 0;
