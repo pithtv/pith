@@ -1,4 +1,4 @@
-body {
+body, body>.scrollwrapper {
     padding: 70px 0px 0 0px;
 }
 
@@ -318,4 +318,11 @@ a.link-imdb {
 
 .contentbrowser .th .contextinfo:empty {
     display: none;
+}
+
+.scrollwrapper {
+    bottom:0; top:0;
+    width: 100%;
+    overflow: hidden;
+    position: absolute !important;
 }

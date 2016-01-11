@@ -45,11 +45,12 @@
         <script src="js/module.controllers.js"></script>
         <script src="js/module.restapi.js"></script>
         <script src="js/controller.containerchooser.js"></script>
+        <script src="js/scroll.js"></script>
         
         <script src="lib/veinjs/vein.min.js"></script>
     </head>
 
-    <body ng-controller="MainController as main" vs-scroll-parent>
+    <body ng-controller="MainController as main">
         <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
             <div class="container">
                 <!-- Brand and toggle get grouped for better mobile display -->
@@ -157,9 +158,10 @@
                 </div><!-- /.navbar-collapse -->
             </div><!-- /.container-fluid -->
         </nav>
-
-        <div ng-view>
-            <h1>Welcome to Pith</h1>
+        <div pt-scroll>
+            <div ng-view>
+                <h1>Welcome to Pith</h1>
+            </div>
         </div>
 
         <script type="text/ng-template" id="errordialog.html">
