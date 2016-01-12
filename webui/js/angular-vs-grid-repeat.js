@@ -311,18 +311,17 @@
 						});
 
 						$scope.$on('vsItemExpanded', function() {
-							var body = $('html, body'),
+							var body = $($attrs.vsScrollParent == 'window' ? 'html, body' : $scrollParent),
 									eh = 392,
-									vpt = body.scrollTop() + $element.offset().top,
+									ot = $element.offset().top + ($attrs.vsScrollParent == 'window' ? 0 : body.scrollTop()),
+									vpt = body.scrollTop() + ot,
 									vpb = body.scrollTop() + $(window).height(),
-									ert = $scope.gridItemHeight * Math.floor($scope.$showdetailsIdx / $scope.itemsPerRow) + $element.offset().top,
+									ert = $scope.gridItemHeight * Math.floor($scope.$showdetailsIdx / $scope.itemsPerRow) + ot,
 									erb = ert + $scope.gridItemHeight + eh,
 									tt;
 
 							if(vpb < erb) {
 								tt = erb - $(window).height();
-							} else if(vpt < ert) {
-								tt = vpt;
 							}
 
 							if(tt !== undefined) {
