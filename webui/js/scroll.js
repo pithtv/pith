@@ -17,14 +17,13 @@
                 element.addClass("scrollwrapper");
                 $("body").addClass("fakescroll")
 
-                var scrollX = 0, scrollY = 0;
-
                 function scrollBy(x,y) {
-                    scrollTo(scrollX + x, scrollY + y);
+                    scrollTo(element.scrollLeft() + x, element.scrollTop() + y);
                 }
 
                 function scrollTo(x,y) {
-                    scrollX = Math.max(0, x); scrollY = Math.max(0, y);
+                    var scrollX = Math.max(0, x),
+                        scrollY = Math.max(0, y);
                     //element.css('transform', 'translate(' + (-1 * scrollX) + 'px, ' + (-1 * scrollY) + 'px)');
                     element.scrollTop(scrollY);
                 }
