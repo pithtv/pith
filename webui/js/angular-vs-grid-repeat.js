@@ -270,7 +270,7 @@
 
 						$scrollParent.on('scroll', function scrollHandler(e){
 							if(updateInnerCollection())
-								$scope.$apply();
+								requestAnimationFrame($scope.$apply.bind($scope));
 						});
 
 						if(isMacOS){
@@ -383,8 +383,6 @@
 									) - $scope.excess) * $scope.itemsPerRow,
 									0
 							);
-
-							console.log($scrollParent[0][scrollPos], $scope.startIndex, $scope.gridItemHeight);
 
 							$scope.endIndex = Math.min(
 									$scope.startIndex + Math.ceil(
