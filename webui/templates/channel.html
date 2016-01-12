@@ -48,7 +48,7 @@
 
 <div ng-if="itemDetails.backdrop" ng-style="{ 'background-image': 'url(\'' + itemDetails.backdrop + '\')' }" class="backdrop"></div>
 
-<ul class="contentbrowser poster" vs-scroll-parent=".scrollwrapper" vs-repeat vs-excess="4" vs-autoresize="true">
+<ul class="contentbrowser poster" vs-scroll-parent="{{ $scrollhack ? '.scrollwrapper' : 'window' }}" vs-repeat vs-excess="4" vs-autoresize="true">
     <li class="contentitem"
         ng-repeat="item in containerContents | filter:{title:(search||'')}"
         ng-class="

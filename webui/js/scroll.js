@@ -6,7 +6,16 @@
             restrict: 'A',
             scope: true,
             link: function($scope, element, attrs) {
+                if(!window.navigator.standalone) {
+                    // not necessary unless we're standalone in iOS
+                    $scope.$scrollhack = false;
+                    return;
+                }
+
+                $scope.$scrollhack = true;
+
                 element.addClass("scrollwrapper");
+                $("body").addClass("fakescroll")
 
                 var scrollX = 0, scrollY = 0;
 
@@ -76,9 +85,11 @@
 
                 element.on("touchstart", function(startevent) {
                     // user touches screen, so we may have to start scrolling
-                    tracking = true;
                     lastX = startevent.originalEvent.touches[0].pageX, lastY = startevent.originalEvent.touches[0].pageY;
                 }).on("touchmove", function(dragevent) {
+                    if(!tracking) {
+                        tracking = true;
+                    }
                     if(tracking) { // probably a pointless test since we shouldn't be getting a touchmove event unless we got a touchstart first anyway, but still
                         var newX = dragevent.originalEvent.touches[0].pageX, newY = dragevent.originalEvent.touches[0].pageY;
 
@@ -98,30 +109,48 @@
 
                         scrollBy(dX, dY);
 
+                        dragevent.stopPropagation();
                         dragevent.preventDefault();
                     }
                 }).on("touchend", function(endevent) {
-                    tracking = false;
+                    if(tracking) {
+                        tracking = false;
 
-                    if(!eventQueue.length) return;
+                        if(!eventQueue.length) return;
 
-                    var timeSinceLastEvent = (new Date().getTime()) - eventQueue[0].t;
-                    if(timeSinceLastEvent < timeUnit) {
-                        var delta = eventQueue.reduce(function(a,b) {
-                            a.dX += b.x;
-                            a.dY += b.y;
-                            return a;
-                        }, { dX: 0, dY: 0 });
+                        var timeSinceLastEvent = (new Date().getTime()) - eventQueue[0].t;
+                        if(timeSinceLastEvent < timeUnit) {
+                            var delta = eventQueue.reduce(function(a,b) {
+                                a.dX += b.x;
+                                a.dY += b.y;
+                                return a;
+                            }, { dX: 0, dY: 0 });
 
-                        var timeBetween = eventQueue[0].t - eventQueue[eventQueue.length-1].t;
+                            var timeBetween = eventQueue[0].t - eventQueue[eventQueue.length-1].t;
 
-                        startInertialScroll(delta.dX / timeBetween, delta.dY / timeBetween);
+                            startInertialScroll(delta.dX / timeBetween, delta.dY / timeBetween);
+                        }
+
+                        eventQueue = [];
+
+                        endevent.stopPropagation();
+                        endevent.preventDefault();
                     }
-
-                    eventQueue = [];
                 }).on("wheel", function(wheelevent) {
                     scrollBy(wheelevent.originalEvent.deltaX,wheelevent.originalEvent.deltaY);
+                    wheelevent.preventDefault();
                 });
+
+                setTimeout(function() {
+                    window.scrollTo(0,10);
+
+                    $(window).on('scroll', function(evt) {
+                        if(window.scrollY == 0) {
+                            scrollTo(0,0);
+                            window.scrollTo(0,10);
+                        }
+                    });
+                }, 100);
             }
         };
     }]);

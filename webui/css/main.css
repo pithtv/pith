@@ -324,5 +324,9 @@ a.link-imdb {
     bottom:0; top:0;
     width: 100%;
     overflow: hidden;
-    position: absolute !important;
+    position: fixed !important;
+}
+
+body.fakescroll {
+    height: 110vh;
 }
