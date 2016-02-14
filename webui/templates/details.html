@@ -8,4 +8,4 @@
 <span class="itemgenres" ng-if="$expandedItem.genres &amp;&amp; $expandedItem.genres.length">{{$expandedItem.genres.join(", ")}}</span>
 <span class="itemplot" ng-if="$expandedItem.plot">{{$expandedItem.plot}}</span>
 <span class="itemoverview" ng-if="$expandedItem.overview">{{$expandedItem.overview}}</span>
-<span class="actions"><a ng-click="load(item)" class="glyphicon glyphicon-play action-play" title="Play" ng-if="$expandedItem.playable"></a><a ng-click="toggleWatched(item)" class="glyphicon glyphicon-ok action-markwatched" title="Mark watched" ng-if="$expandedItem.playable"></a><a href="http://www.imdb.com/title/{{$expandedItem.imdbId}}" ng-if="$expandedItem.imdbId" class="link-imdb" target="_blank"></a></span>
+<span class="actions"><a ng-click="load($expandedItem)" class="glyphicon glyphicon-play action-play" title="Play" ng-if="$expandedItem.playable"></a><a ng-click="toggleWatched($expandedItem)" class="glyphicon glyphicon-ok action-markwatched" title="Mark watched" ng-if="$expandedItem.playable"></a><a href="http://www.imdb.com/title/{{$expandedItem.imdbId}}" ng-if="$expandedItem.imdbId" class="link-imdb" target="_blank"></a></span>
