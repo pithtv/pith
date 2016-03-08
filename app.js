@@ -4,7 +4,6 @@ require("./lib/global")(function(err, Global) {
     var express = require("express");
     var http = require("http");
     var ws = require("ws");
-    var http = require("http");
     var scaler = require("./lib/imagescaler");
     var bodyparser = require("body-parser");
 
