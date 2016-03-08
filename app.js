@@ -8,6 +8,11 @@ require("./lib/global")(function(err, Global) {
     var scaler = require("./lib/imagescaler");
     var bodyparser = require("body-parser");
 
+    process.on('uncaughtException', function(err) {
+        // handle the error safely
+        console.log(err)
+    });
+
     Global.OpenDatabase(
         function startup(err, db) {
             if(err) {
