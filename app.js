@@ -23,7 +23,7 @@ require("./lib/global")(function(err, Global) {
             var port = Global.httpPort;
             var pithPath = Global.settings.pithContext;
 
-            console.log("Listening on " + serverAddress + ":" + port);
+            console.log("Listening on http://" + serverAddress + ":" + port);
 
             var pithApp = new Pith({
                 rootUrl: Global.rootUrl + "/pith/",
