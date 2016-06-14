@@ -62,7 +62,7 @@
              'expanded': $expandedId == item.id,
              'showdetails': $showdetailsId == item.id}" pt-gallery-item-id="item.id" pt-gallery-item="item" pt-gallery-item-index="$index + startIndex">
 
-        <a ng-click="item.type == 'container' ? open(item) : $toggle()">
+        <a ng-click="(item.type == 'container' && item.mediatype!='show') ? open(item) : $toggle()">
             <div ng-if="item.poster || item.still" ng-style="{ 'background-image': 'url(' + (
                 item.poster && prescale(item.poster, '100x150') ||
                 item.still && prescale(item.still, '266x150'))+ ')' }" class="th">
@@ -71,7 +71,8 @@
         </a>
         <div class="iteminfo animate-if" ng-if="$expanded">
             <div>
-                <ng-include src="'templates/details.html'"/>
+                <ng-include src="'templates/details.html'" ng-if="item.type != 'container'"/>
+                <ng-include src="'templates/tvdetails.html'" ng-if="item.mediatype == 'show'"/>
             </div>
         </div>
     </li>

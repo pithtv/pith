@@ -283,7 +283,7 @@ span.itemyear:after {
     max-height: 200px;
 }
 
-.th {
+.th, .still {
     background-size: cover;
     background-position: center;
     overflow: hidden;

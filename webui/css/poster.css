@@ -19,6 +19,10 @@
     margin-bottom: 392px;
 }
 
+.contentbrowser.poster .itemshowname {
+    display: none;
+}
+
 .contentbrowser.poster .contentitem.inprogress>a:after,
 .contentbrowser.poster .contentitem.watched>a:after {
     opacity: 1;
@@ -168,4 +172,90 @@
 
 .contentbrowser.poster .contentitem .iteminfo .itemtitle {
     display: block;
+}
+
+ul.detailtabs {
+    display: inline-block;
+    margin-left: 0;
+    background: rgb(230,230,230);
+    border: 1px solid rgb(115,115,115);
+    font-weight: normal;
+    white-space: nowrap;
+    padding: 0;
+    background: linear-gradient(#DDD, #CCC);
+}
+
+ul.detailtabs > li:not(:first-child) {
+    border-left: 1px outset #999;
+
+}
+ul.detailtabs > li {
+    display: inline-block;
+    width: 100px;
+    color: black;
+    padding: 2px 5px;
+}
+
+ul.detailtabs > li.selected {
+    background: linear-gradient(#555, #666);
+    color: white;
+}
+
+.still {
+    width: 133px;
+    height: 75px;
+}
+
+.episodeguide > .detailtabs,
+.episodeguide > .seasondetails {
+    position: absolute;
+    left: 240px;
+    right: 30px;
+    overflow-x: auto;
+}
+
+.episodeguide > .seasondetails {
+    background: rgba(255,255,255,0.5);
+    top: 57px;
+    bottom: 35px;
+    overflow-y: auto;
+    padding: 10px;
+    font-weight: normal;
+}
+
+.seasondetails > li {
+    display: inline-block;
+    min-height: 80px;
+    width: 100%;
+    border-bottom: 1px solid #CCC;
+    padding: 5px;
+}
+
+.seasondetails > li > .still {
+    float: left;
+    margin: 3px 15px 3px 0px;
+}
+
+.seasondetails > li > .episode-no,
+.seasondetails > li > .episode-title {
+    font-weight: bold;
+}
+
+.seasondetails > li > .episode-no:after {
+    font-weight: bold;
+    content: '. ';
+}
+
+.seasondetails > li > .episode-airdate:before {
+    content: '(';
+}
+.seasondetails > li > .episode-airdate:after {
+    content: ')'
+}
+.seasondetails > li > .episode-airdate {
+    font-style: italic;
+}
+.seasondetails > li > .episode-synopsis {
+    display: block;
+    font-size: 90%;
 }
