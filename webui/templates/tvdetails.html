@@ -1,8 +1,8 @@
 <ng-controller ng-controller="TvDetailsController as details">
     <img ng-if="$expandedItem.poster || $expandedItem.still" ng-src="{{ $expandedItem.poster && prescale($expandedItem.poster, '200x300') || $expandedItem.still && prescale($expandedItem.still, '532x300') }}" class="bigthumb"/>
     <div class="episodeguide">
-        <ul class="detailtabs">
-            <li ng-repeat="season in seasons" ng-click="selectSeason(season)" ng-class="{ selected: selectedSeason == season }">{{ season.title }}</li>
+        <ul class="detailtabs seasons">
+            <li ng-repeat="season in seasons" ng-click="selectSeason(season)" ng-class="{ selected: selectedSeason == season }">{{ season.season }}</li>
         </ul>
         <ul class="seasondetails" scroll-glue="glued">
             <li ng-repeat="episode in episodes"
