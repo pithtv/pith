@@ -4,7 +4,7 @@
         <ul class="detailtabs">
             <li ng-repeat="season in seasons" ng-click="selectSeason(season)" ng-class="{ selected: selectedSeason == season }">{{ season.title }}</li>
         </ul>
-        <ul class="seasondetails">
+        <ul class="seasondetails" scroll-glue="glued">
             <li ng-repeat="episode in episodes"
                 ng-class="{
                     'watched': episode.playState &amp;&amp; episode.playState.status == 'watched',

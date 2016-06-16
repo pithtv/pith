@@ -22,6 +22,7 @@ angular
             if(season) {
                 channel.list(season.id, {includePlayStates: true}).then(function(episodes) {
                     $scope.episodes = episodes.data;
+                    $scope.glued = true;
                 })
             }
         }

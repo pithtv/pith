@@ -12,7 +12,8 @@ var app = angular.module("PithApp",
         "angular-loading-bar",
         "ui.bootstrap",
         "pith.restApi",
-        "ngAnimate"])
+        "ngAnimate",
+        "luegg.directives"])
     .config(['cfpLoadingBarProvider', function (cfpLoadingBarProvider) {
         cfpLoadingBarProvider.includeSpinner = false;
     }]);
