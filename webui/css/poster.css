@@ -25,14 +25,30 @@
 
 .contentbrowser.poster .contentitem.inprogress>a:after,
 .contentbrowser.poster .contentitem.watched>a:after {
+    bottom: 0px;
+    left: 76px;
+}
+
+.still {
+    position: relative;
+}
+
+.seasondetails>li.inprogress > .still:after,
+.seasondetails>li.watched > .still:after {
+    bottom: 5px;
+    right: 5px;
+}
+
+.contentbrowser.poster .contentitem.inprogress>a:after,
+.contentbrowser.poster .contentitem.watched>a:after,
+.seasondetails>li.inprogress > .still:after,
+.seasondetails>li.watched > .still:after {
     opacity: 1;
     display: block;
     content: '';
     border: 1px solid black;
     width: 26px;
     height: 26px;
-    bottom: 0px;
-    left: 76px;
     position: absolute;
     border-radius: 15px;
     border: 2px solid white;
@@ -47,11 +63,13 @@
     z-index: 5;
 }
 
-.contentbrowser.poster .contentitem.inprogress>a:after {
+.contentbrowser.poster .contentitem.inprogress>a:after,
+.seasondetails>li.inprogress>.still:after {
     content: '\e073';
 }
 
-.contentbrowser.poster .contentitem.watched>a:after {
+.contentbrowser.poster .contentitem.watched>a:after,
+.seasondetails>li.watched>.still:after {
     content: '\e013';
 }
 
@@ -221,6 +239,7 @@ ul.detailtabs > li.selected {
     overflow-y: auto;
     padding: 10px;
     font-weight: normal;
+    -webkit-overflow-scrolling: touch;
 }
 
 .seasondetails > li {
@@ -229,6 +248,10 @@ ul.detailtabs > li.selected {
     width: 100%;
     border-bottom: 1px solid #CCC;
     padding: 5px;
+}
+
+.seasondetails > li.unavailable {
+    opacity: 0.5;
 }
 
 .seasondetails > li > .still {

@@ -20,7 +20,7 @@ angular
 
         function fetchEpisodes(season) {
             if(season) {
-                channel.list(season.id).then(function(episodes) {
+                channel.list(season.id, {includePlayStates: true}).then(function(episodes) {
                     $scope.episodes = episodes.data;
                 })
             }

@@ -5,7 +5,12 @@
             <li ng-repeat="season in seasons" ng-click="selectSeason(season)" ng-class="{ selected: selectedSeason == season }">{{ season.title }}</li>
         </ul>
         <ul class="seasondetails">
-            <li ng-repeat="episode in episodes">
+            <li ng-repeat="episode in episodes"
+                ng-class="{
+                    'watched': episode.playState &amp;&amp; episode.playState.status == 'watched',
+                    'inprogress': episode.playState &amp;&amp; episode.playState.status == 'inprogress',
+                    'unavailable': episode.unavailable
+             }">
                 <div ng-if="episode.still" ng-style="{ 'background-image': 'url(' + (
                     prescale(episode.still, '266x150'))+ ')' }" class="still">
                 </div>
