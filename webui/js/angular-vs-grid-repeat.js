@@ -269,8 +269,7 @@
 						$scope.endIndex = 0;
 
 						$scrollParent.on('scroll', function scrollHandler(e){
-							if(updateInnerCollection())
-								requestAnimationFrame($scope.$apply.bind($scope));
+							updateInnerCollection();
 						});
 
 						if(isMacOS){
