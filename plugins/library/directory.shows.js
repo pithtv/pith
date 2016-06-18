@@ -39,13 +39,13 @@ module.exports = [
         type: "container",
         _getContents: function(db, containerId, cb) {
             if(containerId == null) {
-                db.findShows({}, {order: {title: 1}}, function (err, result) {
-                    cb(err, result.map(mapShow));
-                });
+                db.findShows({}, {title: 1}).then(function(result) {
+                    cb(false, result.map(mapShow));
+                }, cb);
             } else {
-                db.findSeasons({showId: containerId}, {order: {season: 1}}, function(err, result) {
-                    cb(err, result.map(mapSeason));
-                });
+                db.findSeasons({showId: containerId}, {season: 1}).then(function(result) {
+                    cb(false, result.map(mapSeason));
+                }).catch(cb);
             }
         },
         _getItem: function(db, itemId, cb) {
@@ -65,13 +65,13 @@ module.exports = [
         type: "container",
         _getContents: function(db, containerId, cb) {
             if(containerId == null) {
-                db.findSeasons({}, function(err, result) {
-                    cb(err, result.map(mapSeason()));
-                })
+                db.findSeasons({}).then(function(result) {
+                    cb(false, result.map(mapSeason()));
+                }).catch(cb);
             } else {
-                db.findEpisodes({seasonId: containerId}, {order: {episode: 1}}, function(err, result) {
-                    cb(err, result.map(mapEpisode));
-                })
+                db.findEpisodes({seasonId: containerId}, {episode: 1}).then(function(result) {
+                    cb(false, result.map(mapEpisode));
+                }).catch(cb);
             }
         },
         _getItem: function(db, itemId, cb) {

@@ -74,16 +74,21 @@ LibraryChannel.prototype = {
             }
         });
     },
+
+    getLastPlayStateFromItem: function(item, cb) {
+        if(item && item.playable) {
+            var targetChannel = this.pithApp.getChannelInstance(item.channelId);
+            targetChannel.getLastPlayState(item.originalId, cb);
+        } else {
+            cb(false);
+        }
+    },
     
     getLastPlayState: function(itemId, cb) {
         var self = this;
         this.getItem(itemId, function(err, item) {
-            if(item && item.playable) {
-                var targetChannel = self.pithApp.getChannelInstance(item.channelId);
-                targetChannel.getLastPlayState(item.originalId, cb);
-            } else {
-                cb(err, item);
-            }
+            if(err) cb(err);
+            else self.getLastPlayStateFromItem(item, cb);
         });
     },
     
