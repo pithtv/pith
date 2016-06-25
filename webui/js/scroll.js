@@ -41,7 +41,9 @@
                     inertia = 0.998, // inertia for inertial scrolling (higher means longer scrolling, 1 = infinite (frictionless) scrolling, 0 = no inertial scrolling)
                 // scroll speed is multiplied by this factor for each millisecond that passes
 
-                    eventQueue = []; // keep track of last 100ms of events to determine drag speed
+                    eventQueue = [],
+                    ignore,
+                    inertial; // keep track of last 100ms of events to determine drag speed
 
                 function pruneEventQueue() {
                     // remove all eventQueue entries older than <timeUnit> milliseconds
@@ -58,7 +60,7 @@
                     var scrollPosition = getScrollPosition();
 
                     function draw() {
-                        if(tracking) return; // if tracking a new touch thing, stop inertial scrolling
+                        if(!inertial) return; // inertial was stopped
 
                         var t = new Date().getTime();
                         var frameDuration = t - previousTime;
@@ -79,15 +81,15 @@
                         }
                     }
 
+                    inertial = true;
                     requestAnimationFrame(draw);
                 }
-
-                var ignore;
 
                 element.on("touchstart", function(startevent) {
                     // user touches screen, so we may have to start scrolling
                     ignore = $(startevent.target).is(".scrollnative") || $(startevent.target).parents('.scrollnative').length;
                     lastX = startevent.originalEvent.touches[0].pageX, lastY = startevent.originalEvent.touches[0].pageY;
+                    inertial = false;
                 }).on("touchmove", function(dragevent) {
                     if(!tracking && !ignore) {
                         tracking = true;
