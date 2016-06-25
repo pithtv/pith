@@ -1,5 +1,16 @@
 body, body>.scrollwrapper {
-    padding: 70px 0px 0 0px;
+    padding: 130px 0px 0 0px;
+}
+
+@media (min-width: 768px)
+{
+    body, body>.scrollwrapper {
+        padding: 70px 0px 0 0px;
+    }
+}
+
+.nav>li {
+    display: inline-block;
 }
 
 #loading-bar .bar {
@@ -161,6 +172,14 @@ span.itemyear:after {
     border-top: none;
     border-bottom: none;
 }
+
+@media (max-width: 767px)
+{
+    .playback-info {
+        border-left: none;
+    }
+}
+
 .noplayer {
     text-align: center;
     margin-top: 15px;
@@ -281,8 +300,8 @@ span.itemyear:after {
 
 .contentdetail img {
     max-height: 200px;
-}
 
+}
 .th, .still {
     background-size: cover;
     background-position: center;
