@@ -29,7 +29,7 @@
                 }
 
                 function getScrollPosition() {
-                    return { left: scrollX, top:scrollY };
+                    return { left: element.scrollLeft(), top: element.scrollTop() };
                 }
 
                 // sets up touch scrolling
@@ -77,16 +77,19 @@
                             // request next frame.
                             requestAnimationFrame(draw);
                         }
-                    };
+                    }
 
                     requestAnimationFrame(draw);
                 }
 
+                var ignore;
+
                 element.on("touchstart", function(startevent) {
                     // user touches screen, so we may have to start scrolling
+                    ignore = $(startevent.target).is(".scrollnative") || $(startevent.target).parents('.scrollnative').length;
                     lastX = startevent.originalEvent.touches[0].pageX, lastY = startevent.originalEvent.touches[0].pageY;
                 }).on("touchmove", function(dragevent) {
-                    if(!tracking) {
+                    if(!tracking && !ignore) {
                         tracking = true;
                     }
                     if(tracking) { // probably a pointless test since we shouldn't be getting a touchmove event unless we got a touchstart first anyway, but still
@@ -135,6 +138,8 @@
                         endevent.stopPropagation();
                         endevent.preventDefault();
                     }
+
+                    ignore = false;
                 }).on("wheel", function(wheelevent) {
                     scrollBy(wheelevent.originalEvent.deltaX,wheelevent.originalEvent.deltaY);
                     wheelevent.preventDefault();
