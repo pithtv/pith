@@ -39,7 +39,7 @@ app.config(['$routeProvider',
             })
     }]);
 
-app.controller("MainController", ['$scope','$pithRest','PlayerControlService', "$modal", function($scope, $pithRest, playerControl, $modal) {
+app.controller("MainController", ['$scope','$pithRest','PlayerControlService', "$uibModal", function($scope, $pithRest, playerControl, $modal) {
     var main = this;
     
     this.channels = [];
