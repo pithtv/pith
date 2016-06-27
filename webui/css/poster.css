@@ -287,3 +287,118 @@ ul.detailtabs > li.selected {
     display: block;
     font-size: 90%;
 }
+
+@media (min-width: 240px ) {
+    .contentbrowser.poster .contentitem {
+        margin: 4px calc( 100% / 4 - 51px );
+    }
+}
+
+@media (min-width: 350px ) {
+    .contentbrowser.poster .contentitem {
+        margin: 4px calc( 100% / 6 - 51px );
+    }
+}
+
+@media (min-width: 460px ) {
+    .contentbrowser.poster .contentitem {
+        margin: 4px calc( 100% / 8 - 51px );
+    }
+}
+
+@media (min-width: 570px ) {
+    .contentbrowser.poster .contentitem {
+        margin: 4px calc( 100% / 10 - 51px );
+    }
+}
+
+@media (min-width: 680px ) {
+    .contentbrowser.poster .contentitem {
+        margin: 4px calc( 100% / 12 - 51px );
+    }
+}
+
+@media (min-width: 790px ) {
+    .contentbrowser.poster .contentitem {
+        margin: 4px calc( 100% / 14 - 51px );
+    }
+}
+
+@media (min-width: 900px ) {
+    .contentbrowser.poster .contentitem {
+        margin: 4px calc( 100% / 16 - 51px );
+    }
+}
+
+@media (min-width: 1010px ) {
+    .contentbrowser.poster .contentitem {
+        margin: 4px calc( 100% / 18 - 51px );
+    }
+}
+
+@media (min-width: 1120px ) {
+    .contentbrowser.poster .contentitem {
+        margin: 4px calc( 100% / 20 - 51px );
+    }
+}
+
+@media (min-width: 1230px ) {
+    .contentbrowser.poster .contentitem {
+        margin: 4px calc( 100% / 22 - 51px );
+    }
+}
+
+@media (min-width: 1340px ) {
+    .contentbrowser.poster .contentitem {
+        margin: 4px calc( 100% / 24 - 51px );
+    }
+}
+
+@media (min-width: 1450px ) {
+    .contentbrowser.poster .contentitem {
+        margin: 4px calc( 100% / 26 - 51px );
+    }
+}
+
+@media (min-width: 1560px ) {
+    .contentbrowser.poster .contentitem {
+        margin: 4px calc( 100% / 28 - 51px );
+    }
+}
+
+@media (min-width: 1670px ) {
+    .contentbrowser.poster .contentitem {
+        margin: 4px calc( 100% / 30 - 51px );
+    }
+}
+
+@media (min-width: 1780px ) {
+    .contentbrowser.poster .contentitem {
+        margin: 4px calc( 100% / 32 - 51px );
+    }
+}
+
+@media (min-width: 1890px ) {
+    .contentbrowser.poster .contentitem {
+        margin: 4px calc( 100% / 34 - 51px );
+    }
+}
+
+@media (min-width: 2000px ) {
+    .contentbrowser.poster .contentitem {
+        margin: 4px calc( 100% / 36 - 51px );
+    }
+}
+
+@media (min-width: 2110px ) {
+    .contentbrowser.poster .contentitem {
+        margin: 4px calc( 100% / 38 - 51px );
+    }
+}
+
+
+@media (min-width: 2220px ) {
+    .contentbrowser.poster .contentitem {
+        margin: 4px 4px;
+    }
+}
