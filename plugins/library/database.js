@@ -161,7 +161,7 @@ module.exports = function(db) {
         ).toArray(function(err, show) {
             if(err) callback(err);
             else {
-                callback(false, show[0].seasons[0].episodes[0]);
+                callback(false, show[0] && show[0].seasons[0].episodes[0]);
             }
         });
     }
