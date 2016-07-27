@@ -26,9 +26,7 @@ function mapEpisode(m) {
         id: 'episodes/' + m.id,
         episodeId: m.id,
         type: 'item',
-        mediatype: 'season',
-        playable: (m.originalId != null),
-        unavailable: (m.originalId == null)
+        mediatype: 'season'
     });
 }
 
@@ -56,46 +54,6 @@ module.exports = [
                     cb(err, show && mapShow(show));
                 });
             }
-        }
-    },
-
-    {
-        id: "seasons",
-        visible: false,
-        type: "container",
-        _getContents: function(db, containerId, cb) {
-            if(containerId == null) {
-                db.findSeasons({}).then(function(result) {
-                    cb(false, result.map(mapSeason()));
-                }).catch(cb);
-            } else {
-                db.findEpisodes({seasonId: containerId}, {episode: 1}).then(function(result) {
-                    cb(false, result.map(mapEpisode));
-                }).catch(cb);
-            }
-        },
-        _getItem: function(db, itemId, cb) {
-            if(itemId === null) {
-                cb(null, {id: 'seasons', title: 'All Seasons'});
-            } else {
-                db.findSeason({id: itemId}, function(err, season) {
-                    cb(err, season && mapSeason(season));
-                });
-            }
-        }
-    },
-
-    {
-        id: "episodes",
-        visible: false,
-        type: "container",
-        _getContents: function(db, containerId, cb) {
-            cb(null, []);
-        },
-        _getItem: function(db, itemId, cb) {
-            db.findEpisode({id: itemId}, function(err, episode) {
-                cb(err, episode && mapEpisode(episode));
-            });
         }
     },
 

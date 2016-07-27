@@ -113,21 +113,17 @@ module.exports = function(item, mediatype, callback) {
         };
 
         if(item) {
-            for (var x in metadata) {
-                item[x] = metadata[x];
-            }
-
-            return item;
+            return Object.assign(metadata, item);
         } else {
             return metadata;
         }
     }
 
     function seasonParser(err, result) {
-	if(err) {
-	    callback(err);
-            return;
-	}
+        if(err) {
+            callback(err);
+                return;
+        }
         var metadata = {
             _children: result.episodes.map(episodeParser),
 

@@ -24,26 +24,26 @@ module.exports = function(opts) {
                 showname: show.title
             };
             metadata(seasonMetaData, 'season', function(err, seasonMetaData) {
-		if(err) {
+                if(err) {
                     cb(err);
-		    return;
-		}
+                    return;
+                }
                 var episodes = seasonMetaData._children;
                 seasonMetaData._children = undefined;
                 winston.info(show.title + " season " + season + " has " + episodes.length + " episodes");
                 db.storeSeason(seasonMetaData, function(err) {
                     async.eachSeries(episodes, function(episodeMetaData, callback) {
-                        db.findEpisode({showId: show.id, seasonId: seasonMetaData.id, season: seasonMetaData.season, episode: episodeMetaData.episode}, function(err, episode) {
+                        db.findEpisode({showId: show.id, season: seasonMetaData.season, episode: episodeMetaData.episode}, function(err, episode) {
                             if(episode) {
                                 for(var x in episodeMetaData) {
                                     episode[x] = episodeMetaData[x];
                                 }
-                                episode.showname = show.title;
                                 db.storeEpisode(episode, callback);
                             } else {
                                 episodeMetaData.showId = show.id;
-                                episodeMetaData.seasonId = seasonMetaData.id;
                                 episodeMetaData.showname = show.title;
+                                episodeMetaData.playable = false;
+                                episodeMetaData.unavailable = true;
                                 db.storeEpisode(episodeMetaData, callback);
                             }
                         });
@@ -55,13 +55,12 @@ module.exports = function(opts) {
         },
 
         updateEpisode: function(show, season, item, cb) {
-            db.findEpisode({showId: show.id, seasonId: season.id, episode: item.episode}, function(err, episode) {
+            db.findEpisode({showId: show.id, season: season.season, episode: item.episode}, function(err, episode) {
                 if(err) {
                     cb(err);
                 } else {
                     if(!episode) {
                         item.showTmdbId = show.tmdbId;
-                        item.seasonId = season.id;
                         item.showId = show.id;
                         item.season = season.season;
                         metadata(item, 'episode', function(err, episodeMetaData) {
@@ -72,9 +71,9 @@ module.exports = function(opts) {
                                     showId: show.id,
                                     showname: show.title,
                                     season: season.season,
-                                    seasonId: season.id,
                                     episode: item.episode,
                                     playable: true,
+                                    unavailable: false,
                                     mediatype: 'episode',
                                     originalId: item.originalId,
                                     channelId: item.channelId,
@@ -90,6 +89,8 @@ module.exports = function(opts) {
                         episode.originalId = item.originalId;
                         episode.channelId = item.channelId;
                         episode.dateScanned = new Date();
+                        episode.playable = true;
+                        episode.unavailable = false;
                         db.storeEpisode(episode, cb);
                     }
                 }
@@ -99,11 +100,11 @@ module.exports = function(opts) {
         updateInSeason: function(showMetaData, item, cb) {
             var self = this;
             db.findSeason({showId: showMetaData.id, season: item.season}, function(err, seasonMetaData) {
-		if(err) { cb(err); return; }
+            if(err) { cb(err); return; }
                 if(seasonMetaData == null) {
                     self.loadAndStoreSeason(showMetaData, item.season, function(err, season) {
                         if(err) { cb(err); return; }
-			self.updateEpisode(showMetaData, season, item, cb);
+                        self.updateEpisode(showMetaData, season, item, cb);
                     })
                 } else {
                     self.updateEpisode(showMetaData, seasonMetaData, item, cb);
@@ -114,8 +115,8 @@ module.exports = function(opts) {
         updateInShow: function(episode, cb) {
             var self = this;
             db.findShow({originalTitle: episode.showname}, function(err, showMetaData) {
-		if(err) { cb(err); return; }
-                if(showMetaData == null) {
+                //if(err) { cb(err); return; }
+                if(err || showMetaData == null) {
                     winston.info("Found a new show", episode.showname)
                     self.loadShow(episode.showname, function(err, showMetaData) {
                         if(err) {
@@ -150,7 +151,7 @@ module.exports = function(opts) {
                             } else if(item.playable) {
                                 db.findEpisode({originalId: item.id, channelId: channelInstance.id}, function(err, episode) {
                                     if(episode == null) {
-                                        var md = filenameparser(item.title);
+                                        var md = filenameparser(item.title, 'show');
 
                                         if(md) {
                                             md.originalId = item.id;
@@ -180,14 +181,14 @@ module.exports = function(opts) {
             }
 
             channelInstance.getItem(dir.containerId, function (err, container) {
-		if(err) { cb(err); return; }
+            if(err) { cb(err); return; }
                 scan(container, cb);
             });
         },
 
         updateAll: function(cb) {
             db.findShows({status: {$ne: 'Ended'}}, function(err, shows) {
-		if(err) { cb(err); return; }
+            if(err) { cb(err); return; }
                 for(var x=0,l=shows.length; x<l; x++) {
                     var show = shows[x];
                     metadata.getChanges(show, function(err, changeset) {

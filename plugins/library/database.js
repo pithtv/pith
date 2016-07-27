@@ -134,7 +134,7 @@ module.exports = function(db) {
     function findSeason(item, callback) {
         series.find({seasons: {$elemMatch: item}}, {'seasons.$': 1}).toArray(function(err, result) {
             if(err) callback(err);
-            else callback(err, result[0].seasons[0]);
+            else callback(err, result[0] && result[0].seasons[0]);
         });
     }
 
@@ -147,7 +147,7 @@ module.exports = function(db) {
     }
 
     function storeSeason(item, callback) {
-        series.updateOne({id: item.showId, seasons: {$elemMatch: $item}}, {$set: {'seasons.$': item}}, function(err, results) {
+        series.updateOne({id: item.showId, seasons: {$elemMatch: item}}, {$set: {'seasons.$': item}}, function(err, results) {
             if(err) callback(err);
             else if(results.nMatched) callback(err, results);
             else series.updateOne({id: item.showId}, {$push: {seasons: item}}, callback);
@@ -156,12 +156,12 @@ module.exports = function(db) {
 
     function findEpisode(item, callback) {
         series.find(
-            {seasons: {$elemMatch: {episodes: {$elemMatch: item}}}},
-            {seasons: {$elemMatch: {episodes: {$elemMatch: item}}}}
+            {episodes: { $elemMatch: item}},
+            {episodes: { $elemMatch: item}}
         ).toArray(function(err, show) {
             if(err) callback(err);
             else {
-                callback(false, show[0] && show[0].seasons[0].episodes[0]);
+                callback(false, show[0] && show[0].episodes && show[0].episodes[0]);
             }
         });
     }
@@ -169,21 +169,13 @@ module.exports = function(db) {
     function findEpisodes(item, callback) {
         return series.find(
             {
-                seasons: {
-                    $elemMatch: {
-                        episodes: {
-                            $elemMatch: item
-                        }
-                    }
+                episodes: {
+                    $elemMatch: item
                 }
-            }, 
+            },
             {
-                seasons: {
-                    $elemMatch: {
-                        episodes: {
-                            $elemMatch: item
-                        }
-                    }
+                episodes: {
+                    $elemMatch: item
                 }
             }
         ).toArray().then(function(result) {
@@ -196,9 +188,14 @@ module.exports = function(db) {
     }
 
     function storeEpisode(item, callback) {
-        series.updateOne({id: item.showId, seasons: {$elemMatch: {season: item.season, episodes: { $elemMatch: item }}}}, {$set: {'seasons.$.episodes.$': item}}, function(err, result) {
-            if(err || result.nMatched) callback(err, result)
-            else series.updateOne({id: item.showId, seasons: {$elemMatch: {season: item.season}}}, {$push: {'seasons.$.episodes': item}}, callback);
+        series.updateOne({
+            id: item.showId,
+            episodes: {$elemMatch: {season: item.season, episode: item.episode}}
+        }, {$set: {'episodes.$': item}}, function (err, result) {
+            if (err || result.matchedCount) callback(err, result)
+            else series.updateOne({
+                id: item.showId
+            }, {$push: {'episodes': item}}, callback);
         })
     }
 
@@ -227,7 +224,7 @@ module.exports = function(db) {
     }
 
     function findShows(selector, sorting) {
-        return series.find(selector, {seasons: 0}).sort(sorting).toArray();
+        return series.find(selector, {seasons: 0, episodes: 0}).sort(sorting).toArray();
     }
     
     function findMovieByOriginalId(channelId, itemId, callback) {

@@ -7,10 +7,14 @@ angular
 
         $scope.selectedSeason = null;
 
-        function fetchSeasons(show) {
+        function fetchDetails(show) {
             if(show) {
-                channel.list(show.id).then(function(seasons) {
-                    $scope.seasons = seasons.data;
+                channel.detail(show.id).then(function(response) {
+                    var show = response.data;
+                    $scope.show = show;
+                    $scope.seasons = show.seasons.sort(function(a,b) {
+                        return a.season - b.season;
+                    });
                     if(!$scope.selectedSeason || $scope.seasons.indexOf($scope.selectedSeason) == -1) {
                         $scope.selectedSeason = $scope.seasons[$scope.seasons.length - 1];
                     }
@@ -20,10 +24,12 @@ angular
 
         function fetchEpisodes(season) {
             if(season) {
-                channel.list(season.id, {includePlayStates: true}).then(function(episodes) {
-                    $scope.episodes = episodes.data;
-                    $scope.glued = true;
-                })
+                $scope.episodes = $scope.show.episodes.filter(function(ep) {
+                    return ep.season == season.season;
+                }).sort(function(a,b) {
+                    return a.episode - b.episode;
+                });
+                $scope.glued = true;
             }
         }
 
@@ -32,7 +38,7 @@ angular
             $scope.episodes = null;
         }
 
-        $scope.$watch('$expandedItem', fetchSeasons);
+        $scope.$watch('$expandedItem', fetchDetails);
         $scope.$watch('selectedSeason', fetchEpisodes);
 
 }]);
