@@ -113,7 +113,8 @@ module.exports = function(item, mediatype, callback) {
         };
 
         if(item) {
-            return Object.assign(metadata, item);
+            for(var x in item) metadata[x] = metadata[x] || item[x];
+            return metadata;
         } else {
             return metadata;
         }

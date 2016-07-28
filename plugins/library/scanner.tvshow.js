@@ -148,7 +148,7 @@ module.exports = function(opts) {
                         async.eachSeries(contents, function(item, cb) {
                             if(item.type === 'container') {
                                 scan(item, cb);
-                            } else if(item.playable) {
+                            } else if(item.playable && item.mimetype.match(/^video\//)) {
                                 db.findEpisode({originalId: item.id, channelId: channelInstance.id}, function(err, episode) {
                                     if(episode == null) {
                                         var md = filenameparser(item.title, 'show');

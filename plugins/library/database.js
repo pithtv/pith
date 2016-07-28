@@ -67,7 +67,9 @@ module.exports = function(db) {
 
     function singleResult(callback) {
         return function(err, result) {
-            if(!result || result.length != 1) {
+            if(!result || result.length == 0) {
+                callback(false, null);
+            } else if(result.length > 1) {
                 callback("Expecting single result");
             } else {
                 callback(false, result[0]);
@@ -228,7 +230,7 @@ module.exports = function(db) {
     }
     
     function findMovieByOriginalId(channelId, itemId, callback) {
-        movies.find({channelId: channelId, originalId: itemId}, singleResult(callback));
+        movies.find({channelId: channelId, originalId: itemId}).toArray(singleResult(callback));
     }
     
     function getMovie(itemId, callback) {
