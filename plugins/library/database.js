@@ -182,9 +182,7 @@ module.exports = function(db) {
             }
         ).toArray().then(function(result) {
             return result.reduce(function(a,b) {
-                return a.concat(b.seasons.reduce( function(a,b){
-                    return a.concat(b.episodes);
-                }, []));
+                return a.concat(b.episodes);
             }, []);
         });
     }
