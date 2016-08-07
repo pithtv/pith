@@ -1,6 +1,6 @@
 angular
     .module("pith.containerChooserModule", ["pith.restApi"])
-    .controller("containerChooserController", ["$scope", "$pithRest", "$modalInstance", function($scope, $pithRest, $modalInstance) {
+    .controller("containerChooserController", ["$scope", "$pithRest", "$uibModalInstance", function($scope, $pithRest, $uibModalInstance) {
 
         var channelHistory = [],
             state = {
@@ -21,7 +21,7 @@ angular
                             title: title
                         };
                         refresh();
-                    }
+                    };
                     $scope.goBack = null;
                 });
             } else {
@@ -35,7 +35,7 @@ angular
                             title: title
                         };
                         refresh();
-                    }
+                    };
 
                     $scope.goBack = function() {
                         if(channelHistory.length) {
@@ -54,11 +54,11 @@ angular
 
         $scope.showMore = function() {
             $scope.limit *= 2;
-        }
+        };
 
         $scope.select = function() {
-            $modalInstance.close(state);
-        }
+            $uibModalInstance.close(state);
+        };
 
         refresh();
     }]);
