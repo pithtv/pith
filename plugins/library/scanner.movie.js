@@ -24,8 +24,8 @@ module.exports = function(opts) {
                                 } else if (item.playable && item.mimetype.match(/^video\//)) {
                                     db.findMovieByOriginalId(dir.channelId, item.id, function (err, result) {
                                         if(err) {
-                                          winston.error(err);
-                                          done(err);
+                                          winston.error("Error processing " + container.id + " : " + item.id, err);
+                                          cb();
                                         } else if (!result) {
                                             winston.info("Found new item " + item.id);
 
