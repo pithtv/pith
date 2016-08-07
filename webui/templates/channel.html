@@ -58,6 +58,7 @@
              'withinfo': item.tagline || item.rating || (item.genres && item.genres.length) || item.plot || item.overview,
              'watched': item.playState &amp;&amp; item.playState.status == 'watched',
              'inprogress': item.playState &amp;&amp; item.playState.status == 'inprogress',
+             'hasnew': item.hasNew,
              'unavailable': item.unavailable,
              'expanded': $expandedId == item.id,
              'showdetails': $showdetailsId == item.id}" pt-gallery-item-id="item.id" pt-gallery-item="item" pt-gallery-item-index="$index + startIndex">

@@ -224,7 +224,7 @@ module.exports = function(db) {
     }
 
     function findShows(selector, sorting) {
-        return series.find(selector, {seasons: 0, episodes: 0}).sort(sorting).toArray();
+        return series.find(selector).sort(sorting).toArray();
     }
     
     function findMovieByOriginalId(channelId, itemId, callback) {

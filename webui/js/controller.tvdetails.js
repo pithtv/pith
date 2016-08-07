@@ -16,7 +16,13 @@ angular
                         return a.season - b.season;
                     });
                     if(!$scope.selectedSeason || $scope.seasons.indexOf($scope.selectedSeason) == -1) {
-                        $scope.selectedSeason = $scope.seasons[$scope.seasons.length - 1];
+                        $scope.selectedSeason = $scope.seasons[0];
+                        for(var x=1,l=$scope.seasons.length;x<l;x++) {
+                            var season = $scope.seasons[x];
+                            if((season.playState && season.playState.status == 'inprogress') || ($scope.seasons[x-1].playState && $scope.seasons[x-1].playState.status == 'watched')) {
+                                $scope.selectedSeason = season;
+                            }
+                        }
                     }
                 });
             }

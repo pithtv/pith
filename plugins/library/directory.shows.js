@@ -1,25 +1,86 @@
 "use strict";
 
 var async = require("async");
-
+var global = require("../../lib/global")();
 var extend = require("node.extend");
+
+const SOME_INPROGRESS=1, SOME_WATCHED=2, SOME_UNWATCHED=4;
 
 module.exports = function(plugin) {
 
     var db = plugin.db;
 
+    function aggregatePlayState(items) {
+        var aggr = items.reduce(function (state, ep) {
+            switch (ep.playState && ep.playState.status) {
+                case 'inprogress':
+                    return state | 1;
+                case 'watched':
+                    return state | 2;
+                default:
+                    return state | 4;
+            }
+        }, 0);
+        var playstate;
+        switch (aggr) {
+            case 0:
+                playstate = 'watched';
+                break; // none watched, inprogress, or unwatched... so basically no episodes whatsoever
+            case 1:
+                playstate = 'inprogress';
+                break; // all in progress
+            case 2:
+                playstate = 'watched';
+                break; // all watched
+            case 3:
+                playstate = 'inprogress';
+                break; // some watched, some in progress
+            case 4:
+                playstate = null;
+                break; // all unwatched
+            default:
+                playstate = 'inprogress'; // some unwatched
+        }
+        return {
+            status: playstate
+        };
+    }
+
+    function byEpisode(a,b) {
+        return (a.season - b.season) || (a.episode - b.episode);
+    }
+
+    function findLastPlayable(episodes) {
+        for(var x=episodes.length - 1;x>=0;x--) {
+            if(episodes[x].playable) return episodes[x];
+        }
+    }
+
     function mapShow(m, cb) {
-        async.mapSeries(m.episodes || [], mapEpisode, function(err, episodes) {
+        async.mapSeries(m.episodes.sort(byEpisode) || [], mapEpisode, function(err, episodes) {
             if(err) cb(err);
-            else cb(false, extend({}, m, {
-                id: 'shows/' + m.id,
-                showId: m.id,
-                type: 'container',
-                mediatype: 'show',
-                showname: m.title,
-                episodes: episodes,
-                seasons: m.seasons && m.seasons.map(mapSeason)
-            }));
+            else {
+                var seasons = m.seasons && m.seasons.map(mapSeason).map(function(season) {
+                    var seasonEps = episodes.filter(function(ep) {
+                        return ep.season == season.season;
+                    });
+                    var playstate = aggregatePlayState(seasonEps);
+                    season.playState = playstate;
+                    return season;
+                });
+                var playState = seasons && aggregatePlayState(seasons);
+                cb(false, extend({}, m, {
+                    id: 'shows/' + m.id,
+                    showId: m.id,
+                    type: 'container',
+                    mediatype: 'show',
+                    showname: m.title,
+                    episodes: episodes,
+                    seasons: seasons,
+                    playState: playState,
+                    hasNew: playState && playState.status == 'inprogress' && findLastPlayable(episodes).dateScanned > (new Date(new Date() - 1000 * 60 * 60 * 24 * global.settings.maxAgeForNew))
+                }));
+            }
         });
     }
 

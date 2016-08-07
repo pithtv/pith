@@ -2,7 +2,7 @@
     <img ng-if="$expandedItem.poster || $expandedItem.still" ng-src="{{ $expandedItem.poster && prescale($expandedItem.poster, '200x300') || $expandedItem.still && prescale($expandedItem.still, '532x300') }}" class="bigthumb"/>
     <div class="episodeguide">
         <ul class="detailtabs seasons">
-            <li ng-repeat="season in seasons" ng-click="selectSeason(season)" ng-class="{ selected: selectedSeason == season }">{{ season.season }}</li>
+            <li ng-repeat="season in seasons" ng-click="selectSeason(season)" ng-class="{ selected: selectedSeason == season, inprogress: season.playState.status == 'inprogress', watched: season.playState.status == 'watched' }">{{ season.season }}</li>
         </ul>
         <ul class="seasondetails scrollnative" scroll-glue="glued">
             <li ng-repeat="episode in episodes"
@@ -11,8 +11,8 @@
                     'inprogress': episode.playState &amp;&amp; episode.playState.status == 'inprogress',
                     'unavailable': episode.unavailable
              }">
-                <div ng-if="episode.still" ng-style="{ 'background-image': 'url(' + (
-                    prescale(episode.still, '266x150'))+ ')' }" class="still">
+                <div ng-style="{ 'background-image': episode.still && 'url(' + (
+                    prescale(episode.still, '266x150'))+ ')' }" ng-class="{ 'still': true, 'imagemissing': !episode.still }">
                 </div>
                 <span class="episode-no">{{ episode.episode }}</span>
                 <span class="episode-title">{{ episode.title }}</span>

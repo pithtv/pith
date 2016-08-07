@@ -349,3 +349,11 @@ a.link-imdb {
 body.fakescroll {
     height: 110vh;
 }
+
+.imagemissing:before {
+    font-family: 'Glyphicons Halflings';
+    font-size: 50px;
+    color: rgba(0,0,0,0.04);
+    content: '\e090';
+    display: block;
+}
