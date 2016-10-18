@@ -69,6 +69,7 @@ module.exports = function(plugin) {
                     return season;
                 });
                 var playState = seasons && aggregatePlayState(seasons);
+                var lastPlayable = findLastPlayable(episodes);
                 cb(false, extend({}, m, {
                     id: 'shows/' + m.id,
                     showId: m.id,
@@ -78,7 +79,7 @@ module.exports = function(plugin) {
                     episodes: episodes,
                     seasons: seasons,
                     playState: playState,
-                    hasNew: playState && playState.status == 'inprogress' && findLastPlayable(episodes).dateScanned > (new Date(new Date() - 1000 * 60 * 60 * 24 * global.settings.maxAgeForNew))
+                    hasNew: (!lastPlayable.playState || lastPlayable.playState.status != 'watched') && lastPlayable.dateScanned > (new Date(new Date() - 1000 * 60 * 60 * 24 * global.settings.maxAgeForNew))
                 }));
             }
         });
