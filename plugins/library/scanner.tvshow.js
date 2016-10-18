@@ -77,6 +77,9 @@ module.exports = function(opts) {
                                 };
                                 db.storeEpisode(episode, cb);
                             } else {
+                                episodeMetaData.dateScanned = new Date();
+                                episodeMetaData.originalId = item.originalId;
+                                episodeMetaData.channelId = item.channelId;
                                 db.storeEpisode(episodeMetaData, cb);
                             }
                         });
