@@ -42,8 +42,6 @@ module.exports = function(opts) {
                             } else {
                                 episodeMetaData.showId = show.id;
                                 episodeMetaData.showname = show.title;
-                                episodeMetaData.playable = false;
-                                episodeMetaData.unavailable = true;
                                 db.storeEpisode(episodeMetaData, callback);
                             }
                         });
@@ -72,8 +70,6 @@ module.exports = function(opts) {
                                     showname: show.title,
                                     season: season.season,
                                     episode: item.episode,
-                                    playable: true,
-                                    unavailable: false,
                                     mediatype: 'episode',
                                     originalId: item.originalId,
                                     channelId: item.channelId,
@@ -81,7 +77,6 @@ module.exports = function(opts) {
                                 };
                                 db.storeEpisode(episode, cb);
                             } else {
-                                episodeMetaData.playable = true;
                                 db.storeEpisode(episodeMetaData, cb);
                             }
                         });
@@ -90,8 +85,6 @@ module.exports = function(opts) {
                         episode.originalId = item.originalId;
                         episode.channelId = item.channelId;
                         episode.dateScanned = new Date();
-                        episode.playable = true;
-                        episode.unavailable = false;
                         db.storeEpisode(episode, cb);
                     }
                 }

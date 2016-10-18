@@ -103,7 +103,9 @@ module.exports = function(plugin) {
                         episodeId: m.id,
                         type: 'item',
                         mediatype: 'season',
-                        playState: playState
+                        playState: playState,
+                        playable: m.originalId != null,
+                        unavailable: m.originalId == null
                     }));
             }
         });
@@ -178,7 +180,7 @@ module.exports = function(plugin) {
         visible: true,
         type: "container",
         _getContents: function(containerId, cb) {
-            db.findEpisodes({airDate: {$gt: new Date(new Date() - 7*24*60*60*1000), $lt:new Date()}}, {order: {airDate: -1}}, function(err, result) {
+            db.findEpisodes({airDate: {$gt: new Date(new Date() - 7*24*60*60*1000), $lt:new Date()}}, {order: {airDate: -1}}).then(function(result) {
                 async.mapSeries(result, mapEpisode, cb);
             });
         }
