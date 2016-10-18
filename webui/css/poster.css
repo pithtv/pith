@@ -24,7 +24,8 @@
 }
 
 .contentbrowser.poster .contentitem.inprogress>a:after,
-.contentbrowser.poster .contentitem.watched>a:after {
+.contentbrowser.poster .contentitem.watched>a:after,
+.contentbrowser.poster .contentitem.hasnew>a:after {
     bottom: 0px;
     left: 76px;
 }
@@ -41,7 +42,7 @@
 
 .contentbrowser.poster .contentitem.inprogress>a:after,
 .contentbrowser.poster .contentitem.watched>a:after,
-.contentbrowser.poster .conntenitem.hasnew>a:after,
+.contentbrowser.poster .contentitem.hasnew>a:after,
 .seasondetails>li.inprogress > .still:after,
 .seasondetails>li.watched > .still:after {
     opacity: 1;
