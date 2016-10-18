@@ -81,6 +81,7 @@ module.exports = function(opts) {
                                 };
                                 db.storeEpisode(episode, cb);
                             } else {
+                                episodeMetaData.playable = true;
                                 db.storeEpisode(episodeMetaData, cb);
                             }
                         });
@@ -100,7 +101,7 @@ module.exports = function(opts) {
         updateInSeason: function(showMetaData, item, cb) {
             var self = this;
             db.findSeason({showId: showMetaData.id, season: item.season}, function(err, seasonMetaData) {
-            if(err) { cb(err); return; }
+                if(err) { cb(err); return; }
                 if(seasonMetaData == null) {
                     self.loadAndStoreSeason(showMetaData, item.season, function(err, season) {
                         if(err) { cb(err); return; }
