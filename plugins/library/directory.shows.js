@@ -52,12 +52,12 @@ module.exports = function(plugin) {
 
     function findLastPlayable(episodes) {
         for(var x=episodes.length - 1;x>=0;x--) {
-            if(episodes[x].playable) return episodes[x];
+            if(episodes[x].originalId) return episodes[x];
         }
     }
 
     function mapShow(m, cb) {
-        async.mapSeries(m.episodes.sort(byEpisode) || [], mapEpisode, function(err, episodes) {
+        async.mapSeries( (m.episodes || []).sort(byEpisode) || [], mapEpisode, function(err, episodes) {
             if(err) cb(err);
             else {
                 var seasons = m.seasons && m.seasons.map(mapSeason).map(function(season) {
@@ -79,7 +79,7 @@ module.exports = function(plugin) {
                     episodes: episodes,
                     seasons: seasons,
                     playState: playState,
-                    hasNew: (!lastPlayable.playState || lastPlayable.playState.status != 'watched') && lastPlayable.dateScanned > (new Date(new Date() - 1000 * 60 * 60 * 24 * global.settings.maxAgeForNew))
+                    hasNew: lastPlayable && (!lastPlayable.playState || lastPlayable.playState.status != 'watched') && lastPlayable.dateScanned > (new Date(new Date() - 1000 * 60 * 60 * 24 * global.settings.maxAgeForNew))
                 }));
             }
         });

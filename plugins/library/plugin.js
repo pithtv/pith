@@ -93,7 +93,7 @@ LibraryChannel.prototype = {
     },
 
     getLastPlayStateFromItem: function(item, cb) {
-        if(item && item.playable) {
+        if(item && item.originalId) {
             var targetChannel = this.pithApp.getChannelInstance(item.channelId);
             targetChannel.getLastPlayState(item.originalId, cb);
         } else {
