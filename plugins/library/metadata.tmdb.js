@@ -13,6 +13,9 @@ function createUrl(path) {
 }
 
 function parseDate(d) {
+    if(d==null) {
+        return null;
+    }
     var p = d.match(dateParser);
     return new Date(parseInt(p[1]),parseInt(p[2])-1,parseInt(p[3]));
 }
