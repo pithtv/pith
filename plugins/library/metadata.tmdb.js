@@ -13,6 +13,9 @@ function createUrl(path) {
 }
 
 function parseDate(d) {
+    if(d==null) {
+        return null;
+    }
     var p = d.match(dateParser);
     return new Date(parseInt(p[1]),parseInt(p[2])-1,parseInt(p[3]));
 }
@@ -113,21 +116,18 @@ module.exports = function(item, mediatype, callback) {
         };
 
         if(item) {
-            for (var x in metadata) {
-                item[x] = metadata[x];
-            }
-
-            return item;
+            for(var x in item) metadata[x] = metadata[x] || item[x];
+            return metadata;
         } else {
             return metadata;
         }
     }
 
     function seasonParser(err, result) {
-	if(err) {
-	    callback(err);
-            return;
-	}
+        if(err) {
+            callback(err);
+                return;
+        }
         var metadata = {
             _children: result.episodes.map(episodeParser),
 

@@ -7,6 +7,11 @@ require("./lib/global")(function(err, Global) {
     var scaler = require("./lib/imagescaler");
     var bodyparser = require("body-parser");
 
+    process.on('uncaughtException', function(err) {
+        // handle the error safely
+        console.log(err)
+    });
+
     Global.OpenDatabase(
         function startup(err, db) {
             if(err) {
@@ -17,7 +22,7 @@ require("./lib/global")(function(err, Global) {
             var port = Global.httpPort;
             var pithPath = Global.settings.pithContext;
 
-            console.log("Listening on " + serverAddress + ":" + port);
+            console.log("Listening on http://" + serverAddress + ":" + port);
 
             var pithApp = new Pith({
                 rootUrl: Global.rootUrl + "/pith/",
@@ -61,7 +66,11 @@ require("./lib/global")(function(err, Global) {
                         switch(message.action) {
                         case 'on':
                                 var listener = function() {
-                                    ws.send(JSON.stringify({event: message.event, arguments: Array.prototype.slice.apply(arguments)}, jsonReplacer));
+                                    try {
+                                        ws.send(JSON.stringify({event: message.event, arguments: Array.prototype.slice.apply(arguments)}, jsonReplacer));
+                                    } catch(e) {
+                                        console.error(e);
+                                    }
                                 };
                                 listeners.push({event: message.event, listener: listener});
                                 pithApp.on(message.event, listener);

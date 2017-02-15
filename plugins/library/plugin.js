@@ -10,13 +10,13 @@ var Channel = require("../../lib/channel");
 var moviesDirectory = require("./directory.movies");
 var showsDirectory = require("./directory.shows");
 
-function LibraryChannel(pithApp, directory) {
+function LibraryChannel(pithApp, directoryFactory) {
     Channel.apply(this);
 
     this.pithApp = pithApp;
     this.db = db(pithApp.db);
 
-    this.directory = directory;
+    this.directory = directoryFactory(this);
 }
 
 LibraryChannel.prototype = {
@@ -34,8 +34,25 @@ LibraryChannel.prototype = {
                 return e.id == directoryId; 
             })[0];
             
-            directory._getContents(this.db, i > -1 ? containerId.substring(i+1) : null, cb);
+            directory._getContents(i > -1 ? containerId.substring(i+1) : null, cb);
         }
+    },
+
+    listContentsWithPlayStates: function(path, cb) {
+        var self = this;
+        this.listContents(path, function (err, contents) {
+            if(err) cb(err);
+            else async.map(contents, function (item, cb) {
+                if(item.playState != null) {
+                    cb(false, item);
+                } else {
+                    self.getLastPlayStateFromItem(item, function (err, state) {
+                        item.playState = state;
+                        cb(err, item);
+                    });
+                }
+            }, cb);
+        });
     },
     
     getItem: function(itemId, cb) {
@@ -56,7 +73,7 @@ LibraryChannel.prototype = {
             }
             
             if(directory._getItem) {
-                directory._getItem(this.db, i > -1 ? itemId.substring(i+1).replace(/\/$/,'') : null, cb);
+                directory._getItem(i > -1 ? itemId.substring(i+1).replace(/\/$/,'') : null, cb);
             } else {
                 cb(null, { id: itemId });
             }
@@ -74,16 +91,21 @@ LibraryChannel.prototype = {
             }
         });
     },
+
+    getLastPlayStateFromItem: function(item, cb) {
+        if(item && item.originalId) {
+            var targetChannel = this.pithApp.getChannelInstance(item.channelId);
+            targetChannel.getLastPlayState(item.originalId, cb);
+        } else {
+            cb(false);
+        }
+    },
     
     getLastPlayState: function(itemId, cb) {
         var self = this;
         this.getItem(itemId, function(err, item) {
-            if(item && item.playable) {
-                var targetChannel = self.pithApp.getChannelInstance(item.channelId);
-                targetChannel.getLastPlayState(item.originalId, cb);
-            } else {
-                cb(err, item);
-            }
+            if(err) cb(err);
+            else self.getLastPlayStateFromItem(item, cb);
         });
     },
     
@@ -155,7 +177,6 @@ module.exports = {
             title: 'Shows',
             type: 'channel',
             init: function(opts) {
-                "use strict";
                 return showsChannel;
             }
         });

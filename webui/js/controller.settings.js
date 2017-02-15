@@ -38,7 +38,7 @@ settingsModule.controller('mainSettingsController',
             };
         }
     ]
-).controller('mediaSettingsController', ["$scope", "$modal", function ($scope, $modal) {
+).controller('mediaSettingsController', ["$scope", "$uibModal", function ($scope, $modal) {
         var settings = $scope.$parent.settings;
 
         $scope.addLibraryContainer = function(type) {

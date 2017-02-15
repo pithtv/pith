@@ -15,16 +15,18 @@ module.exports = function(opts) {
                 if (container) {
                     channelInstance.listContents(container && container.id, function (err, contents) {
                         if (err) {
+                            winston.error(err);
                             done(err);
-                        }
-                        if (contents && contents.length) {
+                        } else if (contents && contents.length) {
                             async.eachSeries(contents, function (item, cb) {
                                 if (item.type == 'container') {
                                     listContents(item, cb);
                                 } else if (item.playable && item.mimetype.match(/^video\//)) {
-
                                     db.findMovieByOriginalId(dir.channelId, item.id, function (err, result) {
-                                        if (!result) {
+                                        if(err) {
+                                          winston.error("Error processing " + container.id + " : " + item.id, err);
+                                          cb();
+                                        } else if (!result) {
                                             winston.info("Found new item " + item.id);
 
                                             item.modificationTime = container.modificationTime;

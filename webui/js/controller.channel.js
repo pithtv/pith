@@ -12,6 +12,7 @@ channelController.controller('channelController',
             $scope.channelId = $routeParams.channelId;
             $scope.currentContainer = $routeParams.containerId;
             $scope.currentPath = [];
+            $scope.expanded = null;
 
             $scope.loading = true;
 
@@ -99,6 +100,10 @@ channelController.controller('channelController',
                     id: item.id
                 };
                 pushState(newState, newState.title);
+            };
+
+            $scope.expand = function expand(item) {
+                $scope.expanded = item;
             };
 
             replaceState({channelpath: [{title: "Contents", id: ""}]});

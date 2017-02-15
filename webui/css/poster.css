@@ -1,67 +1,84 @@
 .contentbrowser.poster .contentitem {
     display: inline-block;
     margin: 4px;
+    border-radius: 4px;
+    vertical-align: top;
     height: 152px;
     width: 102px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    pointer-events: none;
-    overflow: hidden;
 }
 
-.contentbrowser.poster .contentitem.withinfo:hover {
-    transition: 0.4s width ease, 0.4s margin-left ease, 0.4s background ease;
-    background: rgba(255,255,255,0.95);
-    width: 328px;
-    z-index: 2;
-    box-shadow: 0px 0px 10px rgba(0,0,0,0.3);
+.contentbrowser.poster .contentitem.expanded-add,
+.contentbrowser.poster .contentitem.expanded-remove,
+.contentbrowser.poster .vs-repeat-fill-element.animate {
+    transition: margin-bottom 0.6s ease;
 }
 
-.contentbrowser.poster .contentitem.withinfo.alignleft:hover {
-    margin-left: -222px;
+.contentbrowser.poster .contentitem.expanded,
+.contentbrowser.poster .contentitem.showdetails,
+.contentbrowser.poster .vs-repeat-fill-element.expanded {
+    margin-bottom: 392px;
 }
 
-.contentbrowser.poster .contentitem.inprogress:hover:after,
-.contentbrowser.poster .contentitem.watched:hover:after {
-    transition: opacity 0.4s ease-in-out;
+.contentbrowser.poster .itemshowname {
+    display: none;
+}
+
+.contentbrowser.poster .contentitem.inprogress>a:after,
+.contentbrowser.poster .contentitem.watched>a:after,
+.contentbrowser.poster .contentitem.hasnew>a:after {
+    bottom: 0px;
+    left: 76px;
+}
+
+.still {
+    position: relative;
+}
+
+.seasondetails>li.inprogress > .still:after,
+.seasondetails>li.watched > .still:after {
+    bottom: 5px;
+    right: 5px;
+}
+
+.contentbrowser.poster .contentitem.inprogress>a:after,
+.contentbrowser.poster .contentitem.watched>a:after,
+.contentbrowser.poster .contentitem.hasnew>a:after,
+.seasondetails>li.inprogress > .still:after,
+.seasondetails>li.watched > .still:after {
     opacity: 1;
-}
-
-.contentbrowser.poster .contentitem.inprogress:after,
-.contentbrowser.poster .contentitem.watched:after {
-    opacity: 0.6;
     display: block;
     content: '';
     border: 1px solid black;
     width: 26px;
     height: 26px;
-    bottom: 5px;
-    left: 70px;
     position: absolute;
     border-radius: 15px;
     border: 2px solid white;
     background-color: rgb(200,0,0);
     box-shadow:
-    0px -5px 4px rgba(0,0,0,0.2) inset,
-    0px 3px 4px rgba(255,255,255,0.8) inset,
-    0px 2px 4px black;
+            0px -5px 4px rgba(0,0,0,0.2) inset,
+            0px 3px 4px rgba(255,255,255,0.8) inset,
+            0px 2px 4px black;
     font-family: 'Glyphicons Halflings';
     color: white;
     text-align: center;
     z-index: 5;
+    padding-top: 1px;
 }
 
-.contentbrowser.poster .contentitem.alignleft.inprogress:after,
-.contentbrowser.poster .contentitem.alignleft.watched:after {
-    left: auto;
-    right: 2px;
-}
-
-.contentbrowser.poster .contentitem.inprogress:after {
+.contentbrowser.poster .contentitem.inprogress:not(.hasnew)>a:after,
+.seasondetails>li.inprogress>.still:after {
     content: '\e073';
 }
 
-.contentbrowser.poster .contentitem.watched:after {
+.contentbrowser.poster .contentitem.hasnew>a:after {
+    content: '\e006';
+    color: black;
+    background-color: rgb(255,200,0);
+}
+
+.contentbrowser.poster .contentitem.watched>a:after,
+.seasondetails>li.watched>.still:after {
     content: '\e013';
 }
 
@@ -75,10 +92,9 @@
 
     width: 100px;
     height: 150px;
-    pointer-events: auto;
 
     z-index: 4;
-    position: absolute;
+    border: 1px solid #ddd;
 }
 
 .contentbrowser.poster .contentitem.alignleft .th {
@@ -86,10 +102,7 @@
     right: 0px;
 }
 
-.contentbrowser.poster .contentitem.withthumb:not(:hover) .iteminfo,
-.contentbrowser.poster .contentitem .itemplot,
-.contentbrowser.poster .contentitem .itemgenres
-{
+.contentbrowser.poster .contentitem.withthumb .title {
     display: none;
 }
 
@@ -100,19 +113,15 @@
     font-weight: normal;
 }
 
+.contentbrowser.poster .contentitem .iteminfo img.bigthumb {
+    height: 100%;
+    float: left;
+    margin-right: 20px;
+}
 
-.contentbrowser.poster .contentitem .iteminfo {
-    position: absolute;
-    top: 5px;
-    left: 5px;
-    right: 5px;
-    text-align: left;
-    bottom: 32px;
-    padding: 4px;
-    font-weight: bold;
-    overflow: hidden;
-    pointer-events: auto;
-    z-index: 3;
+.contentbrowser.poster .contentitem .itemplot {
+    display: block;
+    font-weight: normal;
 }
 
 .contentbrowser.poster .contentitem .itemrating {
@@ -121,15 +130,7 @@
 
 .contentbrowser.poster .contentitem .actions:not(:empty) {
     display: block;
-    position: absolute;
-    bottom: 0px;
-    pointer-events: auto;
-    z-index: 2;
     font-size: 20px;
-    border-top: 1px solid rgb(200,200,200);
-    padding-top: 3px;
-    padding-left: 10px;
-    padding-right: 10px;
 }
 
 .contentbrowser.poster .contentitem .thumbnail {
@@ -137,34 +138,9 @@
     height: 100%;
 }
 
-.contentbrowser.poster .contentitem.withthumb .iteminfo {
-    pointer-events: none;
-}
-
-.contentbrowser.poster .contentitem .actions {
-    left: 0px;
-    right: 0px;
-}
-
-.contentbrowser.poster .contentitem.withthumb .iteminfo,
-.contentbrowser.poster .contentitem.withthumb .actions {
-    left: 100px;
-    right: auto;
-    width: 220px;
-}
-
-.contentbrowser.poster .contentitem.withthumb.alignleft .iteminfo,
-.contentbrowser.poster .contentitem.withthumb.alignleft .actions {
+.contentbrowser.poster .contentitem.withthumb.alignleft .iteminfo {
     left: auto;
     right: 100px;
-}
-
-.contentbrowser.poster .contentitem.withthumb .actions {
-    text-align: left;
-}
-
-.contentbrowser.poster .contentitem.withthumb.alignleft .actions {
-    text-align: right;
 }
 
 .contentbrowser.poster .th {
@@ -174,4 +150,264 @@
 
 .contentbrowser.poster .stillimg {
     display: none;
+}
+
+.contentbrowser.poster .contentitem > a {
+    position: relative;
+    width: 102px;
+    height: 152px;
+    display: inline-block;
+}
+
+.contentbrowser.poster .contentitem.showdetails > a:before {
+    display: block;
+    content: '';
+    border: 15px solid transparent;
+    border-bottom-color: #777;
+    width: 0;
+    height: 0;
+    box-sizing: content-box;
+    left: 50%;
+    position: absolute;
+    margin-left: -15px;
+    margin-top: -10px;
+    top: 100%;
+}
+.contentbrowser.poster .contentitem .iteminfo {
+    font-weight: bold;
+    overflow: hidden;
+    display: block;
+    position: absolute;
+    left: 0px;
+    right: 0px;
+    height: 0;
+    margin-top: 15px;
+    transition: height 0.5s ease;
+    background: rgb(220,220,220);
+    background: linear-gradient(to bottom, #777, #bbb 15px);
+}
+
+.contentbrowser.poster .contentitem .iteminfo > div {
+    margin: 30px;
+}
+
+.contentbrowser.poster .contentitem.expanded .iteminfo,
+.contentbrowser.poster .contentitem.expanded .iteminfo.ng-enter,
+.contentbrowser.poster .contentitem.expanded .iteminfo.ng-leave.ng-enter-active {
+    height: 360px;
+}
+
+.contentbrowser.poster .contentitem .iteminfo .itemtitle {
+    display: block;
+}
+
+ul.detailtabs {
+    display: inline-block;
+    margin-left: 0;
+    background: rgb(230,230,230);
+    border: 1px solid rgb(115,115,115);
+    font-weight: normal;
+    white-space: nowrap;
+    padding: 0;
+    background: linear-gradient(#DDD, #CCC);
+}
+
+ul.detailtabs.seasons:before {
+    content: 'Season:';
+    padding: 2px 15px;
+    font-weight: bold;
+}
+
+ul.detailtabs > li {
+    border-left: 1px outset #999;
+
+}
+ul.detailtabs > li {
+    display: inline-block;
+    color: black;
+    padding: 2px 15px;
+}
+
+ul.detailtabs > li.selected {
+    background: linear-gradient(#555, #666);
+    color: white;
+}
+
+.still {
+    width: 133px;
+    height: 75px;
+}
+
+.episodeguide > .detailtabs,
+.episodeguide > .seasondetails {
+    position: absolute;
+    left: 240px;
+    right: 30px;
+    overflow-x: auto;
+}
+
+.episodeguide > .seasondetails {
+    background: rgba(255,255,255,0.5);
+    top: 57px;
+    bottom: 35px;
+    overflow-y: auto;
+    padding: 10px;
+    font-weight: normal;
+    -webkit-overflow-scrolling: touch;
+}
+
+.seasondetails > li {
+    display: inline-block;
+    min-height: 80px;
+    width: 100%;
+    border-bottom: 1px solid #CCC;
+    padding: 5px;
+}
+
+.seasondetails > li.unavailable {
+    opacity: 0.5;
+}
+
+.seasondetails > li > .still {
+    float: left;
+    margin: 3px 15px 3px 0px;
+}
+
+.seasondetails > li > .episode-no,
+.seasondetails > li > .episode-title {
+    font-weight: bold;
+}
+
+.seasondetails > li > .episode-no:after {
+    font-weight: bold;
+    content: '. ';
+}
+
+.seasondetails > li > .episode-airdate:before {
+    content: '(';
+}
+.seasondetails > li > .episode-airdate:after {
+    content: ')'
+}
+.seasondetails > li > .episode-airdate {
+    font-style: italic;
+}
+.seasondetails > li > .episode-synopsis {
+    display: block;
+    font-size: 90%;
+}
+
+@media (min-width: 240px ) {
+    .contentbrowser.poster .contentitem {
+        margin: 4px calc( 100% / 4 - 51px );
+    }
+}
+
+@media (min-width: 350px ) {
+    .contentbrowser.poster .contentitem {
+        margin: 4px calc( 100% / 6 - 51px );
+    }
+}
+
+@media (min-width: 460px ) {
+    .contentbrowser.poster .contentitem {
+        margin: 4px calc( 100% / 8 - 51px );
+    }
+}
+
+@media (min-width: 570px ) {
+    .contentbrowser.poster .contentitem {
+        margin: 4px calc( 100% / 10 - 51px );
+    }
+}
+
+@media (min-width: 680px ) {
+    .contentbrowser.poster .contentitem {
+        margin: 4px calc( 100% / 12 - 51px );
+    }
+}
+
+@media (min-width: 790px ) {
+    .contentbrowser.poster .contentitem {
+        margin: 4px calc( 100% / 14 - 51px );
+    }
+}
+
+@media (min-width: 900px ) {
+    .contentbrowser.poster .contentitem {
+        margin: 4px calc( 100% / 16 - 51px );
+    }
+}
+
+@media (min-width: 1010px ) {
+    .contentbrowser.poster .contentitem {
+        margin: 4px calc( 100% / 18 - 51px );
+    }
+}
+
+@media (min-width: 1120px ) {
+    .contentbrowser.poster .contentitem {
+        margin: 4px calc( 100% / 20 - 51px );
+    }
+}
+
+@media (min-width: 1230px ) {
+    .contentbrowser.poster .contentitem {
+        margin: 4px calc( 100% / 22 - 51px );
+    }
+}
+
+@media (min-width: 1340px ) {
+    .contentbrowser.poster .contentitem {
+        margin: 4px calc( 100% / 24 - 51px );
+    }
+}
+
+@media (min-width: 1450px ) {
+    .contentbrowser.poster .contentitem {
+        margin: 4px calc( 100% / 26 - 51px );
+    }
+}
+
+@media (min-width: 1560px ) {
+    .contentbrowser.poster .contentitem {
+        margin: 4px calc( 100% / 28 - 51px );
+    }
+}
+
+@media (min-width: 1670px ) {
+    .contentbrowser.poster .contentitem {
+        margin: 4px calc( 100% / 30 - 51px );
+    }
+}
+
+@media (min-width: 1780px ) {
+    .contentbrowser.poster .contentitem {
+        margin: 4px calc( 100% / 32 - 51px );
+    }
+}
+
+@media (min-width: 1890px ) {
+    .contentbrowser.poster .contentitem {
+        margin: 4px calc( 100% / 34 - 51px );
+    }
+}
+
+@media (min-width: 2000px ) {
+    .contentbrowser.poster .contentitem {
+        margin: 4px calc( 100% / 36 - 51px );
+    }
+}
+
+@media (min-width: 2110px ) {
+    .contentbrowser.poster .contentitem {
+        margin: 4px calc( 100% / 38 - 51px );
+    }
+}
+
+
+@media (min-width: 2220px ) {
+    .contentbrowser.poster .contentitem {
+        margin: 4px 4px;
+    }
 }

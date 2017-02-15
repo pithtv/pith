@@ -137,7 +137,12 @@ FilesChannel.prototype = {
     },
     
     getLastPlayState: function(itemId, cb) {
-        cb(null, this.statestore.get(itemId));
+        var state = this.statestore.get(itemId);
+        process.nextTick(cb.bind(this, false, state));
+    },
+
+    getLastPlayStateFromItem: function(item, cb) {
+        this.getLastPlayState(item.id, cb);
     },
     
     putPlayState: function(itemId, state, cb) {

@@ -36,7 +36,7 @@
 	// - the vsRepeat directive must be applied to a direct parent of an element with ngRepeat
 	// - the value of vsRepeat attribute is the single element's height/width measured in pixels. If none provided, the directive
 	//		will compute it automatically
-	
+
 	// OPTIONAL PARAMETERS (attributes):
 	// vs-scroll-parent="selector" - selector to the scrollable container. The directive will look for a closest parent matching
 	//								he given selector (defaults to the current element)
@@ -54,28 +54,28 @@
 	// - 'vsRepeatReinitialized' - an event the directive emits upon reinitialization done
 
 	var isMacOS = navigator.appVersion.indexOf('Mac') != -1,
-		wheelEventName = typeof window.onwheel !== 'undefined' ? 'wheel' : typeof window.onmousewheel !== 'undefined' ? 'mousewheel' : 'DOMMouseScroll',
-		dde = document.documentElement,
-		matchingFunction = dde.matches ? 'matches' :
-							dde.matchesSelector ? 'matchesSelector' :
+			wheelEventName = typeof window.onwheel !== 'undefined' ? 'wheel' : typeof window.onmousewheel !== 'undefined' ? 'mousewheel' : 'DOMMouseScroll',
+			dde = document.documentElement,
+			matchingFunction = dde.matches ? 'matches' :
+					dde.matchesSelector ? 'matchesSelector' :
 							dde.webkitMatches ? 'webkitMatches' :
-							dde.webkitMatchesSelector ? 'webkitMatchesSelector' :
-							dde.msMatches ? 'msMatches' :
-							dde.msMatchesSelector ? 'msMatchesSelector' :
-							dde.mozMatches ? 'mozMatches' :
-							dde.mozMatchesSelector ? 'mozMatchesSelector' : null;
+									dde.webkitMatchesSelector ? 'webkitMatchesSelector' :
+											dde.msMatches ? 'msMatches' :
+													dde.msMatchesSelector ? 'msMatchesSelector' :
+															dde.mozMatches ? 'mozMatches' :
+																	dde.mozMatchesSelector ? 'mozMatchesSelector' : null;
 
 	var closestElement = angular.element.prototype.closest || function (selector){
-		var el = this[0].parentNode;
-		while(el !== document.documentElement && el != null && !el[matchingFunction](selector)){
-			el = el.parentNode;
-		}
+				var el = this[0].parentNode;
+				while(el !== document.documentElement && el != null && !el[matchingFunction](selector)){
+					el = el.parentNode;
+				}
 
-		if(el && el[matchingFunction](selector))
-			return angular.element(el);
-		else
-			return angular.element();
-	};
+				if(el && el[matchingFunction](selector))
+					return angular.element(el);
+				else
+					return angular.element();
+			};
 
 	angular.module('vs-repeat', []).directive('vsRepeat', ['$compile', function($compile){
 		return {
@@ -87,56 +87,57 @@
 				this.$fillElement = $scope.$fillElement;
 			}],
 			compile: function($element, $attrs){
-				var ngRepeatChild = $element.children().eq(0),
-					ngRepeatExpression = ngRepeatChild.attr('ng-repeat'),
-					childCloneHtml = ngRepeatChild[0].outerHTML,
-					expressionMatches = /^\s*(\S+)\s+in\s+([\S\s]+?)(track\s+by\s+\S+)?$/.exec(ngRepeatExpression),
-					lhs = expressionMatches[1],
-					rhs = expressionMatches[2],
-					rhsSuffix = expressionMatches[3],
-					collectionName = '$vs_collection',
-					attributesDictionary = {
-						'vsRepeat': 'elementSize',
-						'vsOffsetBefore': 'offsetBefore',
-						'vsOffsetAfter': 'offsetAfter',
-						'vsExcess': 'excess'
-					},
-                    origItemWidth = $(ngRepeatChild[0]).outerWidth(true),
-                    origItemHeight = $(ngRepeatChild[0]).outerHeight(true);
-                
+				var ngRepeatChild = $element.children(":not(.vs-repeat-fill-element)").eq(0),
+						ngRepeatExpression = ngRepeatChild.attr('ng-repeat'),
+						childCloneHtml = ngRepeatChild[0].outerHTML,
+						expressionMatches = /^\s*(\S+)\s+in\s+([\S\s]+?)(track\s+by\s+\S+)?$/.exec(ngRepeatExpression),
+						lhs = expressionMatches[1],
+						rhs = expressionMatches[2],
+						rhsSuffix = expressionMatches[3],
+						collectionName = '$vs_collection',
+						attributesDictionary = {
+							'vsRepeat': 'elementSize',
+							'vsOffsetBefore': 'offsetBefore',
+							'vsOffsetAfter': 'offsetAfter',
+							'vsExcess': 'excess'
+						},
+						origItemWidth = $(ngRepeatChild[0]).outerWidth(true),
+						origItemHeight = $(ngRepeatChild[0]).outerHeight(true);
+
 				$element.empty();
-                
-				
-                if(!window.getComputedStyle || window.getComputedStyle($element[0]).position !== 'absolute')
+
+
+				if(!window.getComputedStyle || window.getComputedStyle($element[0]).position !== 'absolute')
 					$element.css('position', 'relative');
-				
-                return {
+
+				return {
 					pre: function($scope, $element, $attrs, $ctrl){
 						var childClone = angular.element(childCloneHtml),
-							originalCollection = [],
-							originalLength,
-							$$horizontal = typeof $attrs.vsHorizontal !== "undefined",
-							$wheelHelper,
-							$fillElement,
-							autoSize = !$attrs.vsRepeat,
-							sizesPropertyExists = !!$attrs.vsSizeProperty,
-                            parentIsWindow = $attrs.vsScrollParent == 'window',
-							$scrollParent = parentIsWindow ? $(window) : $attrs.vsScrollParent ? closestElement.call($element, $attrs.vsScrollParent) : $element,
-							positioningPropertyTransform = $$horizontal ? 'translateX' : 'translateY',
-							positioningProperty = $$horizontal ? 'left' : 'top',
-                            oppositePositioningPropertyTransform = (!$$horizontal) ? 'translateX' : 'translateY',
-							oppositePositioningProperty = (!$$horizontal) ? 'left' : 'top',
+								originalCollection = [],
+								originalLength,
+								$$horizontal = typeof $attrs.vsHorizontal !== "undefined",
+								$wheelHelper,
+								$fillElement,
+								$preFillElement,
+								autoSize = !$attrs.vsRepeat,
+								sizesPropertyExists = !!$attrs.vsSizeProperty,
+								parentIsWindow = $attrs.vsScrollParent == 'window',
+								$scrollParent = parentIsWindow ? $(window) : $attrs.vsScrollParent ? closestElement.call($element, $attrs.vsScrollParent) : $element,
+								positioningPropertyTransform = $$horizontal ? 'translateX' : 'translateY',
+								positioningProperty = $$horizontal ? 'left' : 'top',
+								oppositePositioningPropertyTransform = (!$$horizontal) ? 'translateX' : 'translateY',
+								oppositePositioningProperty = (!$$horizontal) ? 'left' : 'top',
 
 
-                            scrollSize = (parentIsWindow ? 'inner' : 'client') + ($$horizontal ? 'Width':'Height'),
-							clientSize =  $$horizontal ? 'clientWidth' : 'clientHeight',
-							offsetSize =  $$horizontal ? 'offsetWidth' : 'offsetHeight',
-                            clientBreadth = (parentIsWindow ? 'inner' : 'client') + ($$horizontal ? 'Height' : 'Width'),
-							scrollPos =  parentIsWindow ? 'scrollY' : $$horizontal ? 'scrollLeft' : 'scrollTop',
-                            
-                            gridItemHeight = $attrs.vsGridItemHeight || origItemHeight,
-                            gridItemWidth = $attrs.vsGridItemWidth || origItemWidth,
-                            itemsPerRow = gridItemWidth > 0 ? Math.floor($scrollParent[0][clientBreadth] / gridItemWidth) : 1;
+								scrollSize = (parentIsWindow ? 'inner' : 'client') + ($$horizontal ? 'Width':'Height'),
+								clientSize =  $$horizontal ? 'clientWidth' : 'clientHeight',
+								offsetSize =  $$horizontal ? 'offsetWidth' : 'offsetHeight',
+								clientBreadth = (parentIsWindow ? 'inner' : 'client') + ($$horizontal ? 'Height' : 'Width'),
+								scrollPos =  parentIsWindow ? 'scrollY' : $$horizontal ? 'scrollLeft' : 'scrollTop',
+
+								gridItemHeight = $attrs.vsGridItemHeight || origItemHeight,
+								gridItemWidth = $attrs.vsGridItemWidth || origItemWidth,
+								itemsPerRow = gridItemWidth > 0 ? Math.floor( ($$horizontal ? $element.height() : $element.width()) / gridItemWidth) : 1;
 
 						if($scrollParent.length === 0) throw 'Specified scroll parent selector did not match any element';
 						$scope.$scrollParent = $scrollParent;
@@ -148,13 +149,13 @@
 						$scope.offsetBefore = 0;
 						$scope.offsetAfter = 0;
 						$scope.excess = 2;
-                        
-                        $scope.gridItemHeight = gridItemHeight;
-                        $scope.gridItemWidth = gridItemWidth;
-                        $scope.itemsPerRow = itemsPerRow;
 
-                        $scope.floor = Math.floor;
-                        
+						$scope.gridItemHeight = gridItemHeight;
+						$scope.gridItemWidth = gridItemWidth;
+						$scope.itemsPerRow = itemsPerRow;
+
+						$scope.floor = Math.floor;
+
 						Object.keys(attributesDictionary).forEach(function(key){
 							if($attrs[key]){
 								$attrs.$observe(key, function(value){
@@ -170,7 +171,6 @@
 							if(!originalCollection || originalCollection.length < 1){
 								$scope[collectionName] = [];
 								originalLength = 0;
-								resizeFillElement(0);
 								$scope.sizesCumulative = [0];
 								return;
 							}
@@ -198,7 +198,7 @@
 								$scope.$$postDigest(function(){
 									if($element[0].offsetHeight || $element[0].offsetWidth){ // element is visible
 										var children = $element.children(),
-											i = 0;
+												i = 0;
 										while(i < children.length){
 											if(children[i].attributes['ng-repeat'] != null){
 												if(children[i][offsetSize]){
@@ -228,52 +228,40 @@
 						childClone.attr('ng-repeat', lhs + ' in ' + collectionName + (rhsSuffix ? ' ' + rhsSuffix : ''))
 								.addClass('vs-repeat-repeated-element');
 
-						var offsetCalculationString = '( floor(($index + startIndex) / itemsPerRow) * gridItemHeight + offsetBefore) + "px"';
-						var oppositeOffsetCalculationString = '(($index % itemsPerRow) * gridItemWidth) + "px"';
-						var widthCorrectionPosition = '"calc( ( 100% - " + (gridItemWidth * itemsPerRow) + "px ) / (" + (itemsPerRow - 1) + " / " + ($index % itemsPerRow) + "))"';
-
-						if(typeof document.documentElement.style.transform !== "undefined"){ // browser supports transform css property
-							childClone.attr('ng-style', '{ "left" : ' + widthCorrectionPosition + ', "transform": "' + positioningPropertyTransform + '(" + ' + offsetCalculationString + ' + ") '+
-                                             oppositePositioningPropertyTransform + '(" + ' + oppositeOffsetCalculationString + ' + ")"}');
-						}
-						else if(typeof document.documentElement.style.webkitTransform !== "undefined"){ // browser supports -webkit-transform css property
-							childClone.attr('ng-style', '{ "left" : ' + widthCorrectionPosition + ', "-webkit-transform": "' + positioningPropertyTransform + '(" + ' + offsetCalculationString + ' + ") ' +
-							                 oppositePositioningPropertyTransform + '(" + ' + oppositeOffsetCalculationString + ' + ")"}');
-						}
-						else{
-							childClone.attr('ng-style', '{' + positioningProperty + ': ' + offsetCalculationString + ', ' + oppositePositioningProperty + ': ' + oppositeOffsetCalculationString + '}');
-						}
-
 						$compile(childClone)($scope);
 						$element.append(childClone);
 
-						$fillElement = angular.element('<div class="vs-repeat-fill-element"></div>')
-							.css({
-								'position':'relative',
-								'min-height': '100%',
-								'min-width': '100%'
-							});
-						$element.append($fillElement);
+						$fillElement = angular.element('<div class="vs-repeat-fill-element" ng-style="{height: fillHeight}"></div>')
+								.css({
+									'position':'relative',
+									'min-height': '100%',
+									'min-width': '100%'
+								});
+						$preFillElement = angular.element('<div class="vs-repeat-fill-element" ng-class="{ expanded: $showdetailsIdx != null && $showdetailsIdx < startIndex, animate: animateFill }" ng-style="{ height: preFillHeight }"></div>');
+
+						$element.prepend($preFillElement).append($fillElement);
 						$compile($fillElement)($scope);
+						$compile($preFillElement)($scope);
 						$scope.$fillElement = $fillElement;
+						$scope.$preFillElement = $preFillElement;
 
 						var _prevMouse = {};
 						if(isMacOS){
 							$wheelHelper = angular.element('<div class="vs-repeat-wheel-helper"></div>')
-								.on(wheelEventName, function(e){
-									e.preventDefault();
-									e.stopPropagation();
-									if(e.originalEvent) e = e.originalEvent;
-									$scrollParent[0].scrollLeft += (e.deltaX || -e.wheelDeltaX);
-									$scrollParent[0].scrollTop += (e.deltaY || -e.wheelDeltaY);
-								}).on('mousemove', function(e){
-									if(_prevMouse.x !== e.clientX || _prevMouse.y !== e.clientY)
-										angular.element(this).css('display', 'none');
-									_prevMouse = {
-										x: e.clientX,
-										y: e.clientY
-									};
-								}).css('display', 'none');
+									.on(wheelEventName, function(e){
+										e.preventDefault();
+										e.stopPropagation();
+										if(e.originalEvent) e = e.originalEvent;
+										$scrollParent[0].scrollLeft += (e.deltaX || -e.wheelDeltaX);
+										$scrollParent[0].scrollTop += (e.deltaY || -e.wheelDeltaY);
+									}).on('mousemove', function(e){
+										if(_prevMouse.x !== e.clientX || _prevMouse.y !== e.clientY)
+											angular.element(this).css('display', 'none');
+										_prevMouse = {
+											x: e.clientX,
+											y: e.clientY
+										};
+									}).css('display', 'none');
 							$fillElement.append($wheelHelper);
 						}
 
@@ -281,8 +269,7 @@
 						$scope.endIndex = 0;
 
 						$scrollParent.on('scroll', function scrollHandler(e){
-							if(updateInnerCollection())
-								$scope.$apply();
+							updateInnerCollection();
 						});
 
 						if(isMacOS){
@@ -311,66 +298,57 @@
 						});
 
 						$scope.$on('vsRepeatTrigger', reinitialize);
-                        $scope.$watch($attrs.ngRepeatClass, function($class, old$class) {
-                            $element.removeClass(old$class);
-                            $element.addClass($class);
-                            reinitialize();
-                        });
+						$scope.$watch($attrs.ngRepeatClass, function($class, old$class) {
+							$element.removeClass(old$class);
+							$element.addClass($class);
+							reinitialize();
+						});
 
 						$scope.$on('vsRepeatResize', function(){
 							autoSize = true;
 							setAutoSize();
 						});
 
+						$scope.$on('vsItemExpanded', function() {
+							var body = $($attrs.vsScrollParent == 'window' ? 'html, body' : $scrollParent),
+									eh = 392,
+									ot = $element.offset().top + ($attrs.vsScrollParent == 'window' ? 0 : body.scrollTop()),
+									vpt = body.scrollTop() + ot,
+									vpb = body.scrollTop() + $(window).height(),
+									ert = $scope.gridItemHeight * Math.floor($scope.$showdetailsIdx / $scope.itemsPerRow) + ot,
+									erb = ert + $scope.gridItemHeight + eh,
+									tt;
+
+							if(vpb < erb) {
+								tt = erb - $(window).height();
+							}
+
+							if(tt !== undefined) {
+								body.animate({scrollTop: tt}, 600);
+							}
+						});
+
 						var _prevStartIndex,
-							_prevEndIndex;
+								_prevEndIndex;
 						function reinitialize(){
-                            var firstChild = $element.children().eq(0)[0],
-                                w = $(firstChild).outerWidth(true),
-                                h = $(firstChild).outerHeight(true);
-                            if(w && h) {
-                                $scope.gridItemWidth = w;
-                                $scope.gridItemHeight = h;
-                                $scope.itemsPerRow = Math.floor($scrollParent[0][clientBreadth] / w);
-                            }
-                            
+							var firstChild = $element.children(":not(.vs-repeat-fill-element)").eq(0)[0],
+									w = $(firstChild).outerWidth(true),
+									h = $(firstChild).outerHeight(true);
+							if(w && h) {
+								$scope.gridItemWidth = w;
+								$scope.gridItemHeight = h;
+								$scope.itemsPerRow = Math.floor($$horizontal ? $element.height() : $element.width() / w);
+							}
+
 							_prevStartIndex = void 0;
 							_prevEndIndex = void 0;
 							updateInnerCollection();
-							resizeFillElement(sizesPropertyExists ?
-												$scope.sizesCumulative[originalLength] / $scope.itemsPerRow :
-												$scope.elementSize* Math.ceil(originalLength / $scope.itemsPerRow)
-											);
+							resizeFillElement();
 							$scope.$emit('vsRepeatReinitialized');
 						}
 
-						function resizeFillElement(size){
-							if($$horizontal){
-								$fillElement.css({
-									'width': $scope.offsetBefore + size + $scope.offsetAfter + 'px',
-									'height': '100%'
-								});
-								if($ctrl && $ctrl.$fillElement){
-									var referenceElement = $ctrl.$fillElement[0].parentNode.querySelector('[ng-repeat]');
-									if(referenceElement)
-										$ctrl.$fillElement.css({
-											'width': referenceElement.scrollWidth + 'px'
-										});
-								}
-							}
-							else{
-								$fillElement.css({
-									'height': $scope.offsetBefore + size + $scope.offsetAfter + 'px',
-									'width': '100%'
-								});
-								if($ctrl && $ctrl.$fillElement){
-									referenceElement = $ctrl.$fillElement[0].parentNode.querySelector('[ng-repeat]');
-									if(referenceElement)
-										$ctrl.$fillElement.css({
-											'height': referenceElement.scrollHeight + 'px'
-										});
-								}
-							}
+						function resizeFillElement(){
+							$scope.fillHeight = Math.ceil((originalLength - $scope.endIndex) / $scope.itemsPerRow) * $scope.gridItemHeight;
 						}
 
 						var _prevClientSize;
@@ -392,25 +370,35 @@
 						});
 
 						function updateInnerCollection(){
-                            $scope.startIndex = Math.max(
-                                (Math.floor(
-                                    ($scrollParent[0][scrollPos] - $scope.offsetBefore - $element.offset().top) / $scope.gridItemHeight + $scope.excess/2
-                                ) - $scope.excess) * $scope.itemsPerRow,
-                                0
-                            );
+							if($scope.$showdetailsIdx != null && !$scope.$expandedHeight) {
+								var expandedChild = $element.children('.expanded').eq(0);
+								$scope.$expandedHeight = expandedChild.outerHeight(true) - expandedChild.outerHeight(false);
+							}
 
-                            $scope.endIndex = Math.min(
-                                $scope.startIndex + Math.ceil(
-                                    $scrollParent[0][scrollSize] / $scope.elementSize
-                                     + $scope.excess
-                                ) * $scope.itemsPerRow,
-                                originalLength
-                            );
-                            
-                            if($scope.startIndex & 1 && $scope.itemsPerRow == 1) {
-                                $scope.startIndex--; // always begin on an even index to keep odd/even classes working in CSS
-                            }
-                            
+							$scope.startIndex = Math.max(
+									(Math.floor(
+											($scrollParent[0][scrollPos]) / $scope.gridItemHeight + $scope.excess/2
+									) - $scope.excess) * $scope.itemsPerRow,
+									0
+							);
+
+							$scope.endIndex = Math.min(
+									$scope.startIndex + Math.ceil(
+											$scrollParent[0][scrollSize] / $scope.elementSize
+											+ $scope.excess
+									) * $scope.itemsPerRow,
+									originalLength
+							);
+
+							if($scope.$showdetailsIdx != null && $scope.startIndex > $scope.$showdetailsIdx) {
+								$scope.startIndex = Math.max(0, $scope.startIndex - Math.ceil($scope.$expandedHeight / $scope.gridItemHeight) * $scope.itemsPerRow);
+								//$scope.endIndex = Math.min(originalLength, $scope.endIndex + Math.floor($scope.$expandedHeight / $scope.gridItemHeight) * $scope.itemsPerRow);
+							}
+
+							if($scope.startIndex & 1 && $scope.itemsPerRow == 1) {
+								$scope.startIndex--; // always begin on an even index to keep odd/even classes working in CSS
+							}
+
 							var digestRequired = $scope.startIndex !== _prevStartIndex || $scope.endIndex !== _prevEndIndex;
 
 							if(digestRequired)
@@ -418,6 +406,11 @@
 
 							_prevStartIndex = $scope.startIndex;
 							_prevEndIndex = $scope.endIndex;
+
+// 							$preFillElement.css('height', );
+							$scope.preFillHeight = Math.floor($scope.startIndex / $scope.itemsPerRow) * $scope.gridItemHeight;
+							$scope.fillHeight = Math.ceil((originalLength - $scope.endIndex) / $scope.itemsPerRow) * $scope.gridItemHeight;
+							$scope.animateFill = false;
 
 							return digestRequired;
 						}
@@ -430,17 +423,17 @@
 	angular.element(document.head).append([
 		'<style>' +
 		'.vs-repeat-wheel-helper{' +
-			'position: absolute;' +
-			'top: 0;' +
-			'bottom: 0;' +
-			'left: 0;' +
-			'right: 0;' +
-			'z-index: 99999;' +
-			'background: rgba(0, 0, 0, 0);' +
+		'position: absolute;' +
+		'top: 0;' +
+		'bottom: 0;' +
+		'left: 0;' +
+		'right: 0;' +
+		'z-index: 99999;' +
+		'background: rgba(0, 0, 0, 0);' +
 		'}' +
 		'.vs-repeat-repeated-element{' +
-			'position: absolute;' +
-			'z-index: 1;' +
+			//'position: absolute;' +
+			//'z-index: 1;' +
 		'}' +
 		'</style>'
 	].join(''));

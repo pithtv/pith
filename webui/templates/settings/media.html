@@ -13,7 +13,7 @@
             </div>
 
             <div class="form-group" ng-class="{'has-error': settingsForm.scanInterval.$invalid}">
-                <label for="scanInterval">Scan for new library items every (ms):</label>
+                <label for="scanInterval">Scan for new library items every (minutes):</label>
                 <input type="number" ng-model="settings.library.scanInterval" class="form-control" convert-ms required min="1" name="scanInterval" id="scanInterval" />
             </div>
         </div>

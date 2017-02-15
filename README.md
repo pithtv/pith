@@ -38,6 +38,8 @@ Install node & bower
 
     sudo apt-get install nodejs
     npm install -g bower
+    
+Install ImageMagick: http://www.imagemagick.org/script/binary-releases.php or using your favorite package manager
 
 Clone the project:
 
@@ -49,8 +51,8 @@ Install node and bower dependencies
     npm install
     bower install
 
-Change the settings in lib/global.js (particularly the filepath to your content).
-
 Start it up
 
     node app.js
+
+Navigate to the URL that is mentioned in the logging, and click the menu to go into settings to set up your media path and library. Restart pith after saving those settings.

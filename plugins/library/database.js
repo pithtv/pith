@@ -9,14 +9,12 @@ module.exports = function(db) {
     var people = db.collection('people');
     var keywords = db.collection('keywords');
     var genres = db.collection('genres');
-    var shows = db.collection('shows');
-    var seasons = db.collection('seasons');
-    var episodes = db.collection('episodes');
+    var series = db.collection('series');
 
     function insertOrUpdate(collection, entity, callback) {
         entity.modificationTime = new Date();
         if(entity._id) {
-            collection.update({_id: entity._id}, entity, callback);
+            collection.update({_id: entity._id}, {$set: entity}, callback);
         } else {
             if(!entity.id) {
                 entity.id = uuid();
@@ -65,6 +63,18 @@ module.exports = function(db) {
                 callback(null, result);
             }
         });
+    }
+
+    function singleResult(callback) {
+        return function(err, result) {
+            if(!result || result.length == 0) {
+                callback(false, null);
+            } else if(result.length > 1) {
+                callback("Expecting single result");
+            } else {
+                callback(false, result[0]);
+            }
+        }
     }
     
     function getKeyword(name, callback) {
@@ -120,27 +130,77 @@ module.exports = function(db) {
     }
 
     function storeShow(item, callback) {
-        insertOrUpdate(shows, item, callback);
+        insertOrUpdate(series, item, callback);
     }
 
     function findSeason(item, callback) {
-        seasons.findOne(item, callback);
+        series.find({seasons: {$elemMatch: item}}, {'seasons.$': 1}).toArray(function(err, result) {
+            if(err) callback(err);
+            else callback(err, result[0] && result[0].seasons[0]);
+        });
+    }
+
+    function findSeasons(item, sorting) {
+        return series.find({id: item.showId}, {seasons: 1}).sort(sorting).toArray().catch(function(err) {
+            console.log(err);
+        }).then(function(e) {
+            return e[0].seasons;
+        });
     }
 
     function storeSeason(item, callback) {
-        insertOrUpdate(seasons, item, callback);
+        series.updateOne({id: item.showId, seasons: {$elemMatch: item}}, {$set: {'seasons.$': item}}, function(err, results) {
+            if(err) callback(err);
+            else if(results.nMatched) callback(err, results);
+            else series.updateOne({id: item.showId}, {$push: {seasons: item}}, callback);
+        });
     }
 
     function findEpisode(item, callback) {
-        episodes.findOne(item, callback);
+        series.find(
+            {episodes: { $elemMatch: item}},
+            {episodes: { $elemMatch: item}}
+        ).toArray(function(err, show) {
+            if(err) callback(err);
+            else {
+                callback(false, show[0] && show[0].episodes && show[0].episodes[0]);
+            }
+        });
+    }
+
+    function findEpisodes(item, callback) {
+        return series.find(
+            {
+                episodes: {
+                    $elemMatch: item
+                }
+            },
+            {
+                episodes: {
+                    $elemMatch: item
+                }
+            }
+        ).toArray().then(function(result) {
+            return result.reduce(function(a,b) {
+                return a.concat(b.episodes);
+            }, []);
+        });
     }
 
     function storeEpisode(item, callback) {
-        insertOrUpdate(episodes, item, callback);
+        series.updateOne({
+            id: item.showId,
+            episodes: {$elemMatch: {season: item.season, episode: item.episode}}
+        }, {$set: {'episodes.$': item}}, function (err, result) {
+            if (err || result.matchedCount) callback(err, result)
+            else series.updateOne({
+                id: item.showId
+            }, {$push: {'episodes': item}}, callback);
+        })
     }
 
     function findShow(query, callback) {
-        shows.findOne(query, callback);
+        series.find(query).toArray(singleResult(callback));
     }
     
     function getKeywords(callback) {
@@ -163,16 +223,16 @@ module.exports = function(db) {
         people.find({writer: true}).toArray(callback);
     }
 
-    function getShows(selector, callback) {
-        shows.find(selector).toArray(callback);
+    function findShows(selector, sorting) {
+        return series.find(selector).sort(sorting).toArray();
     }
     
     function findMovieByOriginalId(channelId, itemId, callback) {
-        movies.findOne({channelId: channelId, originalId: itemId}, callback);
+        movies.find({channelId: channelId, originalId: itemId}).toArray(singleResult(callback));
     }
     
     function getMovie(itemId, callback) {
-        movies.findOne({id: itemId}, callback);
+        movies.find({id: itemId}, singleResult(callback));
     }
 
     function findAll(query, opts, callback) {
@@ -204,14 +264,14 @@ module.exports = function(db) {
         findMovieByOriginalId: findMovieByOriginalId,
         getMovie: getMovie,
 
-        findShow: shows.findOne.bind(shows),
-        findShows: findAll.bind(shows),
+        findShow: findShow,
+        findShows: findShows,
         storeShow: storeShow,
         findSeason: findSeason,
-        findSeasons: findAll.bind(seasons),
+        findSeasons: findSeasons,
         storeSeason: storeSeason,
         findEpisode: findEpisode,
-        findEpisodes: findAll.bind(episodes),
+        findEpisodes: findEpisodes,
         storeEpisode: storeEpisode
     };
 };

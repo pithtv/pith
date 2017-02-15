@@ -6,10 +6,15 @@ var app = angular.module("PithApp",
         "ChannelControllers",
         "PlayerControlModule",
         "SettingsControllers",
+        "pith.tvDetailsModule",
         "vs-repeat",
+        "gallery",
+        "ptScrollModule",
         "angular-loading-bar",
         "ui.bootstrap",
-        "pith.restApi"])
+        "pith.restApi",
+        "ngAnimate",
+        "luegg.directives"])
     .config(['cfpLoadingBarProvider', function (cfpLoadingBarProvider) {
         cfpLoadingBarProvider.includeSpinner = false;
     }]);
@@ -34,7 +39,7 @@ app.config(['$routeProvider',
             })
     }]);
 
-app.controller("MainController", ['$scope','$pithRest','PlayerControlService', "$modal", function($scope, $pithRest, playerControl, $modal) {
+app.controller("MainController", ['$scope','$pithRest','PlayerControlService', "$uibModal", function($scope, $pithRest, playerControl, $modal) {
     var main = this;
     
     this.channels = [];
