@@ -151,7 +151,7 @@ module.exports = function(plugin) {
                     });
                 } else if(p.length == 3) {
                     db.findEpisode({showId: p[0], season: parseInt(p[1]), episode: parseInt(p[2])}, function(err, result) {
-                        if(err) cb(err);
+                        if(err || !result) cb(err);
                         else mapEpisode(result, cb);
                     });
                 }

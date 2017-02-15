@@ -7,6 +7,7 @@ var settings = require("../../lib/global")().settings;
 var playstate = require("./playstate");
 var ff = require("fluent-ffmpeg");
 var Channel = require("../../lib/channel");
+var wrapToPromise = require("../../lib/util").wrapToPromise;
 
 var metaDataProviders = [
     require("./movie-nfo"),
@@ -35,32 +36,34 @@ function FilesChannel(pith, statestore) {
 }
 
 FilesChannel.prototype = {
-    listContents: function(containerId, cb) {
-        var rootDir = this.rootDir, path;
-        if(containerId) {
-            path = $path.resolve(rootDir, containerId);
-        } else {
-            path = rootDir;
-        }
-        
-        var filesChannel = this;
-        
-        fs.readdir(path, function(err, files) {
-            if(err) {
-                cb(err);
+    listContents: function(containerId) {
+        return wrapToPromise(cb => {
+            var rootDir = this.rootDir, path;
+            if(containerId) {
+                path = $path.resolve(rootDir, containerId);
             } else {
-                async.map(files.filter(function(e) {
-                    return (e[0] != "." || settings.files.showHiddenFiles) && settings.files.excludeExtensions.indexOf($path.extname(e)) == -1;
-                }), function(file, cb) {
-                    var filepath = $path.resolve(path, file);
-                    var itemId = $path.relative(rootDir, filepath);
-                    filesChannel.getItem(itemId, false,function(err, item) {
-                        cb(err, item);
-                    });
-                }, function(err, contents) {
-                    cb(err, contents.filter(function(e) { return e !== undefined; }));
-                });
+                path = rootDir;
             }
+
+            var filesChannel = this;
+
+            fs.readdir(path, function(err, files) {
+                if(err) {
+                    cb(err);
+                } else {
+                    async.map(files.filter(function(e) {
+                        return (e[0] != "." || settings.files.showHiddenFiles) && settings.files.excludeExtensions.indexOf($path.extname(e)) == -1;
+                    }), function(file, cb) {
+                        var filepath = $path.resolve(path, file);
+                        var itemId = $path.relative(rootDir, filepath);
+                        filesChannel.getItem(itemId, false).then(function(item) {
+                            cb(false, item);
+                        }).catch(cb);
+                    }, function(err, contents) {
+                        cb(err, contents.filter(function(e) { return e !== undefined; }));
+                    });
+                }
+            });
         });
     },
 

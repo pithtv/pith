@@ -13,11 +13,8 @@ module.exports = function(opts) {
 
             function listContents(container, done) {
                 if (container) {
-                    channelInstance.listContents(container && container.id, function (err, contents) {
-                        if (err) {
-                            winston.error(err);
-                            done(err);
-                        } else if (contents && contents.length) {
+                    channelInstance.listContents(container && container.id).then(function(contents) {
+                        if (contents && contents.length) {
                             async.eachSeries(contents, function (item, cb) {
                                 if (item.type == 'container') {
                                     listContents(item, cb);
@@ -73,11 +70,11 @@ module.exports = function(opts) {
                         } else {
                             done();
                         }
-                    });
+                    }).catch(err => done(err));
                 }
             }
 
-            channelInstance.getItem(dir.containerId, function (err, container) {
+            channelInstance.getItem(dir.containerId).then(function(container) {
                 listContents(container, cb);
             });
         }

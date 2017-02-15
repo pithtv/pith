@@ -3,9 +3,11 @@
 var metadata = require("./metadata.tmdb.js");
 var db = require("./database");
 var async = require("async");
+var asyncPromise = require("../../lib/async");
 var winston = require("winston");
 var global = require("../../lib/global")();
 var Channel = require("../../lib/channel");
+var wrapToPromise = require("../../lib/util").wrapToPromise;
 
 var moviesDirectory = require("./directory.movies");
 var showsDirectory = require("./directory.shows");
@@ -19,10 +21,17 @@ function LibraryChannel(pithApp, directoryFactory) {
     this.directory = directoryFactory(this);
 }
 
+function wrap(resolve, reject) {
+    return (err, result) => {
+        if(err) reject(err);
+        else resolve(result);
+    }
+}
+
 LibraryChannel.prototype = {
-    listContents: function(containerId, cb) {
+    listContents: function(containerId) {
         if(!containerId) {
-            cb(null, this.directory.filter(function(d) {
+            return Promise.resolve(this.directory.filter(function(d) {
                 return d.visible !== false;
             }));
         } else {
@@ -34,15 +43,16 @@ LibraryChannel.prototype = {
                 return e.id == directoryId; 
             })[0];
             
-            directory._getContents(i > -1 ? containerId.substring(i+1) : null, cb);
+            return new Promise((resolve, reject) => {
+                directory._getContents(i > -1 ? containerId.substring(i+1) : null, wrap(resolve, reject));
+            });
         }
     },
 
-    listContentsWithPlayStates: function(path, cb) {
+    listContentsWithPlayStates: function(path) {
         var self = this;
-        this.listContents(path, function (err, contents) {
-            if(err) cb(err);
-            else async.map(contents, function (item, cb) {
+        return this.listContents(path).then(function(contents) {
+            return asyncPromise.map(contents, function (item, cb) {
                 if(item.playState != null) {
                     cb(false, item);
                 } else {
@@ -51,13 +61,13 @@ LibraryChannel.prototype = {
                         cb(err, item);
                     });
                 }
-            }, cb);
+            });
         });
     },
     
-    getItem: function(itemId, cb) {
+    getItem: function(itemId) {
         if(!itemId) {
-            cb(null, { title: "Movies" });
+            return Promise.resolve({ title: "Movies" });
         } else {
             var i = itemId.indexOf('/');
             
@@ -68,14 +78,15 @@ LibraryChannel.prototype = {
             })[0];
             
             if(!directory) {
-                cb(Error("Not found"));
-                return;
+                return Promise.reject(Error("Not found"));
             }
             
             if(directory._getItem) {
-                directory._getItem(i > -1 ? itemId.substring(i+1).replace(/\/$/,'') : null, cb);
+                return wrapToPromise(cb => {
+                    directory._getItem(i > -1 ? itemId.substring(i+1).replace(/\/$/,'') : null, cb);
+                });
             } else {
-                cb(null, { id: itemId });
+                return Promise.resolve({id: itemId});
             }
         }
     },
@@ -83,13 +94,9 @@ LibraryChannel.prototype = {
     getStream: function(item, cb) {
         var channel = this;
         var targetChannel = channel.pithApp.getChannelInstance(item.channelId);
-        targetChannel.getItem(item.originalId, function(err, item) {
-            if(err) {
-                cb(err);
-            } else {
-                targetChannel.getStream(item, cb);
-            }
-        });
+        targetChannel.getItem(item.originalId).then(function(item) {
+            targetChannel.getStream(item, cb);
+        }).catch(cb);
     },
 
     getLastPlayStateFromItem: function(item, cb) {

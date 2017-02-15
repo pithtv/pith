@@ -100,13 +100,13 @@ Pith.prototype = {
     },
     
     getChannelContentDetail: function (channelId, containerId, cb) {
-        this.getChannelInstance(channelId).getItem(containerId, cb);
+        this.getChannelInstance(channelId).getItem(containerId).then(result => cb(false, result)).catch(cb);
     },
     
     listChannelContents: function (channelId, containerId, cb, options) {
         var ci = this.getChannelInstance(channelId);
-        ci.listContents(containerId, function(err, contents) {
-            if(!err && options.includePlayStates) {
+        ci.listContents(containerId).then(function(contents) {
+            if(options.includePlayStates) {
                 async.map(contents, function(item, m) {
                     ci.getLastPlayState(item.id, function(err, state) {
                         item.playState = state;
@@ -116,10 +116,9 @@ Pith.prototype = {
                     cb(err, result);
                 });
             } else {
-                cb(err, contents);
+                cb(null, contents);
             }
-        });
-        
+        }).catch(err => cb(err));
     },
     
     getStream: function (channelId, itemId, cb) {
@@ -154,7 +153,7 @@ Pith.prototype = {
             return;
         }
         var channel = self.getChannelInstance(channelId);
-        channel.getItem(itemId, function(err, item) {
+        channel.getItem(itemId).then((item) => {
             player.load(channel, item, function(err) {
                 if(err) {
                     cb(err);
@@ -164,7 +163,7 @@ Pith.prototype = {
                     }, opts && opts.time);
                 }
             });
-        });
+        }).catch(err => cb(err));
     },
     
     controlPlayback: function(playerId, command, query, cb) {
@@ -181,6 +180,7 @@ Pith.prototype = {
         require("./plugins/library/plugin").init({pith: this});
         require("./plugins/upnp-mediarenderer/plugin").init({pith: this});
         require("./plugins/yamaha/plugin").init({pith: this});
+        require("./plugins/sonarr/plugin").init({pith: this});
     },
 
     settings: function(settings) {
