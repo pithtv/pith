@@ -13,7 +13,7 @@ angular
                     var show = response.data;
                     $scope.show = show;
                     $scope.seasons = show.seasons.sort(function(a,b) {
-                        return a.season - b.season;
+                        return a.season == b.season ? 0 : a.season == 0 ? 1 : b.season == 0 ? -1 : a.season - b.season;
                     });
                     if(!$scope.selectedSeason || $scope.seasons.indexOf($scope.selectedSeason) == -1) {
                         $scope.selectedSeason = $scope.seasons[0];
@@ -42,7 +42,7 @@ angular
         $scope.selectSeason = function(season) {
             $scope.selectedSeason = season;
             $scope.episodes = null;
-        }
+        };
 
         $scope.$watch('$expandedItem', fetchDetails);
         $scope.$watch('selectedSeason', fetchEpisodes);
