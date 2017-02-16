@@ -121,11 +121,6 @@ Pith.prototype = {
         }).catch(err => cb(err));
     },
     
-    getStream: function (channelId, itemId, cb) {
-        var channelInstance = this.getChannelInstance(channelId);
-        channelInstance.getStream(itemId, cb);
-    },
-    
     getLastPlayState: function(channelId, itemId, cb) {
         var channelInstance = this.getChannelInstance(channelId);
         channelInstance.getLastPlayState(itemId, cb);

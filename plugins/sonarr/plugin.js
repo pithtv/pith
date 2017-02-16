@@ -53,64 +53,28 @@ class SonarrChannel extends Channel {
                 type: 'container',
                 unavailable: sonarrSeason.episodeCount == 0
             })),
-            /*
-             {
-             "seriesId": 1,
-             "episodeFileId": 806,
-             "seasonNumber": 12,
-             "episodeNumber": 8,
-             "title": "Morning Mimosa",
-             "airDate": "2015-03-02",
-             "airDateUtc": "2015-03-03T01:30:00Z",
-             "overview": "When Steve swears at Francine, she refuses to cook for him, and he becomes a successful chef, appearing on a popular morning show. Meanwhile, Stan thinks he can make people invisible by snapping his fingers.",
-             "episodeFile": {
-             "seriesId": 1,
-             "seasonNumber": 12,
-             "relativePath": "Season 12/American Dad! - 12x08 - Morning Mimosa.mkv",
-             "path": "/mnt/store/Public/Series/American Dad!/Season 12/American Dad! - 12x08 - Morning Mimosa.mkv",
-             "size": 368251435,
-             "dateAdded": "2015-03-03T02:56:23.903615Z",
-             "sceneName": "American.Dad.S11E08.720p.HDTV.x264-KILLERS",
-             "quality": {
-             "quality": {
-             "id": 4,
-             "name": "HDTV-720p"
-             },
-             "revision": {
-             "version": 1,
-             "real": 0
-             }
-             },
-             "qualityCutoffNotMet": false,
-             "id": 806
-             },
-             "hasFile": true,
-             "monitored": false,
-             "sceneAbsoluteEpisodeNumber": 183,
-             "sceneEpisodeNumber": 8,
-             "sceneSeasonNumber": 11,
-             "unverifiedSceneNumbering": false,
-             "id": 189
-             },
-             */
-
-            episodes: episodes && episodes.map(sonarrEpisode => ({
-                airDate: sonarrEpisode.airDate,
-                dateScanned: sonarrEpisode.dateAdded,
-                episode: sonarrEpisode.episodeNumber,
-                season: sonarrEpisode.seasonNumber,
-                id: `sonarr.show.${show.id}.season.${sonarrEpisode.seasonNumber}.episode.${sonarrEpisode.episodeNumber}`,
-                mediatype: 'episode',
-                overview: sonarrEpisode.overview,
-                playable: sonarrEpisode.hasFile,
-                // still: "http://image.tmdb.org/t/p/original/mxSQsHOJdVrUvHC4qoAAubVgiph.jpg",
-                title: sonarrEpisode.title,
-                type: 'item',
-                unavailable: !sonarrEpisode.hasFile
-            }))
+            episodes: episodes && episodes.map(sonarrEpisode => this.convertEpisode(sonarrEpisode))
         };
 
         return pithShow;
+    }
+
+    convertEpisode(sonarrEpisode) {
+        return {
+            id: `sonarr.episode.${sonarrEpisode.id}`,
+            type: 'item',
+            mediatype: 'episode',
+            airDate: sonarrEpisode.airDate,
+            dateScanned: sonarrEpisode.dateAdded,
+            season: sonarrEpisode.seasonNumber,
+            episode: sonarrEpisode.episodeNumber,
+            overview: sonarrEpisode.overview,
+            playable: sonarrEpisode.hasFile,
+            // still: "http://image.tmdb.org/t/p/original/mxSQsHOJdVrUvHC4qoAAubVgiph.jpg",
+            title: sonarrEpisode.title,
+            unavailable: !sonarrEpisode.hasFile,
+            sonarrEpisodeFileId: sonarrEpisode.episodeFileId
+        };
     }
 
     listContents(containerId) {
@@ -122,25 +86,35 @@ class SonarrChannel extends Channel {
     }
 
     getItem(itemId, detailed) {
-        let showMatch = itemId.match(/^sonarr\.show\.([^.]*)$/);
-        if(showMatch) {
-            let seriesId = showMatch[1];
-            return Promise.all([
-                this._get(`api/episode?seriesId=${seriesId}`),
-                this._get(`api/series/${seriesId}`)
-            ]).then(result => {
-                let episodes = result[0],
-                    show = result[1];
+        let match = itemId.match(/^sonarr\.(show|episode)\.([^.]*)$/),
+            mediaType = match && match[1],
+            id = match && match[2];
+        switch(mediaType) {
+            case 'show':
+                return Promise.all([
+                    this._get(`api/episode?seriesId=${id}`),
+                    this._get(`api/series/${id}`)
+                ]).then(result => {
+                    let episodes = result[0],
+                        show = result[1];
 
-                return this.convertSeries(show, episodes);
-            });
-        } else {
-            return Promise.resolve({});
+                    return this.convertSeries(show, episodes);
+                });
+            case 'episode':
+                return this._get(`api/episode/${id}`).then(episode => this.convertEpisode(episode));
+            default:
+                return Promise.resolve({id: itemId});
         }
     }
 
     getStream(item) {
-
+        let filesChannel = this.pith.getChannelInstance('files');
+        return this._get(`api/episodeFile/${item.sonarrEpisodeFileId}`).then(file => {
+            let fileId = filesChannel.resolveFile(file.path);
+            return filesChannel.getItem(fileId);
+        }).then(file => {
+            return filesChannel.getStream(file)
+        });
     }
 
     getLastPlayState(itemId, cb) {

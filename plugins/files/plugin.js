@@ -71,71 +71,72 @@ FilesChannel.prototype = {
         return $path.resolve(this.rootDir, decodeURIComponent(path));
     },
     
-    getItem: function(itemId, detailed, cb) {
-        if(typeof detailed === 'function') {
-            cb = detailed;
-            detailed = true;
-        }
-        
-        var filepath = $path.resolve(this.rootDir, itemId);
-        var channel = this;
-        fs.stat(filepath, function(err, stats) {
-            var item = {
-                title: $path.basename(itemId),
-                id: itemId
-            };
+    getItem: function(itemId, detailed) {
+        return new Promise((resolve, reject) => {
+            if(arguments.length == 1) {
+                detailed = true;
+            }
 
-            if(stats && stats.isDirectory()) {
-                item.type = 'container';
-            } else {
-                item.type = 'file';
-                var extension = $path.extname(itemId);
-                item.mimetype = mimetypes[extension];
-                item.playable = item.mimetype && true;
-                
-                item.fileSize = stats && stats.size;
-                item.modificationTime = stats && stats.mtime;
-                item.creationTime = stats && stats.ctime;
-                item.fsPath = filepath;
-            }
-            
-            var applicableProviders = metaDataProviders.filter(function(f) {
-                return f.appliesTo(channel, filepath, item);
-            });
-            
-            if(applicableProviders.length) {
-                async.parallel(applicableProviders.map(function(f) {
-                    return function(cb) {
-                        f.get(channel, filepath, item, cb);
-                    };
-                }), function() {
-                    cb(null, item);
+            var filepath = $path.resolve(this.rootDir, itemId);
+            var channel = this;
+            fs.stat(filepath, function(err, stats) {
+                var item = {
+                    title: $path.basename(itemId),
+                    id: itemId
+                };
+
+                if(stats && stats.isDirectory()) {
+                    item.type = 'container';
+                } else {
+                    item.type = 'file';
+                    var extension = $path.extname(itemId);
+                    item.mimetype = mimetypes[extension];
+                    item.playable = item.mimetype && true;
+
+                    item.fileSize = stats && stats.size;
+                    item.modificationTime = stats && stats.mtime;
+                    item.creationTime = stats && stats.ctime;
+                    item.fsPath = filepath;
+                }
+
+                var applicableProviders = metaDataProviders.filter(function(f) {
+                    return f.appliesTo(channel, filepath, item);
                 });
-            } else {
-                cb(null, item);
-            }
+
+                if(applicableProviders.length) {
+                    async.parallel(applicableProviders.map(function(f) {
+                        return function(cb) {
+                            f.get(channel, filepath, item, cb);
+                        };
+                    }), function() {
+                        resolve(item);
+                    });
+                } else {
+                    resolve(item);
+                }
+            });
         });
     },
     
-    getStream: function(item, cb) {
-        var channel = this;
-        var itemId = item.id;
-        var itemPath = itemId.split($path.sep).map(encodeURIComponent).join("/");
-        ff.ffprobe(this.getFile(item.id), function(err, metadata) {
-            if(err) {
-                cb(err);
-                return;
-            }
-            var desc = {
-                url: channel.pith.rootUrl + "stream/" + itemPath,
-                mimetype: item.mimetype
-            };
+    getStream: function(item) {
+        return new Promise((resolve, reject) => {
+            var channel = this;
+            var itemId = item.id;
+            var itemPath = itemId.split($path.sep).map(encodeURIComponent).join("/");
+            ff.ffprobe(this.getFile(item.id), function(err, metadata) {
+                if(err) {
+                    reject(err);
+                } else {
+                    var desc = {
+                        url: channel.pith.rootUrl + "stream/" + itemPath,
+                        mimetype: item.mimetype
+                    };
 
-            if(!err) {
-                desc.duration = parseFloat(metadata.format.duration) * 1000;
-            }
+                    desc.duration = parseFloat(metadata.format.duration) * 1000;
 
-            cb(false, desc);
+                    resolve(desc);
+                }
+            });
         });
     },
     
@@ -155,6 +156,17 @@ FilesChannel.prototype = {
             if(cb) cb(false, "OK");
         } catch(e) {
             if(cb) cb(e);
+        }
+    },
+
+    resolveFile: function(file) {
+        if(file.startsWith(this.rootDir)) {
+            var relative = file.substring(this.rootDir.length);
+            if(relative.startsWith('/')) {
+                return relative.substring(1);
+            } else {
+                return relative;
+            }
         }
     }
 };

@@ -95,12 +95,7 @@ MediaRenderer.prototype = {
     load: function(channel, item, cb) {
         var renderer = this;
         
-        channel.getStream(item, function(err, stream) {
-            if(err) {
-                cb(err);
-                return;
-            }
-
+        channel.getStream(item).then(stream => {
             var mediaUrl = stream.url;
             console.log("Loading " + mediaUrl);
             
@@ -131,8 +126,7 @@ MediaRenderer.prototype = {
             } else {
                 doLoad();
             }
-        });
-        
+        }).catch(cb);
     },
     
     play: function(cb, time) {
