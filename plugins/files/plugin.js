@@ -140,22 +140,22 @@ FilesChannel.prototype = {
         });
     },
     
-    getLastPlayState: function(itemId, cb) {
+    getLastPlayState: function(itemId) {
         var state = this.statestore.get(itemId);
-        process.nextTick(cb.bind(this, false, state));
+        return Promise.resolve(state);
     },
 
-    getLastPlayStateFromItem: function(item, cb) {
-        this.getLastPlayState(item.id, cb);
+    getLastPlayStateFromItem: function(item) {
+        return this.getLastPlayState(item.id);
     },
     
-    putPlayState: function(itemId, state, cb) {
+    putPlayState: function(itemId, state) {
         try {
             state.id = itemId;
             this.statestore.put(state);
-            if(cb) cb(false, "OK");
+            return Promise.resolve();
         } catch(e) {
-            if(cb) cb(e);
+            return Promise.reject(e);
         }
     },
 
@@ -163,10 +163,9 @@ FilesChannel.prototype = {
         if(file.startsWith(this.rootDir)) {
             var relative = file.substring(this.rootDir.length);
             if(relative.startsWith('/')) {
-                return relative.substring(1);
-            } else {
-                return relative;
+                relative = relative.substring(1);
             }
+            return this.getItem(relative);
         }
     }
 };

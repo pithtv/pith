@@ -5,6 +5,20 @@ var fetch = require('node-fetch');
 var parseUrl = require('url').parse;
 var Channel = require("../../lib/channel");
 
+function parseItemId(itemId) {
+    if(!itemId) {
+        return {
+            mediatype: 'root'
+        };
+    }
+    let match = itemId.match(/^sonarr\.(show|episode)\.([^.]*)$/);
+    if(match) {
+        let mediatype = match && match[1],
+            id = match && match[2];
+        return {mediatype, id};
+    }
+}
+
 class SonarrChannel extends Channel {
     constructor(pith, url, apikey) {
         super(pith);
@@ -48,19 +62,26 @@ class SonarrChannel extends Channel {
             type: 'container',
             seasons: show.seasons.map(sonarrSeason => ({
                 id: `sonarr.show.${show.id}.season.${sonarrSeason.seasonNumber}`,
-                mediaType: 'season',
+                mediatype: 'season',
                 season: sonarrSeason.seasonNumber,
                 type: 'container',
                 unavailable: sonarrSeason.episodeCount == 0
-            })),
-            episodes: episodes && episodes.map(sonarrEpisode => this.convertEpisode(sonarrEpisode))
+            }))
         };
 
-        return pithShow;
+        let mappedEpisodes;
+        if(episodes) {
+            return Promise.all(episodes.map(sonarrEpisode => this.convertEpisode(sonarrEpisode))).then(mappedEpisodes => {
+                pithShow.episodes = mappedEpisodes;
+                return pithShow
+            });
+        } else {
+            return Promise.resolve(pithShow);
+        }
     }
 
     convertEpisode(sonarrEpisode) {
-        return {
+        let episode = {
             id: `sonarr.episode.${sonarrEpisode.id}`,
             type: 'item',
             mediatype: 'episode',
@@ -73,27 +94,26 @@ class SonarrChannel extends Channel {
             // still: "http://image.tmdb.org/t/p/original/mxSQsHOJdVrUvHC4qoAAubVgiph.jpg",
             title: sonarrEpisode.title,
             unavailable: !sonarrEpisode.hasFile,
-            sonarrEpisodeFileId: sonarrEpisode.episodeFileId
+            sonarrEpisodeFileId: sonarrEpisode.episodeFileId,
+            _episodeFile: sonarrEpisode.episodeFile
         };
+        return this.getLastPlayStateFromItem(episode).then(playState => {
+            episode.playState = playState;
+            return episode;
+        })
     }
 
     listContents(containerId) {
         return this._get('api/series').then(series => series.map(show => this.convertSeries(show)));
     }
 
-    getFile(path) {
-
-    }
-
     getItem(itemId, detailed) {
-        let match = itemId.match(/^sonarr\.(show|episode)\.([^.]*)$/),
-            mediaType = match && match[1],
-            id = match && match[2];
-        switch(mediaType) {
+        let parsed = parseItemId(itemId);
+        switch(parsed.mediatype) {
             case 'show':
                 return Promise.all([
-                    this._get(`api/episode?seriesId=${id}`),
-                    this._get(`api/series/${id}`)
+                    this._get(`api/episode?seriesId=${parsed.id}`),
+                    this._get(`api/series/${parsed.id}`)
                 ]).then(result => {
                     let episodes = result[0],
                         show = result[1];
@@ -101,31 +121,58 @@ class SonarrChannel extends Channel {
                     return this.convertSeries(show, episodes);
                 });
             case 'episode':
-                return this._get(`api/episode/${id}`).then(episode => this.convertEpisode(episode));
+                return this._get(`api/episode/${parsed.id}`).then(episode => this.convertEpisode(episode));
             default:
                 return Promise.resolve({id: itemId});
         }
     }
 
+    getFile(item) {
+        let filesChannel = this.pith.getChannelInstance('files'),
+            sonarrFile;
+
+        if(item._episodeFile) {
+            sonarrFile = Promise.resolve(item._episodeFile);
+        } else {
+            sonarrFile = this._get(`api/episodeFile/${item.sonarrEpisodeFileId}`);
+        }
+        return sonarrFile.then(file => {
+            return filesChannel.resolveFile(file.path)
+        });
+    }
+
     getStream(item) {
         let filesChannel = this.pith.getChannelInstance('files');
-        return this._get(`api/episodeFile/${item.sonarrEpisodeFileId}`).then(file => {
-            let fileId = filesChannel.resolveFile(file.path);
-            return filesChannel.getItem(fileId);
-        }).then(file => {
+        return this.getFile(item).then(file => {
             return filesChannel.getStream(file)
         });
     }
 
-    getLastPlayState(itemId, cb) {
-        cb();
+    getLastPlayState(itemId) {
+        let parsed = parseItemId(itemId);
+        if(parsed.mediatype == 'episode') {
+            return this.getItem(itemId).then(item => this.getLastPlayStateFromItem(item));
+        } else {
+            return Promise.resolve();
+        }
     }
 
-    getLastPlayStateFromItem(item, cb) {
-        return this.getLastPlayState(item.id);
+    getLastPlayStateFromItem(item) {
+        if(item.mediatype == 'episode') {
+            if(item.unavailable) {
+                return Promise.resolve();
+            } else {
+                let filesChannel = this.pith.getChannelInstance('files');
+                return this.getFile(item).then(file => filesChannel.getLastPlayStateFromItem(file));
+            }
+        } else {
+            return Promise.resolve();
+        }
     }
 
     putPlayState(itemId, state) {
+        let filesChannel = this.pith.getChannelInstance('files');
+        return this.getItem(itemId).then(item => this.getFile(item)).then(file => filesChannel.putPlayState(file.id, state));
     }
 }
 

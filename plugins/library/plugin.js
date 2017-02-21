@@ -3,7 +3,6 @@
 var metadata = require("./metadata.tmdb.js");
 var db = require("./database");
 var async = require("async");
-var asyncPromise = require("../../lib/async");
 var winston = require("winston");
 var global = require("../../lib/global")();
 var Channel = require("../../lib/channel");
@@ -51,18 +50,12 @@ LibraryChannel.prototype = {
 
     listContentsWithPlayStates: function(path) {
         var self = this;
-        return this.listContents(path).then(function(contents) {
-            return asyncPromise.map(contents, function (item, cb) {
-                if(item.playState != null) {
-                    cb(false, item);
-                } else {
-                    self.getLastPlayStateFromItem(item, function (err, state) {
-                        item.playState = state;
-                        cb(err, item);
-                    });
-                }
-            });
-        });
+        return this.listContents(path).then(contents =>
+            Promise.all(contents.map(item => this.getLastPlayStateFromItem(item).then(playState => {
+                item.playState = playState;
+                return item;
+            })))
+        );
     },
     
     getItem: function(itemId) {
@@ -97,32 +90,27 @@ LibraryChannel.prototype = {
         return targetChannel.getItem(item.originalId).then(item => targetChannel.getStream(item));
     },
 
-    getLastPlayStateFromItem: function(item, cb) {
+    getLastPlayStateFromItem: function(item) {
         if(item && item.originalId) {
             var targetChannel = this.pithApp.getChannelInstance(item.channelId);
-            targetChannel.getLastPlayState(item.originalId, cb);
+            return targetChannel.getLastPlayState(item.originalId);
         } else {
-            cb(false);
+            return Promise.resolve();
         }
     },
     
-    getLastPlayState: function(itemId, cb) {
-        var self = this;
-        this.getItem(itemId, function(err, item) {
-            if(err) cb(err);
-            else self.getLastPlayStateFromItem(item, cb);
-        });
+    getLastPlayState: function(itemId) {
+        return this.getItem(itemId).then(item => this.getLastPlayStateFromItem(item));
     },
     
     putPlayState: function(itemId, state, cb) {
         var self = this;
-        this.getItem(itemId, function(err, item) {
+        return this.getItem(itemId, function(err, item) {
             if(err || item == undefined) {
-                if(cb) cb(err);
-                return;
+                return Promise.reject(err);
             }
             var targetChannel = self.pithApp.getChannelInstance(item.channelId);
-            targetChannel.putPlayState(item.originalId, state, cb);
+            return targetChannel.putPlayState(item.originalId, state);
         });
     }
 };

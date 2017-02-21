@@ -123,7 +123,7 @@ Pith.prototype = {
     
     getLastPlayState: function(channelId, itemId, cb) {
         var channelInstance = this.getChannelInstance(channelId);
-        channelInstance.getLastPlayState(itemId, cb);
+        channelInstance.getLastPlayState(itemId).then(result => cb(false, result)).catch(cb);
     },
     
     putPlayState: function(channelId, itemId, state, cb) {
@@ -136,7 +136,10 @@ Pith.prototype = {
                     state.status = 'inprogress';
                 }
             }
-            channelInstance.putPlayState(itemId, state, cb);
+            let promise = channelInstance.putPlayState(itemId, state);
+            if(cb) {
+                promise.then(result => cb(false, result)).catch(cb);
+            }
         }
     },
     

@@ -95,21 +95,18 @@ module.exports = function(plugin) {
     }
 
     function mapEpisode(m, cb) {
-        plugin.getLastPlayStateFromItem(m, function(err, playState) {
-            if(err) cb(err);
-            else {
-                cb(false,
-                    extend({}, m, {
-                        id: 'shows/' + m.showId + '/' + m.season + '/' + m.episode,
-                        episodeId: m.id,
-                        type: 'item',
-                        mediatype: 'season',
-                        playState: playState,
-                        playable: m.originalId != null,
-                        unavailable: m.originalId == null
-                    }));
-            }
-        });
+        plugin.getLastPlayStateFromItem(m).then(playState => {
+            cb(false,
+                extend({}, m, {
+                    id: 'shows/' + m.showId + '/' + m.season + '/' + m.episode,
+                    episodeId: m.id,
+                    type: 'item',
+                    mediatype: 'season',
+                    playState: playState,
+                    playable: m.originalId != null,
+                    unavailable: m.originalId == null
+                }));
+        }).catch(cb);
     }
 
     return [
