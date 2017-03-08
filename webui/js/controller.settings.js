@@ -20,6 +20,10 @@ settingsModule.controller('mainSettingsController',
                 {
                     title: "Advanced",
                     template: "templates/settings/advanced.html"
+                },
+                {
+                    title: "Integrations",
+                    template: "templates/settings/integrations.html"
                 }
             ];
 
@@ -59,11 +63,21 @@ settingsModule.controller('mainSettingsController',
             }).result.then(function () {
                     settings.library.folders.splice(settings.library.folders.indexOf(container), 1);
                 })
-        }
+        };
 
         $scope.categories = {
             movies: "Movies",
             tvshows: "TV shows",
             music: "Music"
         };
-    }]);
+}]).controller('sonarrSettingsController', ["$scope", function($scope) {
+    var settings = $scope.$parent.settings;
+    $scope.getGeneralSettingsUrl = function() {
+        var url = settings.sonarr.url;
+        if(!url.endsWith('/')) {
+            url += '/';
+        }
+        url += 'settings/general';
+        return url;
+    }
+}]);

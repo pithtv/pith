@@ -22,7 +22,7 @@ function parseItemId(itemId) {
 class SonarrChannel extends Channel {
     constructor(pith, url, apikey) {
         super(pith);
-        this.url = parseUrl(url);
+        this.url = parseUrl(url.endsWith("/") ? url : url + "/");
         this.pith = pith;
         this.apikey = apikey;
     }
@@ -178,7 +178,7 @@ class SonarrChannel extends Channel {
 
 module.exports = {
     init(opts) {
-        if(settings.sonarr && settings.sonarr.url) {
+        if(settings.sonarr && settings.sonarr.enabled && settings.sonarr.url) {
             opts.pith.registerChannel({
                 id: 'sonarr',
                 title: 'Sonarr',
