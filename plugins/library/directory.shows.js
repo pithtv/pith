@@ -3,48 +3,13 @@
 var async = require("async");
 var global = require("../../lib/global")();
 var extend = require("node.extend");
+var TvShowUtils = require("../../lib/tvshowutils");
 
 const SOME_INPROGRESS=1, SOME_WATCHED=2, SOME_UNWATCHED=4;
 
 module.exports = function(plugin) {
 
     var db = plugin.db;
-
-    function aggregatePlayState(items) {
-        var aggr = items.reduce(function (state, ep) {
-            switch (ep.playState && ep.playState.status) {
-                case 'inprogress':
-                    return state | 1;
-                case 'watched':
-                    return state | 2;
-                default:
-                    return state | 4;
-            }
-        }, 0);
-        var playstate;
-        switch (aggr) {
-            case 0:
-                playstate = 'watched';
-                break; // none watched, inprogress, or unwatched... so basically no episodes whatsoever
-            case 1:
-                playstate = 'inprogress';
-                break; // all in progress
-            case 2:
-                playstate = 'watched';
-                break; // all watched
-            case 3:
-                playstate = 'inprogress';
-                break; // some watched, some in progress
-            case 4:
-                playstate = null;
-                break; // all unwatched
-            default:
-                playstate = 'inprogress'; // some unwatched
-        }
-        return {
-            status: playstate
-        };
-    }
 
     function byEpisode(a,b) {
         return (a.season - b.season) || (a.episode - b.episode);
@@ -64,11 +29,11 @@ module.exports = function(plugin) {
                     var seasonEps = episodes.filter(function(ep) {
                         return ep.season == season.season;
                     });
-                    var playstate = aggregatePlayState(seasonEps);
+                    var playstate = TvShowUtils.aggregatePlayState(seasonEps);
                     season.playState = playstate;
                     return season;
                 });
-                var playState = seasons && aggregatePlayState(seasons);
+                var playState = seasons && TvShowUtils.aggregatePlayState(seasons);
                 var lastPlayable = findLastPlayable(episodes);
                 cb(false, extend({}, m, {
                     id: 'shows/' + m.id,

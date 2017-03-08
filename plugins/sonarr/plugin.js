@@ -4,6 +4,9 @@ var settings = require("../../lib/global")().settings;
 var fetch = require('node-fetch');
 var parseUrl = require('url').parse;
 var Channel = require("../../lib/channel");
+var TvShowUtils = require("../../lib/tvshowutils");
+var global = require("../../lib/global")();
+var parseDate = require("../../lib/util").parseDate;
 
 function parseItemId(itemId) {
     if(!itemId) {
@@ -73,6 +76,21 @@ class SonarrChannel extends Channel {
         if(episodes) {
             return Promise.all(episodes.map(sonarrEpisode => this.convertEpisode(sonarrEpisode))).then(mappedEpisodes => {
                 pithShow.episodes = mappedEpisodes;
+
+                let lastPlayable;
+                for(let x=mappedEpisodes.length;x && !lastPlayable;x--) {
+                    if(mappedEpisodes[x-1].playable) lastPlayable = mappedEpisodes[x-1];
+                }
+
+                pithShow.seasons.forEach(season => {
+                    let seasonEps = mappedEpisodes.filter(ep => ep.season == season.season);
+                    season.playState = TvShowUtils.aggregatePlayState(seasonEps);
+                });
+
+                pithShow.playState = TvShowUtils.aggregatePlayState(pithShow.seasons);
+
+                pithShow.hasNew = lastPlayable && (!lastPlayable.playState || lastPlayable.playState.status != 'watched') && lastPlayable.dateScanned > (new Date(new Date() - 1000 * 60 * 60 * 24 * global.settings.maxAgeForNew));
+
                 return pithShow
             });
         } else {
@@ -86,7 +104,7 @@ class SonarrChannel extends Channel {
             type: 'item',
             mediatype: 'episode',
             airDate: sonarrEpisode.airDate,
-            dateScanned: sonarrEpisode.dateAdded,
+            dateScanned: sonarrEpisode.episodeFile && parseDate(sonarrEpisode.episodeFile.dateAdded),
             season: sonarrEpisode.seasonNumber,
             episode: sonarrEpisode.episodeNumber,
             overview: sonarrEpisode.overview,
@@ -104,16 +122,21 @@ class SonarrChannel extends Channel {
     }
 
     listContents(containerId) {
-        return this._get('api/series').then(series => series.sort((a,b) => a.title.localeCompare(b.title))).then(series => series.map(show => this.convertSeries(show)));
+        return this._get('api/series').then(
+            series => series.sort((a,b) => a.title.localeCompare(b.title))
+        ).then(
+            series => series.map(show => this.queryEpisodes(show.id).then(episodes => this.convertSeries(show, episodes)))
+        );
     }
 
     getItem(itemId, detailed) {
         let parsed = parseItemId(itemId);
+        var sonarrId = parsed.id;
         switch(parsed.mediatype) {
             case 'show':
                 return Promise.all([
-                    this._get(`api/episode?seriesId=${parsed.id}`),
-                    this._get(`api/series/${parsed.id}`)
+                    this.queryEpisodes(sonarrId),
+                    this.querySeries(sonarrId)
                 ]).then(result => {
                     let episodes = result[0],
                         show = result[1];
@@ -121,10 +144,18 @@ class SonarrChannel extends Channel {
                     return this.convertSeries(show, episodes);
                 });
             case 'episode':
-                return this._get(`api/episode/${parsed.id}`).then(episode => this.convertEpisode(episode));
+                return this._get(`api/episode/${sonarrId}`).then(episode => this.convertEpisode(episode));
             default:
                 return Promise.resolve({id: itemId});
         }
+    }
+
+    querySeries(sonarrId) {
+        return this._get(`api/series/${sonarrId}`);
+    }
+
+    queryEpisodes(sonarrId) {
+        return this._get(`api/episode?seriesId=${sonarrId}`);
     }
 
     getFile(item) {
