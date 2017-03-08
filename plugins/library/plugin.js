@@ -51,10 +51,16 @@ LibraryChannel.prototype = {
     listContentsWithPlayStates: function(path) {
         var self = this;
         return this.listContents(path).then(contents =>
-            Promise.all(contents.map(item => this.getLastPlayStateFromItem(item).then(playState => {
-                item.playState = playState;
-                return item;
-            })))
+            Promise.all(contents.map(item => {
+                if(item.playState) {
+                    return item;
+                } else {
+                    return this.getLastPlayStateFromItem(item).then(playState => {
+                        item.playState = playState;
+                        return item;
+                    })
+                }
+            }))
         );
     },
     
