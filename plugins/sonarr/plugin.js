@@ -104,7 +104,7 @@ class SonarrChannel extends Channel {
     }
 
     listContents(containerId) {
-        return this._get('api/series').then(series => series.map(show => this.convertSeries(show)));
+        return this._get('api/series').then(series => series.sort((a,b) => a.title.localeCompare(b.title))).then(series => series.map(show => this.convertSeries(show)));
     }
 
     getItem(itemId, detailed) {
