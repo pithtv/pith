@@ -128,17 +128,19 @@ Pith.prototype = {
     
     putPlayState: function(channelId, itemId, state, cb) {
         var channelInstance = this.getChannelInstance(channelId);
-        if(state.status !== undefined || state.duration > 600) {
-            if(!state.status) {
-                if(state.time > Math.max(state.duration - 300, state.duration * 11 / 12)) {
-                    state.status = 'watched';
-                } else {
-                    state.status = 'inprogress';
+        if(channelInstance) {
+            if (state.status !== undefined || state.duration > 600) {
+                if (!state.status) {
+                    if (state.time > Math.max(state.duration - 300, state.duration * 11 / 12)) {
+                        state.status = 'watched';
+                    } else {
+                        state.status = 'inprogress';
+                    }
                 }
-            }
-            let promise = channelInstance.putPlayState(itemId, state);
-            if(cb) {
-                promise.then(result => cb(false, result)).catch(cb);
+                let promise = channelInstance.putPlayState(itemId, state);
+                if (cb) {
+                    promise.then(result => cb(false, result)).catch(cb);
+                }
             }
         }
     },
