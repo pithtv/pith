@@ -181,6 +181,7 @@ Pith.prototype = {
         require("./plugins/upnp-mediarenderer/plugin").init({pith: this});
         require("./plugins/yamaha/plugin").init({pith: this});
         require("./plugins/sonarr/plugin").init({pith: this});
+        require("./plugins/couchpotato/plugin").init({pith: this});
     },
 
     settings: function(settings) {

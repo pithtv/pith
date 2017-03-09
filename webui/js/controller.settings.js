@@ -80,4 +80,14 @@ settingsModule.controller('mainSettingsController',
         url += 'settings/general';
         return url;
     }
+}]).controller('couchpotatoSettingsController', ["$scope", function($scope) {
+    var settings = $scope.$parent.settings;
+    $scope.getGeneralSettingsUrl = function() {
+        var url = settings.couchpotato.url;
+        if(!url.endsWith('/')) {
+            url += '/';
+        }
+        url += 'settings/general';
+        return url;
+    }
 }]);

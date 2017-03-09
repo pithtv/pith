@@ -16,4 +16,22 @@
         </div>
     </div>
 </div>
+
+<div class="panel panel-default" ng-controller="couchpotatoSettingsController">
+    <div class="panel-heading">
+        <input type="checkbox" ng-model="settings.couchpotato.enabled" id="couchpotatoEnabled" /> <label for="couchpotatoEnabled">CouchPotato</label>
+    </div>
+    <div class="panel-body" ng-show="settings.couchpotato.enabled">
+        <div class="form-group" ng-class="{'has-error': settingsForm.couchpotatoUrl.$invalid }">
+            <label for="couchpotatoUrl">couchpotato URL</label>
+            <input type="text" ng-model="settings.couchpotato.url" name="couchpotatoUrl" id="couchpotatoUrl" class="form-control" ng-required="settings.couchpotato.enabled"/>
+        </div>
+        <div class="form-group" ng-class="{'has-error': settingsForm.couchpotatoApikey.$invalid }">
+            <label for="couchpotatoApikey">API key
+                <small>which you can find here: <a target="_blank" href="{{ getGeneralSettingsUrl() }}">{{getGeneralSettingsUrl()}}</a></small>
+            </label>
+            <input type="text" ng-model="settings.couchpotato.apikey" name="couchpotatoApikey" id="couchpotatoApikey" class="form-control" ng-required="settings.couchpotato.enabled"/>
+        </div>
+    </div>
+</div>
 </p>
