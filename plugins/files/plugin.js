@@ -68,7 +68,7 @@ FilesChannel.prototype = {
     },
 
     getFile: function(path, cb) {
-        return $path.resolve(this.rootDir, decodeURIComponent(path));
+        return $path.resolve(this.rootDir, path);
     },
     
     getItem: function(itemId, detailed) {
