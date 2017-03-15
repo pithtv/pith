@@ -8,10 +8,19 @@ var global = require("../../lib/global")();
 var parseDate = require("../../lib/util").parseDate;
 
 function parseItemId(itemId) {
-    return {
-        id: itemId,
-        mediatype: itemId ? 'movie' : 'root'
-    };
+    if(itemId) {
+        let i = itemId.indexOf('/');
+        if(i == -1) throw "Incorrect id";
+        return {
+            id: itemId.substring(i+1),
+            mediatype: itemId.substring(0, i)
+        };
+    } else {
+        return {
+            id: 'root',
+            mediatype: 'root'
+        };
+    }
 }
 
 class CouchPotatoChannel extends Channel {
@@ -25,8 +34,9 @@ class CouchPotatoChannel extends Channel {
     _get(url) {
         var u = this.url.resolve(`api/${this.apikey}/${url}`);
 
-        return fetch(u).then(res => {
-            return res.json()
+        return fetch(u).then(res => res.json()).then(j => {
+            if(!j.success) throw "Call failed";
+            return j;
         });
     }
 
@@ -35,57 +45,50 @@ class CouchPotatoChannel extends Channel {
             if(result.empty) {
                 return [];
             } else {
-                return result.movies.map(movie => ({
-                    id: movie._id,
-                    title: movie.title,
-                    type: 'file',
-                    playable: movie.releases.length > 0,
-                    year: movie.info.year,
-                    rating: movie.info.rating.imdb[0],
-                    plot: movie.info.plot,
-                    tagline: movie.info.tagline,
-                    genres: movie.info.genres,
-                    imdbId: movie.identifiers.imdb,
-                    poster: movie.info.images.poster[0],
-                    backdrop: movie.info.images.backdrop[0],
-                    // releaseDate: movie.info.released,
-                    runtime: movie.info.runtime,
-                    actors: movie.info.actors,
-                    writers: movie.info.writers
-                }));
+                return result.movies.filter(movie => movie.releases.length > 0).map(movie => (this.mapMovie(movie)));
             }
         });
     }
 
+    mapMovie(movie) {
+        let release = movie.releases.find(r => r.status == 'done');
+        return {
+            id: 'media/' + movie._id,
+            title: movie.title,
+            type: 'file',
+            playable: release && true,
+            year: movie.info.year,
+            rating: movie.info.rating.imdb[0],
+            plot: movie.info.plot,
+            tagline: movie.info.tagline,
+            genres: movie.info.genres,
+            imdbId: movie.identifiers.imdb,
+            poster: movie.info.images.poster[0],
+            backdrop: movie.info.images.backdrop[0],
+            // releaseDate: movie.info.released,
+            runtime: movie.info.runtime,
+            actors: movie.info.actors,
+            writers: movie.info.writers,
+            filePath: release && release.files.movie[0]
+        };
+    }
+
+    queryMedia(id) {
+        return this._get(`media.get?id=${id}`).then(result => (this.mapMovie(result.media)));
+    }
+
     getItem(itemId, detailed) {
         let parsed = parseItemId(itemId);
+        switch(parsed.mediatype) {
+            case 'media':
+                return this.queryMedia(parsed.id);
+        }
         return Promise.resolve({id: itemId});
     }
 
     getFile(item) {
         let filesChannel = this.pith.getChannelInstance('files');
-        return this._get(`media.get?id=${item.id}`).then(result => {
-            // {
-            //     "media": {
-            //         "status": "done",
-            //         "files": {
-            //             "nfo": ["/mnt/store/Public/Movies HD/1 - Life on the limit (2013)/1 - Life on the limit.nfo", "/mnt/store/Public/Movies HD/1 - Life on the limit (2013)/1- Life on the limit.orig.nfo"],
-            //             "movie": ["/mnt/store/Public/Movies HD/1 - Life on the limit (2013)/1 - Life on the limit.mkv"]
-            //         },
-            //         "_id": "95ed143525cc4047beab2ee596fa0054",
-            //         "media_id": "309aa7b5ff8b497bb99b6f38fdbcf85a",
-            //         "releases": [],
-            //         "_rev": "028458a9",
-            //         "_t": "release",
-            //         "is_3d": false,
-            //         "last_edit": 1489015406,
-            //         "identifier": "tt2518788.DTS.1080p",
-            //         "quality": "1080p"
-            //     },
-            //     "success": true
-            // };
-            return filesChannel.resolveFile(result.media.releases[0].files.movie[0]);
-        });
+        return filesChannel.resolveFile(item.filePath);
     }
 
     getStream(item) {
