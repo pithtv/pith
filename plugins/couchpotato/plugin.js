@@ -69,7 +69,8 @@ class CouchPotatoChannel extends Channel {
             runtime: movie.info.runtime,
             actors: movie.info.actors,
             writers: movie.info.writers,
-            filePath: release && release.files.movie[0]
+            filePath: release && release.files.movie[0],
+            hasNew: movie.tags && movie.tags.indexOf("recent") > -1
         };
     }
 
@@ -100,7 +101,7 @@ class CouchPotatoChannel extends Channel {
 
     getLastPlayState(itemId) {
         let parsed = parseItemId(itemId);
-        if(parsed.mediatype == 'episode') {
+        if(parsed.type == 'media') {
             return this.getItem(itemId).then(item => this.getLastPlayStateFromItem(item));
         } else {
             return Promise.resolve();
@@ -108,7 +109,7 @@ class CouchPotatoChannel extends Channel {
     }
 
     getLastPlayStateFromItem(item) {
-        if(item.mediatype == 'episode') {
+        if(item.type == 'file' && item.playable) {
             if(item.unavailable) {
                 return Promise.resolve();
             } else {
