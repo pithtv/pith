@@ -7,6 +7,7 @@ var Channel = require("../../lib/channel");
 var global = require("../../lib/global")();
 var parseDate = require("../../lib/util").parseDate;
 var fs = require('fs');
+var path = require('path');
 
 function parseItemId(itemId) {
     if(itemId) {
@@ -54,7 +55,7 @@ class CouchPotatoChannel extends Channel {
     mapMovie(movie) {
         let release = movie.releases.find(r => r.status == 'done');
         let movieFile = release && release.files.movie && release.files.movie[0];
-        let stat = movieFile && fs.statSync(movieFile);
+        let stat = movieFile && fs.statSync(path.dirname(movieFile));
         return {
             id: 'media/' + movie._id,
             title: movie.title,
