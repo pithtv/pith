@@ -7,18 +7,12 @@
 
     <div>
         <div class="btn-group btn-group-sm viewselector" data-toggle="buttons">
-          <label class="btn btn-primary active" ng-click="view('list')">
-            <input type="radio" name="view" id="list" value="list" />
-            <span class="glyphicon glyphicon-list"></span>
-          </label>
-          <label class="btn btn-primary" ng-click="view('poster')">
-            <input type="radio" name="view" id="poster" value="poster" />
-            <span class="glyphicon glyphicon-th"></span>
-          </label>
-          <label class="btn btn-primary" ng-click="view('still')">
-            <input type="radio" name="view" id="still" value="still" />
-            <span class="glyphicon glyphicon-th"></span>
-          </label>
+            <div class="dropdown" uib-dropdown>
+                <a class="btn dropdown-toggle" data-toggle="dropdown" uib-dropdown-toggle><i class="glyphicon glyphicon-chevron-up"></i></a>
+                <ul class="dropdown-menu" role="menu" ng-if="itemDetails.sortableFields && itemDetails.sortableFields.length" uib-dropdown-menu>
+                    <li ng-repeat="sortField in itemDetails.sortableFields"><a ng-click="sort(sortField)">{{fieldDescriptions[sortField]}}</a></li>
+                </ul>
+            </div>
         </div>
     </div>
 

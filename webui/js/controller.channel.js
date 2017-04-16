@@ -106,6 +106,32 @@ channelController.controller('channelController',
                 $scope.expanded = item;
             };
 
+            $scope.sort = function sort(sortField) {
+                var direction;
+                switch(sortField) {
+                    case 'year':
+                    case 'creationTime':
+                    case 'releaseDate':
+                    case 'rating':
+                        direction=-1;
+                        break;
+                    default:
+                        direction=1;
+                }
+                $scope.containerContents.sort(function(a,b) {
+                    return direction * (a[sortField] < b[sortField] ? -1 : a[sortField] > b[sortField] ? 1 : 0);
+                });
+            };
+
+            $scope.fieldDescriptions = {
+                year: "Year",
+                rating: "Rating",
+                releaseDate: "Release date",
+                title: "Title",
+                runtime: "Runtime",
+                creationTime: "Date added"
+            };
+
             replaceState({channelpath: [{title: "Contents", id: ""}]});
 
             window.addEventListener("popstate", function (event) {

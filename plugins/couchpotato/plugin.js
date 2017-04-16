@@ -6,6 +6,7 @@ var parseUrl = require('url').parse;
 var Channel = require("../../lib/channel");
 var global = require("../../lib/global")();
 var parseDate = require("../../lib/util").parseDate;
+var fs = require('fs');
 
 function parseItemId(itemId) {
     if(itemId) {
@@ -52,6 +53,8 @@ class CouchPotatoChannel extends Channel {
 
     mapMovie(movie) {
         let release = movie.releases.find(r => r.status == 'done');
+        let movieFile = release && release.files.movie && release.files.movie[0];
+        let stat = movieFile && fs.statSync(movieFile);
         return {
             id: 'media/' + movie._id,
             title: movie.title,
@@ -70,7 +73,8 @@ class CouchPotatoChannel extends Channel {
             actors: movie.info.actors,
             writers: movie.info.writers,
             filePath: release && release.files.movie[0],
-            hasNew: movie.tags && movie.tags.indexOf("recent") > -1
+            hasNew: movie.tags && movie.tags.indexOf("recent") > -1,
+            creationTime: stat && stat.mtime
         };
     }
 
@@ -84,7 +88,10 @@ class CouchPotatoChannel extends Channel {
             case 'media':
                 return this.queryMedia(parsed.id);
         }
-        return Promise.resolve({id: itemId});
+        return Promise.resolve({
+            sortableFields: ['title', 'year', 'rating', 'runtime', 'creationTime'],
+            id: itemId
+        });
     }
 
     getFile(item) {
