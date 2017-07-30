@@ -62,7 +62,7 @@ class CouchPotatoChannel extends Channel {
             type: 'file',
             playable: release && true,
             year: movie.info.year,
-            rating: movie.info.rating.imdb[0],
+            rating: movie.info.rating && movie.info.rating.imdb[0],
             plot: movie.info.plot,
             tagline: movie.info.tagline,
             genres: movie.info.genres,
@@ -137,7 +137,7 @@ class CouchPotatoChannel extends Channel {
 
 module.exports = {
     init(opts) {
-        if(settings.sonarr && settings.sonarr.enabled && settings.sonarr.url) {
+        if(settings.couchpotato && settings.couchpotato.enabled && settings.couchpotato.url) {
             opts.pith.registerChannel({
                 id: 'couchpotato',
                 title: 'CouchPotato',

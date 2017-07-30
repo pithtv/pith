@@ -166,6 +166,8 @@ FilesChannel.prototype = {
                 relative = relative.substring(1);
             }
             return this.getItem(relative);
+        } else {
+            return Promise.reject("File not contained within media root");
         }
     }
 };
