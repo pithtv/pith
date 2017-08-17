@@ -56,6 +56,7 @@ require("./lib/global")(function(err, Global) {
             var server = new http.Server(app);
 
             server.listen(port, serverAddress);
+            server.listen(port);
 
             var wss = new ws.Server({server: server});
 
