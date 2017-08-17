@@ -1,0 +1,8 @@
+<ul class="contentbrowser poster">
+  <ng-template #cells *ngFor="let item of items" [ngTemplateOutlet]="templ" id="item.id" [ngOutletContext]="{
+    item: item,
+    toggle: createToggleFunction(item),
+    expanded: expandedId == item.id,
+    showdetails: showDetailsId == item.id
+  }"></ng-template>
+</ul>

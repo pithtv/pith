@@ -1,0 +1,11 @@
+<img *ngIf="item.poster || item.still" [src]="(item.poster | prescale:'200x300') || (item.still | prescale:'532x300')" class="bigthumb"/>
+<a (click)="open(item)">
+  <span class="contextinfo"><span class="itemshowname" *ngIf="item.showname && item.showname != itemDetails.showname">{{item.showname}}</span><span class="itemseason" *ngIf="item.season && (item.showname !== itemDetails.showname || item.season !== itemDetails.season)">{{item.season}}</span><span class="itemepisode" *ngIf="item.episode">{{item.episode}}</span></span>
+  <span class="itemtitle">{{item.title}} <span *ngIf="item.year" class="itemyear">{{item.year}}</span></span>
+</a>
+<span class="itemtagline" *ngIf="item.tagline">{{item.tagline}}</span>
+<span class="itemrating"><span class="stars" [attr.data-starrating]="item.rating" *ngIf="item.rating"></span>{{item.rating}}</span>
+<span class="itemgenres" *ngIf="item.genres &amp;&amp; item.genres.length">{{item.genres.join(", ")}}</span>
+<span class="itemplot" *ngIf="item.plot">{{item.plot}}</span>
+<span class="itemoverview" *ngIf="item.overview">{{item.overview}}</span>
+<span class="actions"><a ng-click="load(item)" class="glyphicon glyphicon-play action-play" title="Play" *ngIf="item.playable"></a><a ng-click="toggleWatched(item)" class="glyphicon glyphicon-ok action-markwatched" title="Mark watched" *ngIf="item.playable"></a><a href="http://www.imdb.com/title/{{item.imdbId}}" *ngIf="item.imdbId" class="link-imdb" target="_blank"></a></span>

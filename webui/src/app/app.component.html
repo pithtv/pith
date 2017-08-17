@@ -1,0 +1,20 @@
+<!--The content below is only a placeholder and can be replaced.-->
+<nav class="navbar navbar-light bg-light justify-content-between">
+  <nav class="navbar-brand">
+    <pith-logo></pith-logo>
+  </nav>
+  <div ngbDropdown>
+    <button ngbDropdownToggle class="btn btn-secondary"><i class="oi oi-menu"></i></button>
+    <div ngbDropdownMenu>
+      <a *ngFor="let channel of channels | async" class="dropdown-item" routerLink="channel/{{channel.id}}">{{channel.title}}</a>
+    </div>
+  </div>
+  <div ngbDropdown>
+    <button ngbDropdownToggle class="btn btn-secondary"><img *ngIf="selectedPlayer" [src]="selectedPlayer.icons['48x48'].url | prescale:'original'" height="24"/></button>
+    <div ngbDropdownMenu>
+      <div *ngFor="let player of players | async" class="dropdown-item"><img [src]="player.icons['48x48'].url | prescale:'original'" height="24"> {{player.friendlyName}}</div>
+    </div>
+  </div>
+</nav>
+
+<router-outlet></router-outlet>

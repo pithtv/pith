@@ -1,0 +1,10 @@
+{
+  "/rest": {
+    "target": "http://localhost:3333",
+    "secure": false
+  },
+  "/scale": {
+    "target": "http://localhost:3333",
+    "secure": false
+  }
+}

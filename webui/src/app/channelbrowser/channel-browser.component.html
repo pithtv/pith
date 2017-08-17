@@ -1,0 +1,34 @@
+<ul class="contentbrowser poster">
+  <li class="contentitem"
+      *ngFor="let item of contents"
+      [class.withthumb]="item.poster || item.still"
+      [class.withposter]="item.poster"
+      [class.withstill]="item.still"
+      [class.withinfo]="item.tagline || item.rating || (item.genres && item.genres.length) || item.plot || item.overview"
+      [class.watched]="item.playState &amp;&amp; item.playState.status == 'watched'"
+      [class.inprogress]="item.playState &amp;&amp; item.playState.status == 'inprogress'"
+      [class.hasnew]="item.hasNew"
+      [class.unavailable]="item.unavailable"
+      [class.expanded]="expandedId == item.id"
+      [class.showdetails]="showDetailsId == item.id"
+      [id]="item.id"
+      #cell
+  >
+
+    <a (click)="(item.type == 'container' && item.mediatype!='show') ? open(item) : toggle(item)">
+      <div *ngIf="item.poster || item.still" class="th"
+           [style.background-image]="'url(' + ((item.poster | prescale:'100x150') || (item.still | prescale:'266x150'))+ ')'">
+      </div>
+      <span class="contextinfo"><span class="title" *ngIf="item.title">{{item.title}}</span><span
+        class="itemshowname" *ngIf="item.showname && item.showname != itemDetails.showname">{{item.showname}}</span><span
+        class="itemseason"   *ngIf="item.season && (item.showname !== itemDetails.showname || item.season !== itemDetails.season)">{{item.season}}</span><span
+        class="itemepisode"  *ngIf="item.episode">{{item.episode}}</span></span>
+    </a>
+    <div class="iteminfo" *ngIf="expandedId == item.id">
+      <div>
+        <channel-details *ngIf="showDetailsItem.type != 'container'" [item]="showDetailsItem" [channel]="channel"></channel-details>
+        <channel-tv-details *ngIf="showDetailsItem.mediatype == 'show'" [item]="showDetailsItem" [channel]="channel"></channel-tv-details>
+      </div>
+    </div>
+  </li>
+</ul>
