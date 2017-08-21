@@ -1,0 +1,347 @@
+
+//original selectors
+//.contentbrowser.poster .contentitem .itemtagline, .contentbrowser.poster .contentitem .itemoverview
+%extend_2 {
+  display: block;
+  font-size: 80%;
+  font-weight: normal;
+}
+
+//original selectors
+//.episodeguide >.detailtabs, .episodeguide >.seasondetails
+%extend_3 {
+  position: absolute;
+  left: 240px;
+  right: 30px;
+  overflow-x: auto;
+}
+
+
+.still {
+  position: relative;
+  width: 133px;
+  height: 75px;
+}
+@media(min-width: 240px ) {
+  .contentbrowser.poster .contentitem {
+    margin: 4px calc(100% / 4 - 51px );
+  }
+}
+@media(min-width: 350px ) {
+  .contentbrowser.poster .contentitem {
+    margin: 4px calc(100% / 6 - 51px );
+  }
+}
+@media(min-width: 460px ) {
+  .contentbrowser.poster .contentitem {
+    margin: 4px calc(100% / 8 - 51px );
+  }
+}
+@media(min-width: 570px ) {
+  .contentbrowser.poster .contentitem {
+    margin: 4px calc(100% / 10 - 51px );
+  }
+}
+@media(min-width: 680px ) {
+  .contentbrowser.poster .contentitem {
+    margin: 4px calc(100% / 12 - 51px );
+  }
+}
+@media(min-width: 790px ) {
+  .contentbrowser.poster .contentitem {
+    margin: 4px calc(100% / 14 - 51px );
+  }
+}
+@media(min-width: 900px ) {
+  .contentbrowser.poster .contentitem {
+    margin: 4px calc(100% / 16 - 51px );
+  }
+}
+@media(min-width: 1010px ) {
+  .contentbrowser.poster .contentitem {
+    margin: 4px calc(100% / 18 - 51px );
+  }
+}
+@media(min-width: 1120px ) {
+  .contentbrowser.poster .contentitem {
+    margin: 4px calc(100% / 20 - 51px );
+  }
+}
+@media(min-width: 1230px ) {
+  .contentbrowser.poster .contentitem {
+    margin: 4px calc(100% / 22 - 51px );
+  }
+}
+@media(min-width: 1340px ) {
+  .contentbrowser.poster .contentitem {
+    margin: 4px calc(100% / 24 - 51px );
+  }
+}
+@media(min-width: 1450px ) {
+  .contentbrowser.poster .contentitem {
+    margin: 4px calc(100% / 26 - 51px );
+  }
+}
+@media(min-width: 1560px ) {
+  .contentbrowser.poster .contentitem {
+    margin: 4px calc(100% / 28 - 51px );
+  }
+}
+@media(min-width: 1670px ) {
+  .contentbrowser.poster .contentitem {
+    margin: 4px calc(100% / 30 - 51px );
+  }
+}
+@media(min-width: 1780px ) {
+  .contentbrowser.poster .contentitem {
+    margin: 4px calc(100% / 32 - 51px );
+  }
+}
+@media(min-width: 1890px ) {
+  .contentbrowser.poster .contentitem {
+    margin: 4px calc(100% / 34 - 51px );
+  }
+}
+@media(min-width: 2000px ) {
+  .contentbrowser.poster .contentitem {
+    margin: 4px calc(100% / 36 - 51px );
+  }
+}
+@media(min-width: 2110px ) {
+  .contentbrowser.poster .contentitem {
+    margin: 4px calc(100% / 38 - 51px );
+  }
+}
+@media(min-width: 2220px ) {
+  .contentbrowser.poster .contentitem {
+    margin: 4px;
+  }
+}
+.contentbrowser.poster {
+  .contentitem {
+    display: inline-block;
+    margin: 4px;
+    //Instead of the line below you could use @include border-radius($radius, $vertical-radius)
+    border-radius: 4px;
+    vertical-align: top;
+    height: 152px;
+    width: 102px;
+
+    &.showdetails {
+      margin-bottom: 392px;
+      > a:before {
+        display: block;
+        content: '';
+        border: 15px solid transparent;
+        border-bottom-color: $color_dark_gray;
+        width: 0;
+        height: 0;
+        //Instead of the line below you could use @include box-sizing($bs)
+        box-sizing: content-box;
+        left: 50%;
+        position: absolute;
+        margin-left: -15px;
+        margin-top: -10px;
+        top: 100%;
+      }
+    }
+
+    .th {
+      left: 0;
+      padding: 4px;
+      //Instead of the line below you could use @include transition($transition-1, $transition-2, $transition-3, $transition-4, $transition-5, $transition-6, $transition-7, $transition-8, $transition-9, $transition-10)
+      transition: all .2s ease-in-out;
+      background-color: $color_glare;
+      width: 100px;
+      height: 150px;
+      z-index: 4;
+      border: 1px solid $color_light_gray;
+    }
+
+    &.withthumb {
+      .title {
+        display: none;
+      }
+      &.alignleft .iteminfo {
+        left: auto;
+        right: 100px;
+      }
+    }
+    .itemtagline {
+      @extend %extend_2;
+    }
+    .itemoverview {
+      @extend %extend_2;
+    }
+    .iteminfo {
+      font-weight: bold;
+      overflow: hidden;
+      display: block;
+      position: absolute;
+      left: 0;
+      right: 0;
+      margin-top: 14px;
+      height: 360px;
+      background: $color_light_gray;
+      background: linear-gradient(to bottom, $color_dark_gray, $color_pink_swan_approx 15px);
+      > div {
+        margin: 30px;
+      }
+      .itemtitle {
+        display: block;
+      }
+      img.bigthumb {
+        height: 100%;
+        float: left;
+        margin-right: 20px;
+      }
+    }
+    .itemplot {
+      display: block;
+      font-weight: normal;
+    }
+    .itemrating {
+      display: block;
+    }
+    .thumbnail {
+      width: 150px;
+      height: 100%;
+    }
+    > a {
+      position: relative;
+      width: 102px;
+      height: 152px;
+      display: inline-block;
+
+      &:after {
+        bottom: 0;
+        left: 76px;
+      }
+    }
+    &.inprogress > a:after {
+      @extend %playstatus.inprogress;
+    }
+    &.watched > a:after {
+      @extend %playstatus.watched;
+    }
+    &.hasnew > a:after {
+      @extend %playstatus.hasnew;
+    }
+
+    &.alignleft .th {
+      left: auto;
+      right: 0;
+    }
+    .actions:not(:empty) {
+      display: block;
+      font-size: 20px;
+    }
+  }
+  .vs-repeat-fill-element {
+    &.animate {
+      //Instead of the line below you could use @include transition($transition-1, $transition-2, $transition-3, $transition-4, $transition-5, $transition-6, $transition-7, $transition-8, $transition-9, $transition-10)
+      transition: margin-bottom 0.6s ease;
+    }
+    &.expanded {
+      margin-bottom: 392px;
+    }
+  }
+  .itemshowname {
+    display: none;
+  }
+  .th {
+    max-width: 101px;
+    max-height: 150px;
+  }
+  .stillimg {
+    display: none;
+  }
+}
+.seasondetails > li {
+  display: inline-block;
+  min-height: 80px;
+  width: 100%;
+  border-bottom: 1px solid $color_celeste_approx;
+  padding: 5px;
+  &.unavailable {
+    opacity: 0.5;
+  }
+  > {
+    .still {
+      float: left;
+      margin: 3px 15px 3px 0;
+    }
+    .episode-no {
+      font-weight: bold;
+      &:after {
+        font-weight: bold;
+        content: '. ';
+      }
+    }
+    .episode-title {
+      font-weight: bold;
+    }
+    .episode-airdate {
+      font-style: italic;
+      &:before {
+        content: '(';
+      }
+      &:after {
+        content: ')';
+      }
+    }
+    .episode-synopsis {
+      display: block;
+      font-size: 90%;
+    }
+  }
+  &.inprogress > .still:after {
+    bottom: 5px;
+    right: 5px;
+    @extend %playstatus.inprogress;
+  }
+  &.watched > .still:after {
+    bottom: 5px;
+    right: 5px;
+    @extend %playstatus.watched;
+  }
+}
+ul.detailtabs {
+  display: inline-block;
+  margin-left: 0;
+  background: $color_mercury_approx;
+  border: 1px solid $color_dark_gray;
+  font-weight: normal;
+  white-space: nowrap;
+  padding: 0;
+  background: linear-gradient($color_light_gray, $color_celeste_approx);
+  > li {
+    border-left: 1px outset $color_mountain_mist_approx;
+    display: inline-block;
+    color: $black;
+    padding: 2px 15px;
+    &.selected {
+      background: linear-gradient($color_fuscous_gray_approx, $color_storm_dust_approx);
+      color: $white;
+    }
+  }
+  &.seasons:before {
+    content: 'Season:';
+    padding: 2px 15px;
+    font-weight: bold;
+  }
+}
+.episodeguide > {
+  .detailtabs {
+    @extend %extend_3;
+  }
+  .seasondetails {
+    @extend %extend_3;
+    background: $white_50;
+    top: 60px;
+    bottom: 35px;
+    overflow-y: auto;
+    padding: 10px;
+    font-weight: normal;
+  }
+}

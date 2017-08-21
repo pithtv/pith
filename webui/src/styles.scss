@@ -13,6 +13,7 @@ $icon-font-path: '~open-iconic/font/fonts/';
   height: 37px;
 }
 
-@import "styles/list.css";
-@import "styles/poster.css";
-@import "styles/still.css";
+@import "styles/common";
+@import "styles/list";
+@import "styles/poster";
+@import "styles/still";

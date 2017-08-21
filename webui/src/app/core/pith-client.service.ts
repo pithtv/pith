@@ -1,11 +1,52 @@
-import {HttpClient} from "@angular/common/http";
+import {HttpClient, HttpParams} from "@angular/common/http";
 import 'rxjs/Rx';
 import {Observable} from "rxjs/Observable";
 import {Injectable} from "@angular/core";
 
-export class Player {
-  constructor(p: Object) {
-    Object.assign(this, p);
+abstract class RestModule {
+  constructor(private pith: PithClientService, properties: object) {
+    Object.assign(this, properties);
+  }
+
+  abstract root: string[];
+
+  protected get(...args: any[]) {
+    let query: object;
+    if(typeof args[args.length-1] == 'object') {
+      query = args[args.length-1];
+      args = args.slice(0, -1);
+    }
+    return this.pith.get(`${this.root.concat(args).map(encodeURIComponent).join('/')}`, query);
+  }
+}
+
+export class Player extends RestModule {
+  readonly id: string;
+  readonly icons: object[];
+  readonly friendlyName: string;
+
+  get root() {
+    return ['player', this.id];
+  }
+
+  load(channel: Channel, item: ChannelItem) {
+    this.get("load", channel.id, item.id).subscribe();
+  }
+
+  play() {
+    this.get("play").subscribe();
+  }
+
+  pause() {
+    this.get("pause").subscribe();
+  }
+
+  stop() {
+    this.get("stop").subscribe();
+  }
+
+  seek(time: number) {
+    this.get("seek", {time: Math.floor(time)}).subscribe();
   }
 }
 
@@ -17,7 +58,7 @@ export class ChannelItem {
   mediatype: string;
   playState: any;
 
-  constructor(private pith: PithClientService, p: Object) {
+  constructor(p: Object) {
     Object.assign(this, p);
   }
 }
@@ -35,25 +76,25 @@ export class Season extends ChannelItem {
 export class Show extends ChannelItem {
   seasons: Season[];
   episodes: Episode[];
-
-  constructor(pith: PithClientService, p: Object) {
-    super(pith, p);
-  }
 }
 
-export class Channel {
+export class Channel extends RestModule {
   id: string;
 
-  constructor(private pith: PithClientService, p: Object) {
-    Object.assign(this, p);
+  get root() {
+    return ['channel', this.id];
   }
 
   listContents(path): Observable<ChannelItem[]> {
-    return this.pith.get(`channel/${this.id}/list/${path}?includePlayStates=true`).map((results: object[]) => results.map(r => new ChannelItem(this.pith, r)));
+    return this.get('list', path, {includePlayStates:true}).map((results: object[]) => results.map(r => new ChannelItem(r)));
   }
 
   detail(path) {
-    return this.pith.get(`channel/${this.id}/detail/${path}?includePlayStates=true`).map(result => new ChannelItem(this.pith, result));
+    return this.get('detail', path, {includePlayStates:true}).map(result => new ChannelItem(result));
+  }
+
+  markWatched(item: any) {
+    // TODO
   }
 }
 
@@ -68,20 +109,21 @@ export class PithClientService {
     this.root = "/rest";
   }
 
-  get(url) {
-    return this.httpClient.get(`${this.root}/${url}`);
+  get(url, query?: object) {
+    let options = {};
+    if(query) {
+      let p = Object.keys(query).reduce((p, k) => p.append(k, query[k]), new HttpParams());
+      options['params'] = p;
+    }
+    return this.httpClient.get(`${this.root}/${url}`, options);
   }
 
   queryChannels() {
     return (this.get("channels") as Observable<object[]>).map(p => this.channels = p.map(p => new Channel(this, p)));
   }
 
-  private queryPlayers() {
-    return (this.get("players") as Observable<object[]>).map(p => p.map(p => new Player(p)));
-  }
-
-  players() {
-    return this.queryPlayers();
+  queryPlayers() {
+    return (this.get("players") as Observable<object[]>).map(p => p.map(p => new Player(this, p)));
   }
 
   getChannel(id: string): Observable<Channel> {

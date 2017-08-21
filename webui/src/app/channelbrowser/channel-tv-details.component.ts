@@ -1,5 +1,6 @@
 import {Component, Input} from "@angular/core";
 import {Channel, ChannelItem, Episode, Season, Show} from "../core/pith-client.service";
+import {PlayerService} from "../core/player.service";
 
 @Component({
   selector: 'channel-tv-details',
@@ -12,6 +13,16 @@ export class ChannelTvDetailsComponent {
   seasons: Season[];
   // @Input() item: Show;
   @Input() channel: Channel;
+
+  constructor(private playerService: PlayerService) {}
+
+  load(item) {
+    this.playerService.load(this.channel, item);
+  }
+
+  markWatched(item) {
+    this.channel.markWatched(item);
+  }
 
   @Input()
   set item(newItem) {

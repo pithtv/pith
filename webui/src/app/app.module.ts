@@ -1,5 +1,6 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -14,6 +15,7 @@ import {ChannelBrowserComponent} from "./channelbrowser/channel-browser.componen
 import {ChannelDetailsComponent} from "./channelbrowser/channel-details.component";
 import {ChannelTvDetailsComponent} from "./channelbrowser/channel-tv-details.component";
 import {GalleryComponent} from "./util/gallery.component";
+import {PlayerService} from "./core/player.service";
 
 @NgModule({
   declarations: [
@@ -27,12 +29,14 @@ import {GalleryComponent} from "./util/gallery.component";
   ],
   imports: [
     BrowserModule,
+    BrowserAnimationsModule,
     HttpClientModule,
     AppRoutingModule,
     NgbModule.forRoot()
   ],
   providers: [
-    PithClientService
+    PithClientService,
+    PlayerService
   ],
   bootstrap: [AppComponent]
 })

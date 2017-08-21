@@ -9,10 +9,11 @@
       [class.inprogress]="item.playState &amp;&amp; item.playState.status == 'inprogress'"
       [class.hasnew]="item.hasNew"
       [class.unavailable]="item.unavailable"
-      [class.expanded]="expandedId == item.id"
+      [class.expanded]="showDetails && expandedId == item.id"
       [class.showdetails]="showDetailsId == item.id"
       [id]="item.id"
       #cell
+      [@expand]="(showDetails && expandedId == item.id) ? 'expanded':'collapsed'"
   >
 
     <a (click)="(item.type == 'container' && item.mediatype!='show') ? open(item) : toggle(item)">
@@ -24,8 +25,8 @@
         class="itemseason"   *ngIf="item.season && (item.showname !== itemDetails.showname || item.season !== itemDetails.season)">{{item.season}}</span><span
         class="itemepisode"  *ngIf="item.episode">{{item.episode}}</span></span>
     </a>
-    <div class="iteminfo" *ngIf="expandedId == item.id">
-      <div>
+    <div class="iteminfo" [@visibility]="(showDetails && expandedId == item.id) ? 'expanded':'collapsed'">
+      <div *ngIf="expandedId == item.id">
         <channel-details *ngIf="showDetailsItem.type != 'container'" [item]="showDetailsItem" [channel]="channel"></channel-details>
         <channel-tv-details *ngIf="showDetailsItem.mediatype == 'show'" [item]="showDetailsItem" [channel]="channel"></channel-tv-details>
       </div>

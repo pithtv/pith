@@ -2,9 +2,26 @@ import {Component, ViewChildren} from "@angular/core";
 import {ActivatedRoute, ParamMap} from "@angular/router";
 import {Channel, ChannelItem, PithClientService} from "../core/pith-client.service";
 import 'rxjs/Rx';
+import {animate, state, style, transition, trigger} from "@angular/animations";
+
+const animationTiming = "500ms ease";
 
 @Component({
-  templateUrl: './channel-browser.component.html'
+  templateUrl: './channel-browser.component.html',
+  animations: [
+    trigger('expand',
+      [
+        state('expanded', style({"margin-bottom": '392px'})),
+        state('collapsed', style({"margin-bottom": '0'})),
+        transition('expanded => collapsed, collapsed => expanded', animate(animationTiming))
+      ]),
+    trigger('visibility',
+      [
+        state('expanded', style({'height': '*'})),
+        state('collapsed', style({'height': '0', display: 'none'})),
+        transition('expanded => collapsed, collapsed => expanded', animate(animationTiming))
+      ])
+  ]
 })
 export class ChannelBrowserComponent {
   showDetailsItem: ChannelItem;
@@ -47,7 +64,7 @@ export class ChannelBrowserComponent {
   toggle(item: ChannelItem) {
       if(this.showDetailsId == item.id) {
         this.showDetailsId = null;
-        this.expandedId = null;
+        // this.expandedId = null;
         this.showDetails = false;
       } else {
         let previousCell = this.cellFor(this.expandedId);

@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
-import {PithClientService, Player} from "./core/pith-client.service"
+import {Channel, PithClientService, Player} from "./core/pith-client.service"
 import {Observable} from "rxjs/Observable";
+import {PlayerService} from "./core/player.service";
 
 @Component({
   selector: 'app-root',
@@ -8,17 +9,22 @@ import {Observable} from "rxjs/Observable";
   styleUrls: ['./app.component.sass']
 })
 export class AppComponent {
-  selectedPlayer: Player;
-  players: Observable<object[]>;
-  channels: Observable<object[]>;
+  channels: Observable<Channel[]>;
   title = 'app';
 
-  constructor(private pithClient: PithClientService) {
+  constructor(private pithClient: PithClientService, private playerService: PlayerService) {
     this.channels = pithClient.queryChannels();
-    this.players = pithClient.players();
+  }
 
-    this.players.subscribe(players => {
-      if(this.selectedPlayer == null && players.length > 0) this.selectedPlayer = players[0];
-    })
+  get players() {
+    return this.playerService.players;
+  }
+
+  get activePlayer() {
+    return this.playerService.activePlayer;
+  }
+
+  set activePlayer(player) {
+    this.playerService.activePlayer = player;
   }
 }
