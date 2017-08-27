@@ -16,6 +16,9 @@ import {ChannelDetailsComponent} from "./channelbrowser/channel-details.componen
 import {ChannelTvDetailsComponent} from "./channelbrowser/channel-tv-details.component";
 import {GalleryComponent} from "./util/gallery.component";
 import {PlayerService} from "./core/player.service";
+import {SlimLoadingBarModule} from "ng2-slim-loading-bar";
+import {PithEventsService} from "./core/pith-events.service";
+import {TimePipe} from "./core/time.pipe";
 
 @NgModule({
   declarations: [
@@ -25,17 +28,20 @@ import {PlayerService} from "./core/player.service";
     ChannelDetailsComponent,
     ChannelTvDetailsComponent,
     PrescalePipe,
-    GalleryComponent
+    GalleryComponent,
+    TimePipe
   ],
   imports: [
     BrowserModule,
     BrowserAnimationsModule,
     HttpClientModule,
     AppRoutingModule,
-    NgbModule.forRoot()
+    NgbModule.forRoot(),
+    SlimLoadingBarModule.forRoot()
   ],
   providers: [
     PithClientService,
+    PithEventsService,
     PlayerService
   ],
   bootstrap: [AppComponent]

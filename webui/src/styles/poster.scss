@@ -118,14 +118,18 @@
   }
 }
 .contentbrowser.poster {
+  padding: 0;
+
   .contentitem {
     display: inline-block;
-    margin: 4px;
-    //Instead of the line below you could use @include border-radius($radius, $vertical-radius)
     border-radius: 4px;
     vertical-align: top;
     height: 152px;
     width: 102px;
+
+    > a {
+      cursor: pointer;
+    }
 
     &.showdetails {
       margin-bottom: 392px;
@@ -341,6 +345,7 @@ ul.detailtabs {
     top: 60px;
     bottom: 35px;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     padding: 10px;
     font-weight: normal;
   }

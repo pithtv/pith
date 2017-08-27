@@ -2,9 +2,12 @@ import {HttpClient, HttpParams} from "@angular/common/http";
 import 'rxjs/Rx';
 import {Observable} from "rxjs/Observable";
 import {Injectable} from "@angular/core";
+import {Subject} from "rxjs/Subject";
+import {BehaviorSubject} from "rxjs/BehaviorSubject";
+import {PithEventsService} from "./pith-events.service";
 
 abstract class RestModule {
-  constructor(private pith: PithClientService, properties: object) {
+  constructor(private pith: PithClientService, properties?: object) {
     Object.assign(this, properties);
   }
 
@@ -16,7 +19,23 @@ abstract class RestModule {
       query = args[args.length-1];
       args = args.slice(0, -1);
     }
-    return this.pith.get(`${this.root.concat(args).map(encodeURIComponent).join('/')}`, query);
+    return this.pith.get(`${this.root.concat(args).map(encodeURIComponent).join('/')}`, query).catch((e, c) => {
+      this.pith.throw(new PithError(e.error));
+      return Observable.empty();
+    });
+  }
+
+  protected on(event, callback) {
+    this.pith.on(event).subscribe(args => callback.apply(null, args));
+  }
+}
+
+export class PlayerStatus {
+  private timestamp: Date;
+
+  constructor(obj: any) {
+    Object.assign(this, obj);
+    this.timestamp = new Date();
   }
 }
 
@@ -24,6 +43,21 @@ export class Player extends RestModule {
   readonly id: string;
   readonly icons: object[];
   readonly friendlyName: string;
+  private _statusSubject: Subject<PlayerStatus> = new BehaviorSubject(null);
+
+  constructor(pith, properties) {
+    super(pith);
+
+    this.id = properties.id;
+    this.friendlyName = properties.friendlyName;
+    this.icons = properties.icons;
+
+    this.on("playerstatechange", event => {
+      if(event.player.id === this.id) {
+        this._statusSubject.next(new PlayerStatus(event.status));
+      }
+    });
+  }
 
   get root() {
     return ['player', this.id];
@@ -47,6 +81,10 @@ export class Player extends RestModule {
 
   seek(time: number) {
     this.get("seek", {time: Math.floor(time)}).subscribe();
+  }
+
+  get status() {
+    return this._statusSubject.asObservable();
   }
 }
 
@@ -96,15 +134,32 @@ export class Channel extends RestModule {
   markWatched(item: any) {
     // TODO
   }
+
+  toggleWatched(item: ChannelItem) {
+    // TODO
+  }
+}
+
+export class PithError {
+  message: string;
+  code: string;
+  error: string;
+
+  constructor(e: object) {
+    Object.assign(this, e);
+  }
 }
 
 @Injectable()
 export class PithClientService {
   private channels: Channel[];
   private root: string;
+  private _errors: Subject<PithError> = new Subject();
+  private _progress: Subject<any> = new BehaviorSubject({loading: false});
 
   constructor(
-    private httpClient: HttpClient
+    private httpClient: HttpClient,
+    private eventService: PithEventsService
   ) {
     this.root = "/rest";
   }
@@ -115,7 +170,10 @@ export class PithClientService {
       let p = Object.keys(query).reduce((p, k) => p.append(k, query[k]), new HttpParams());
       options['params'] = p;
     }
-    return this.httpClient.get(`${this.root}/${url}`, options);
+    this.reportProgress({
+      loading: true
+    });
+    return this.httpClient.get(`${this.root}/${url}`, options).do(() => this.reportProgress({loading: false}));
   }
 
   queryChannels() {
@@ -128,6 +186,26 @@ export class PithClientService {
 
   getChannel(id: string): Observable<Channel> {
     return this.queryChannels().map((channels => channels.find(channel => channel.id == id)));
+  }
+
+  get errors() {
+    return this._errors.asObservable();
+  }
+
+  throw(error: PithError) {
+    this._errors.next(error);
+  }
+
+  private reportProgress(progress) {
+    this._progress.next(progress);
+  }
+
+  get progress() {
+    return this._progress.asObservable();
+  }
+
+  on(event) {
+    return this.eventService.listenFor(event);
   }
 }
 

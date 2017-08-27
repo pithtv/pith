@@ -1,20 +1,70 @@
 <!--The content below is only a placeholder and can be replaced.-->
-<nav class="navbar navbar-light bg-light justify-content-between">
-  <nav class="navbar-brand">
-    <pith-logo></pith-logo>
-  </nav>
-  <div ngbDropdown>
-    <button ngbDropdownToggle class="btn btn-secondary"><i class="oi oi-menu"></i></button>
-    <div ngbDropdownMenu>
-      <a *ngFor="let channel of channels | async" class="dropdown-item" routerLink="channel/{{channel.id}}">{{channel.title}}</a>
+<nav class="navbar fixed-top navbar-expand-lg navbar-clear">
+  <div class="container">
+    <a class="navbar-brand" href="#">
+      <pith-logo></pith-logo>
+    </a>
+
+    <div class="navbar-nav">
+      <div class="nav-item dropdown" ngbDropdown>
+        <a ngbDropdownToggle class="nav-link dropdown-toggle"><span class="oi oi-menu"></span></a>
+        <div ngbDropdownMenu>
+          <a *ngFor="let channel of channels | async" class="dropdown-item" routerLink="channel/{{channel.id}}">{{channel.title}}</a>
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item" routerLink="settings">Settings</a>
+        </div>
+      </div>
+      <div class="nav-item" [hidden]="!(status && status.actions.pause)">
+        <a class="nav-link" (click)="pause()"><span class="oi oi-media-pause"></span></a>
+      </div>
+      <div class="nav-item" [hidden]="!(status && status.actions.play)">
+        <a class="nav-link" (click)="play()"><span class="oi oi-media-play"></span></a>
+      </div>
+      <div class="nav-item" [hidden]="!(status && status.actions.stop)">
+        <a class="nav-link" (click)="stop()"><span class="oi oi-media-stop"></span></a>
+      </div>
     </div>
-  </div>
-  <div ngbDropdown>
-    <button ngbDropdownToggle class="btn btn-secondary"><img *ngIf="activePlayer" [src]="activePlayer.icons['48x48'].url | prescale:'original'" height="24"/></button>
-    <div ngbDropdownMenu>
-      <div *ngFor="let player of players | async" class="dropdown-item"><img [src]="player.icons['48x48'].url | prescale:'original'" height="24"> {{player.friendlyName}}</div>
+
+    <div class="navbar-flex player-box">
+      <div class="playback-info" *ngIf="activePlayer">
+        <span class="playback-title">{{ status && status.position && status.position.title || "Unknown"}}</span>
+        <div class="playback-bar">
+          <span class="playback-time">{{ status && status.position && status.position.time | time }}</span>
+          <ngb-progressbar [value]="status && status.position && status.position.time" [max]="status && status.position && status.position.duration"></ngb-progressbar>
+          <div class="progress progress-thin flex-grow" ng-click="main.handleSeekClick($event, this)">
+            <div class="progress-bar" role="progressbar"
+                 [style.width]="status && status.position && (status.position.time / status.position.duration * 100 + '%')"></div>
+          </div>
+          <span class="playback-runtime">{{ status && status.position && status.position.duration | time }}</span>
+        </div>
+      </div>
+      <div class="nav navbar-nav navbar-flex noplayer" *ngIf="!activePlayer">
+        No player selected
+      </div>
+    </div>
+
+    <div class="navbar-nav">
+      <div ngbDropdown class="nav-item dropdown">
+        <a ngbDropdownToggle class="nav-link dropdown-toggle"><img *ngIf="activePlayer"
+                                                                   [src]="activePlayer.icons['48x48'].url | prescale:'original'"
+                                                                   height="24"/></a>
+        <div ngbDropdownMenu class="dropdown-menu-right">
+          <a *ngFor="let player of players | async" class="dropdown-item" (click)="selectPlayer(player)"><img
+            [src]="player.icons['48x48'].url | prescale:'original'" height="24"> {{player.friendlyName}}</a>
+        </div>
+      </div>
     </div>
   </div>
 </nav>
+
+<ng-template #errorModal let-d="dismiss">
+  <div class="modal-header">
+    <h4 class="modal-title">An error occured :-(</h4>
+    <button class="close" aria-label="Close" (click)="d()"><span aria-hidden="true">&times;</span></button>
+  </div>
+  <div class="modal-body">
+    {{errorMessage}}
+  </div>
+</ng-template>
 
 <router-outlet></router-outlet>
