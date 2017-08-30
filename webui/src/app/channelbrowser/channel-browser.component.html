@@ -1,12 +1,26 @@
+<div class="container">
+  <div class="row">
+    <ul class="col breadcrumb align-self-center mb-0 p-2">
+      <li class="breadcrumb-item"><a (click)="goToChannelRoot()" tabindex="0">{{channel?.title}}</a></li>
+      <li *ngFor="let pathItem of currentPath" class="breadcrumb-item"><a (click)="goBack(pathItem)" tabindex="1">{{pathItem.title}}</a></li>
+    </ul>
+
+    <div class="col-md-3 align-self-center input-group">
+      <input type="text" [(ngModel)]="searchString" role="search" placeholder="Search" class="form-control"/>
+      <span class="input-group-addon"><span class="oi oi-magnifying-glass"></span></span>
+    </div>
+  </div>
+</div>
+
 <ul class="contentbrowser poster">
   <li class="contentitem"
-      *ngFor="let item of contents"
+      *ngFor="let item of filteredContents"
       [class.withthumb]="item.poster || item.still"
       [class.withposter]="item.poster"
       [class.withstill]="item.still"
-      [class.withinfo]="item.tagline || item.rating || (item.genres && item.genres.length) || item.plot || item.overview"
-      [class.watched]="item.playState &amp;&amp; item.playState.status == 'watched'"
-      [class.inprogress]="item.playState &amp;&amp; item.playState.status == 'inprogress'"
+      [class.withinfo]="item.tagline || item.rating || (item.genres?.length) || item.plot || item.overview"
+      [class.watched]="item.playState?.status == 'watched'"
+      [class.inprogress]="item.playState?.status == 'inprogress'"
       [class.hasnew]="item.hasNew"
       [class.unavailable]="item.unavailable"
       [class.expanded]="showDetails && expandedId == item.id"

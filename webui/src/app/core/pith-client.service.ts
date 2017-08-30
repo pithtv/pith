@@ -127,7 +127,7 @@ export class Channel extends RestModule {
     return this.get('list', path, {includePlayStates:true}).map((results: object[]) => results.map(r => new ChannelItem(r)));
   }
 
-  detail(path) {
+  getDetails(path) {
     return this.get('detail', path, {includePlayStates:true}).map(result => new ChannelItem(result));
   }
 

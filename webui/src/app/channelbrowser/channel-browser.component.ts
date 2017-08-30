@@ -1,4 +1,4 @@
-import {Component, ViewChildren} from "@angular/core";
+import {Component, Input, ViewChildren} from "@angular/core";
 import {ActivatedRoute, ParamMap} from "@angular/router";
 import {Channel, ChannelItem, PithClientService} from "../core/pith-client.service";
 import 'rxjs/Rx';
@@ -24,14 +24,19 @@ const animationTiming = "500ms ease";
   ]
 })
 export class ChannelBrowserComponent {
+  private itemDetails: ChannelItem;
   showDetailsItem: ChannelItem;
   private channel: Channel;
-  private currentPath: string;
+  private currentContainerId: string;
   private contents: ChannelItem[];
+  private filteredContents: ChannelItem[];
+  private currentPath: ChannelItem[] = [];
 
   private expandedId: string;
   private showDetailsId: string;
   private showDetails: boolean;
+
+  private currentSearch: string;
 
   @ViewChildren('cell') cells;
 
@@ -40,7 +45,11 @@ export class ChannelBrowserComponent {
   }
 
   fetchContents() {
-    this.channel.listContents(this.currentPath).subscribe(contents => this.contents = contents);
+    this.channel.listContents(this.currentContainerId).subscribe(contents => {
+      this.contents = contents;
+      this.search(this.currentSearch, true);
+    });
+    this.channel.getDetails(this.currentContainerId).subscribe(details => this.itemDetails = details);
   }
 
   ngOnInit() {
@@ -49,16 +58,14 @@ export class ChannelBrowserComponent {
       return this.pithClient.getChannel(id);
     }).subscribe((channel: Channel) => {
       this.channel = channel;
-      this.currentPath = "";
+      this.currentContainerId = "";
       this.fetchContents();
     });
   }
 
   cellFor(id: string) {
     if(!id) return null;
-    return this.cells.find(cell => {
-      return cell.nativeElement.id == id
-    });
+    return this.cells.find(cell => cell.nativeElement.id == id);
   }
 
   toggle(item: ChannelItem) {
@@ -80,8 +87,41 @@ export class ChannelBrowserComponent {
       }
   }
 
+  @Input()
+  set searchString(value) {
+    this.search(value);
+  }
+
+  search(value: string, forceFull?: boolean) {
+    if(!value) {
+      this.filteredContents = this.contents;
+    } else {
+      let filter = ((i) => i.title.toLocaleLowerCase().indexOf(value.toLocaleLowerCase()) != -1);
+      if (!forceFull && this.currentSearch && value.indexOf(this.currentSearch) != -1) {
+        this.filteredContents = this.filteredContents.filter(filter);
+      } else {
+        this.filteredContents = this.contents.filter(filter);
+      }
+    }
+    this.currentSearch = value;
+  }
+
   open(item: ChannelItem) {
-    this.currentPath = item.id;
+    this.currentContainerId = item.id;
+    this.fetchContents();
+    this.currentPath.push(item);
+  }
+
+  goBack(item) {
+    let x = this.currentPath.indexOf(item)
+    this.currentPath.splice(x + 1);
+    this.currentContainerId = item.id;
+    this.fetchContents();
+  }
+
+  goToChannelRoot() {
+    this.currentPath = [];
+    this.currentContainerId = "";
     this.fetchContents();
   }
 }

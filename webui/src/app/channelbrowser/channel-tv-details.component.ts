@@ -36,7 +36,7 @@ export class ChannelTvDetailsComponent {
 
   fetchDetails() {
     if(this._item) {
-      this.channel.detail(this._item.id).subscribe( (details: Show) => {
+      this.channel.getDetails(this._item.id).subscribe( (details: Show) => {
         this._item = details;
         this.seasons = details.seasons.sort(function(a,b) {
           return a.season == b.season ? 0 : a.season == 0 ? 1 : b.season == 0 ? -1 : a.season - b.season;
