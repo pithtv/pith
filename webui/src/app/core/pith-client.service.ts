@@ -95,6 +95,7 @@ export class ChannelItem {
   title: string;
   mediatype: string;
   playState: any;
+  sortableFields: string[];
 
   constructor(p: Object) {
     Object.assign(this, p);

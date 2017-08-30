@@ -40,6 +40,16 @@ export class ChannelBrowserComponent {
 
   @ViewChildren('cell') cells;
 
+
+  fieldDescriptions = {
+    year: "Year",
+    rating: "Rating",
+    releaseDate: "Release date",
+    title: "Title",
+    runtime: "Runtime",
+    creationTime: "Date added"
+  };
+
   constructor(private route: ActivatedRoute,
               private pithClient: PithClientService) {
   }
@@ -106,6 +116,25 @@ export class ChannelBrowserComponent {
     this.currentSearch = value;
   }
 
+  sort(sortField: string) {
+    var direction;
+    switch(sortField) {
+      case 'year':
+      case 'creationTime':
+      case 'releaseDate':
+      case 'rating':
+        direction=-1;
+        break;
+      default:
+        direction=1;
+    }
+    let compareFn = function(a, b) {
+      return direction * (a[sortField] < b[sortField] ? -1 : a[sortField] > b[sortField] ? 1 : 0);
+    };
+    this.contents.sort(compareFn);
+    this.filteredContents.sort(compareFn);
+  }
+
   open(item: ChannelItem) {
     this.currentContainerId = item.id;
     this.fetchContents();
@@ -113,7 +142,7 @@ export class ChannelBrowserComponent {
   }
 
   goBack(item) {
-    let x = this.currentPath.indexOf(item)
+    let x = this.currentPath.indexOf(item);
     this.currentPath.splice(x + 1);
     this.currentContainerId = item.id;
     this.fetchContents();
