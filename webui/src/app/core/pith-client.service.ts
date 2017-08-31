@@ -141,6 +141,43 @@ export class Channel extends RestModule {
   }
 }
 
+export class PithSettings {
+  apiContext: string;
+  bindAddress: string
+  couchPotato: {
+    enabled: boolean,
+    url: string,
+    apikey: string
+  };
+  dbEngine: string;
+  files: {
+    rootDir: string,
+    excludeExtensions: string[],
+    showHiddenFiles: boolean
+  };
+  httpPort: number;
+  library: {
+    folders: [{
+      channelId: string,
+      containerId: string,
+      contains: string,
+      canAutomatically: boolean
+    }],
+    scanInterval: number
+  };
+  maxAgeForNew: number;
+  mongoUrl: string;
+  pithContext: string;
+  server: string;
+  sonarr: {
+    enabled: boolean,
+    url: string,
+    apikey: string
+  };
+  tingoPath: string;
+  webUiContext: string
+};
+
 export class PithError {
   message: string;
   code: string;
@@ -153,7 +190,6 @@ export class PithError {
 
 @Injectable()
 export class PithClientService {
-  private channels: Channel[];
   private root: string;
   private _errors: Subject<PithError> = new Subject();
   private _progress: Subject<any> = new BehaviorSubject({loading: false});
@@ -178,7 +214,7 @@ export class PithClientService {
   }
 
   queryChannels() {
-    return (this.get("channels") as Observable<object[]>).map(p => this.channels = p.map(p => new Channel(this, p)));
+    return (this.get("channels") as Observable<object[]>).map(p => p.map(p => new Channel(this, p)));
   }
 
   queryPlayers() {
@@ -207,6 +243,10 @@ export class PithClientService {
 
   on(event) {
     return this.eventService.listenFor(event);
+  }
+
+  loadSettings() {
+    return (this.get("settings") as Observable<PithSettings>);
   }
 }
 

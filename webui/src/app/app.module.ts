@@ -20,6 +20,7 @@ import {SlimLoadingBarModule} from "ng2-slim-loading-bar";
 import {PithEventsService} from "./core/pith-events.service";
 import {TimePipe} from "./core/time.pipe";
 import {FormsModule} from "@angular/forms";
+import {SettingsModule} from "./settings/settings.module";
 
 @NgModule({
   declarations: [
@@ -39,7 +40,8 @@ import {FormsModule} from "@angular/forms";
     AppRoutingModule,
     NgbModule.forRoot(),
     SlimLoadingBarModule.forRoot(),
-    FormsModule
+    FormsModule,
+    SettingsModule
   ],
   providers: [
     PithClientService,

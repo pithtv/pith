@@ -1,0 +1,25 @@
+<div class="card m-3">
+  <div class="card-header">
+    General settings
+  </div>
+  <div class="card-body">
+    <div class="form-group" ng-class="{'has-error': settingsForm.rootDir.$invalid}">
+      <label for="rootDir">Media root directory</label>
+      <input type="text" [(ngModel)]="settings.files.rootDir" class="form-control" required name="rootDir" id="rootDir"/>
+    </div>
+    <div class="alert alert-danger alert-sm">
+      Changing this path will invalidate all file folders in your media folders. Be sure to remove any invalid folders
+      and clean the library if you change this value.
+    </div>
+
+    <div class="form-group" ng-class="{'has-error': settingsForm.scanInterval.$invalid}">
+      <label for="scanInterval">Scan for new library items every (minutes):</label>
+      <input type="number" ng-model="settings.library.scanInterval" class="form-control" convert-ms required min="1"
+             name="scanInterval" id="scanInterval"/>
+    </div>
+  </div>
+</div>
+
+<library-category-settings [settings]="settings" title="Movies" type="movies"></library-category-settings>
+<library-category-settings [settings]="settings" title="TV Shows" type="tvshows"></library-category-settings>
+<library-category-settings [settings]="settings" title="Music" type="music"></library-category-settings>

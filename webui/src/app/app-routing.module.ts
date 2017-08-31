@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 import {ChannelBrowserComponent} from "./channelbrowser/channel-browser.component";
+import {SettingsComponent} from "./settings/settings.component";
 
 const routes: Routes = [
   {
@@ -10,6 +11,10 @@ const routes: Routes = [
   {
     path: 'channel/:id',
     component: ChannelBrowserComponent
+  },
+  {
+    path: 'settings',
+    component: SettingsComponent
   }
 ];
 

@@ -1,0 +1,9 @@
+<div class="container" *ngIf="(settings | async) as settings">
+  <ngb-tabset type="tabs m-3">
+    <ngb-tab title="Media">
+      <ng-template ngbTabContent>
+        <media-settings [settings]="settings"></media-settings>
+      </ng-template>
+    </ngb-tab>
+  </ngb-tabset>
+</div>
