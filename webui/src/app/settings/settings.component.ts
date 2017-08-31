@@ -11,4 +11,8 @@ export class SettingsComponent {
   constructor(private pithClientService: PithClientService) {
     this.settings = this.pithClientService.loadSettings();
   }
+
+  save(settings) {
+    console.log(settings);
+  }
 }

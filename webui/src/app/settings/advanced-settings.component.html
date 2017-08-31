@@ -1,0 +1,41 @@
+<div class="card my-3">
+  <div class="card-header">
+    Database settings
+  </div>
+  <div class="card-body">
+    <div class="form-group">
+      <label for="dbEngine">Database engine</label>
+      <select [(ngModel)]="settings.dbEngine" id="dbEngine" class="form-control">
+        <option value="mongodb">MongoDB</option>
+        <option value="tingodb">TingoDB</option>
+      </select>
+    </div>
+    <div class="form-group" *ngIf="settings.dbEngine === 'mongodb'">
+      <label forId="mongoUrl">MongoDB Connection String</label>
+      <input type="text" [(ngModel)]="settings.mongoUrl" class="form-control" name="mongoUrl" id="mongoUrl"
+             [disabled]="settings.dbEngine !== 'mongodb'" [required]="settings.dbEngine === 'mongodb'"/>
+    </div>
+    <div class="form-group" *ngIf="settings.dbEngine === 'tingodb'">
+      <label forId="tingoPath">TingoDB database filepath</label>
+      <input type="text" [(ngModel)]="settings.tingoPath" class="form-control" name="tingoPath" id="tingoPath"
+             [disabled]="settings.dbEngine !== 'tingodb'" [required]="settings.dbEngine === 'tingodb'"/>
+    </div>
+  </div>
+</div>
+
+<div class="card my-3">
+  <div class="card-header">
+    Server settings
+  </div>
+  <div class="card-body">
+    <div class="form-group">
+      <label for="httpPort">HTTP port</label>
+      <input type="number" required [(ngModel)]="settings.httpPort" class="form-control" id="httpPort" name="httpPort"/>
+    </div>
+    <div class="form-group">
+      <label for="bindAddress">Bind address</label>
+      <input type="text" [(ngModel)]="settings.bindAddress" class="form-control" id="bindAddress"
+             placeholder="Leave empty for auto-detect"/>
+    </div>
+  </div>
+</div>

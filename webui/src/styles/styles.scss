@@ -69,3 +69,7 @@ a.link-imdb {
   background-position: center 0.5ex;
   display: inline-block;
 }
+
+.ng-invalid {
+  @extend .is-invalid;
+}

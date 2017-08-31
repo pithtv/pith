@@ -1,8 +1,14 @@
 <div class="container" *ngIf="(settings | async) as settings">
-  <ngb-tabset type="tabs m-3">
+  <button class="btn btn-primary float-right" (click)="save(settings)">Save</button>
+  <ngb-tabset type="tabs">
     <ngb-tab title="Media">
       <ng-template ngbTabContent>
         <media-settings [settings]="settings"></media-settings>
+      </ng-template>
+    </ngb-tab>
+    <ngb-tab title="Advanced">
+      <ng-template ngbTabContent>
+        <advanced-settings [settings]="settings"></advanced-settings>
       </ng-template>
     </ngb-tab>
   </ngb-tabset>

@@ -6,12 +6,19 @@ import {FormsModule} from "@angular/forms";
 import {AsyncPipe} from "@angular/common";
 import {BrowserModule} from "@angular/platform-browser";
 import {LibraryCategorySettingsComponent} from "./library-category-settings.component";
+import {ContainerChooserComponent} from "./container-chooser.component";
+import {AdvancedSettingsComponent} from "./advanced-settings.component";
 
 @NgModule({
   declarations: [
     SettingsComponent,
     MediaSettingsComponent,
-    LibraryCategorySettingsComponent
+    LibraryCategorySettingsComponent,
+    ContainerChooserComponent,
+    AdvancedSettingsComponent
+  ],
+  entryComponents: [
+    ContainerChooserComponent
   ],
   imports: [
     BrowserModule,

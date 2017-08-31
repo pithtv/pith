@@ -119,17 +119,18 @@ export class Show extends ChannelItem {
 
 export class Channel extends RestModule {
   id: string;
+  title: string;
 
   get root() {
     return ['channel', this.id];
   }
 
   listContents(path): Observable<ChannelItem[]> {
-    return this.get('list', path, {includePlayStates:true}).map((results: object[]) => results.map(r => new ChannelItem(r)));
+    return this.get('list', path || "", {includePlayStates:true}).map((results: object[]) => results.map(r => new ChannelItem(r)));
   }
 
   getDetails(path) {
-    return this.get('detail', path, {includePlayStates:true}).map(result => new ChannelItem(result));
+    return this.get('detail', path || "", {includePlayStates:true}).map(result => new ChannelItem(result));
   }
 
   markWatched(item: any) {
@@ -161,7 +162,7 @@ export class PithSettings {
       channelId: string,
       containerId: string,
       contains: string,
-      canAutomatically: boolean
+      scanAutomatically: boolean
     }],
     scanInterval: number
   };
