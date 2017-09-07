@@ -73,3 +73,7 @@ a.link-imdb {
 .ng-invalid {
   @extend .is-invalid;
 }
+
+.container-fullwidth {
+  max-width: calc(100vw - 15px);
+}
