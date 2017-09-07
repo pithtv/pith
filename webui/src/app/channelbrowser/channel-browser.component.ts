@@ -1,4 +1,4 @@
-import {Component, Input, ViewChildren} from "@angular/core";
+import {Component, Input, ViewChild, ViewChildren} from "@angular/core";
 import {ActivatedRoute, ParamMap} from "@angular/router";
 import {Channel, ChannelItem, PithClientService} from "../core/pith-client.service";
 import 'rxjs/Rx';
@@ -13,11 +13,13 @@ const animationTiming = "500ms ease";
       [
         state('expanded', style({"margin-bottom": '392px'})),
         state('collapsed', style({"margin-bottom": '0'})),
+        state('assumeexpanded', style({"margin-bottom": '0'})),
         transition('expanded => collapsed, collapsed => expanded', animate(animationTiming))
       ]),
     trigger('visibility',
       [
         state('expanded', style({'height': '*'})),
+        state('assumeexpanded', style({'height': '0'})),
         state('collapsed', style({'height': '0', display: 'none'})),
         transition('expanded => collapsed, collapsed => expanded', animate(animationTiming))
       ])
@@ -25,21 +27,33 @@ const animationTiming = "500ms ease";
 })
 export class ChannelBrowserComponent {
   private itemDetails: ChannelItem;
-  showDetailsItem: ChannelItem;
   private channel: Channel;
   private currentContainerId: string;
   private contents: ChannelItem[];
   private filteredContents: ChannelItem[];
   private currentPath: ChannelItem[] = [];
 
-  private expandedId: string;
   private showDetailsId: string;
+  private showDetailsIdx: number;
   private showDetails: boolean;
 
   private currentSearch: string;
 
+  private itemsPerRow: number;
+
+  @ViewChild('container') container;
   @ViewChildren('cell') cells;
 
+  resetItemOffsets() {
+    console.log(this.itemsPerRow = Math.floor((window.innerWidth - 20) / 110)); // defined in poster.scss through the media queries
+  }
+
+  ngAfterViewInit() {
+    this.resetItemOffsets();
+    window.addEventListener('resize', () => {
+      this.resetItemOffsets();
+    });
+  }
 
   fieldDescriptions = {
     year: "Year",
@@ -55,6 +69,7 @@ export class ChannelBrowserComponent {
   }
 
   fetchContents() {
+    this.toggle(null);
     this.channel.listContents(this.currentContainerId).subscribe(contents => {
       this.contents = contents;
       this.search(this.currentSearch, true);
@@ -78,22 +93,15 @@ export class ChannelBrowserComponent {
     return this.cells.find(cell => cell.nativeElement.id == id);
   }
 
-  toggle(item: ChannelItem) {
-      if(this.showDetailsId == item.id) {
+  toggle(item: ChannelItem, idx?) {
+      if(item == null || this.showDetailsId == item.id) {
         this.showDetailsId = null;
-        // this.expandedId = null;
         this.showDetails = false;
+        this.showDetailsIdx = -1;
       } else {
-        let previousCell = this.cellFor(this.expandedId);
-        let nextCell = this.cellFor(item.id);
-
-        if(!previousCell || previousCell.nativeElement.offsetTop != nextCell.nativeElement.offsetTop) {
-          this.expandedId = item.id;
-        }
-
         this.showDetailsId = item.id;
-        this.showDetailsItem = item;
         this.showDetails = true;
+        this.showDetailsIdx = idx;
       }
   }
 
@@ -152,5 +160,9 @@ export class ChannelBrowserComponent {
     this.currentPath = [];
     this.currentContainerId = "";
     this.fetchContents();
+  }
+
+  rowIdx(idx) {
+    return Math.floor(idx / this.itemsPerRow);
   }
 }

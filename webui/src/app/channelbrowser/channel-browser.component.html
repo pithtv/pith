@@ -19,9 +19,9 @@
   </div>
 </div>
 
-<ul class="contentbrowser poster px-3">
+<ul class="contentbrowser poster px-3" #container>
   <li class="contentitem"
-      *ngFor="let item of filteredContents"
+      *ngFor="let item of filteredContents; index as idx"
       [class.withthumb]="item.poster || item.still"
       [class.withposter]="item.poster"
       [class.withstill]="item.still"
@@ -34,10 +34,10 @@
       [class.showdetails]="showDetailsId == item.id"
       [id]="item.id"
       #cell
-      [@expand]="(showDetails && expandedId == item.id) ? 'expanded':'collapsed'"
+      [@expand]="idx == showDetailsIdx ? 'expanded' : (rowIdx(idx) == rowIdx(showDetailsIdx)) ? 'assumeexpanded' : 'collapsed'"
   >
 
-    <a (click)="(item.type == 'container' && item.mediatype!='show') ? open(item) : toggle(item)">
+    <a (click)="(item.type == 'container' && item.mediatype!='show') ? open(item) : toggle(item, idx)">
       <div *ngIf="item.poster || item.still" class="th"
            [style.background-image]="'url(' + ((item.poster | prescale:'100x150') || (item.still | prescale:'266x150'))+ ')'">
       </div>
@@ -46,10 +46,10 @@
         class="itemseason"   *ngIf="item.season && (item.showname !== itemDetails.showname || item.season !== itemDetails.season)">{{item.season}}</span><span
         class="itemepisode"  *ngIf="item.episode">{{item.episode}}</span></span>
     </a>
-    <div class="iteminfo" [@visibility]="(showDetails && expandedId == item.id) ? 'expanded':'collapsed'">
-      <div *ngIf="expandedId == item.id">
-        <channel-details *ngIf="showDetailsItem.type != 'container'" [item]="showDetailsItem" [channel]="channel"></channel-details>
-        <channel-tv-details *ngIf="showDetailsItem.mediatype == 'show'" [item]="showDetailsItem" [channel]="channel"></channel-tv-details>
+    <div class="iteminfo" [@visibility]="idx == showDetailsIdx ? 'expanded' : (rowIdx(idx) == rowIdx(showDetailsIdx)) ? 'assumeexpanded' : 'collapsed'">
+      <div *ngIf="showDetailsId == item.id">
+        <channel-details *ngIf="item.type != 'container'" [item]="item" [channel]="channel"></channel-details>
+        <channel-tv-details *ngIf="item.mediatype == 'show'" [item]="item" [channel]="channel"></channel-tv-details>
       </div>
     </div>
   </li>
