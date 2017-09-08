@@ -111,10 +111,7 @@ LibraryChannel.prototype = {
     
     putPlayState: function(itemId, state, cb) {
         var self = this;
-        return this.getItem(itemId, function(err, item) {
-            if(err || item == undefined) {
-                return Promise.reject(err);
-            }
+        return this.getItem(itemId).then(item => {
             var targetChannel = self.pithApp.getChannelInstance(item.channelId);
             return targetChannel.putPlayState(item.originalId, state);
         });

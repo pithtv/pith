@@ -20,8 +20,8 @@ export class ChannelTvDetailsComponent {
     this.playerService.load(this.channel, item);
   }
 
-  markWatched(item) {
-    this.channel.markWatched(item);
+  togglePlayState(item) {
+    this.channel.togglePlayState(item);
   }
 
   @Input()

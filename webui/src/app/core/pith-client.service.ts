@@ -25,6 +25,14 @@ abstract class RestModule {
     });
   }
 
+  protected put(...args: any[]) {
+    let body = args.pop();
+    return this.pith.put(`${this.root.concat(args).map(encodeURIComponent).join('/')}`, body).catch((e, c) => {
+      this.pith.throw(new PithError(e.error));
+      return Observable.empty();
+    });
+  }
+
   protected on(event, callback) {
     this.pith.on(event).subscribe(args => callback.apply(null, args));
   }
@@ -133,12 +141,17 @@ export class Channel extends RestModule {
     return this.get('detail', path || "", {includePlayStates:true}).map(result => new ChannelItem(result));
   }
 
-  markWatched(item: any) {
-    // TODO
+  togglePlayState(item) {
+    if (item.playState && item.playState.status == 'watched') {
+      item.playState = {status: 'none'};
+    } else {
+      item.playState = {status: 'watched'};
+    }
+    this.setPlayState(item.id, item.playState);
   }
 
-  toggleWatched(item: ChannelItem) {
-    // TODO
+  setPlayState(path, playstate) {
+    this.put('playstate', path, playstate).subscribe();
   }
 }
 
@@ -212,6 +225,10 @@ export class PithClientService {
       loading: true
     });
     return this.httpClient.get(`${this.root}/${url}`, options).do(() => this.reportProgress({loading: false}));
+  }
+
+  put(url: string, body: object) {
+    return this.httpClient.put(`${this.root}/${url}`, body).do(() => this.reportProgress({loading: false}));
   }
 
   queryChannels() {

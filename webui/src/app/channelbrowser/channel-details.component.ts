@@ -16,7 +16,7 @@ export class ChannelDetailsComponent {
     this.playerService.load(this.channel, this.item);
   }
 
-  toggleWatched() {
-    this.channel.toggleWatched(this.item);
+  togglePlayState() {
+    this.channel.togglePlayState(this.item);
   }
 }
