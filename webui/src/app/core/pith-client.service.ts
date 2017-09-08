@@ -145,7 +145,7 @@ export class Channel extends RestModule {
 export class PithSettings {
   apiContext: string;
   bindAddress: string
-  couchPotato: {
+  couchpotato: {
     enabled: boolean,
     url: string,
     apikey: string

@@ -8,6 +8,7 @@ import {BrowserModule} from "@angular/platform-browser";
 import {LibraryCategorySettingsComponent} from "./library-category-settings.component";
 import {ContainerChooserComponent} from "./container-chooser.component";
 import {AdvancedSettingsComponent} from "./advanced-settings.component";
+import {IntegrationSettingsComponent} from "./integration-settings.component";
 
 @NgModule({
   declarations: [
@@ -15,7 +16,8 @@ import {AdvancedSettingsComponent} from "./advanced-settings.component";
     MediaSettingsComponent,
     LibraryCategorySettingsComponent,
     ContainerChooserComponent,
-    AdvancedSettingsComponent
+    AdvancedSettingsComponent,
+    IntegrationSettingsComponent
   ],
   entryComponents: [
     ContainerChooserComponent
