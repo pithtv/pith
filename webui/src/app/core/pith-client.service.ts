@@ -183,7 +183,6 @@ export class PithSettings {
     apikey: string
   };
   tingoPath: string;
-  webUiContext: string
 };
 
 export class PithError {

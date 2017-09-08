@@ -3,12 +3,12 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "ng": "ng",
-    "start": "ng serve --proxy-config proxy.conf.json --host=0.0.0.0 --disable-host-check",
-    "build": "ng build",
-    "test": "ng test",
-    "lint": "ng lint",
-    "e2e": "ng e2e"
+    "ng": "./node_modules/@angular/cli/bin/ng",
+    "start": "./node_modules/@angular/cli/bin/ng serve --proxy-config proxy.conf.json --host=0.0.0.0 --disable-host-check",
+    "build": "./node_modules/@angular/cli/bin/ng build --bh /webui/",
+    "test": "./node_modules/@angular/cli/bin/ng test",
+    "lint": "./node_modules/@angular/cli/bin/ng lint",
+    "e2e": "./node_modules/@angular/cli/bin/ng e2e"
   },
   "private": true,
   "dependencies": {

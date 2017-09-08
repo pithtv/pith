@@ -39,7 +39,7 @@ require("./lib/global")(function(err, Global) {
 
             app.use(pithPath, pithApp.handle);
             app.use(Global.settings.apiContext, rest(pithApp));
-            app.use(Global.settings.webUiContext, express.static("webui"));
+            app.use("/webui", express.static("webui/dist"));
             app.use("/scale", scaler.handle);
             app.get("/", function(req, res) {
                 res.redirect(Global.settings.webUiContext);

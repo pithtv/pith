@@ -34,10 +34,9 @@ It's built on a MEAN stack (so MongoDB, Express, Angular and NodeJS), with some 
 
 Getting started
 ===============
-Install node & bower
+Install node
 
     sudo apt-get install nodejs
-    npm install -g bower
     
 Install ImageMagick: http://www.imagemagick.org/script/binary-releases.php or using your favorite package manager
 
@@ -49,10 +48,10 @@ Clone the project:
 Install node and bower dependencies
 
     npm install
-    bower install
+    npm run-script build
 
 Start it up
 
-    node app.js
+    npm start
 
 Navigate to the URL that is mentioned in the logging, and click the menu to go into settings to set up your media path and library. Restart pith after saving those settings.

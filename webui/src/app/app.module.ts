@@ -16,7 +16,6 @@ import {ChannelDetailsComponent} from "./channelbrowser/channel-details.componen
 import {ChannelTvDetailsComponent} from "./channelbrowser/channel-tv-details.component";
 import {GalleryComponent} from "./util/gallery.component";
 import {PlayerService} from "./core/player.service";
-import {SlimLoadingBarModule} from "ng2-slim-loading-bar";
 import {PithEventsService} from "./core/pith-events.service";
 import {TimePipe} from "./core/time.pipe";
 import {FormsModule} from "@angular/forms";
@@ -39,7 +38,6 @@ import {SettingsModule} from "./settings/settings.module";
     HttpClientModule,
     AppRoutingModule,
     NgbModule.forRoot(),
-    SlimLoadingBarModule.forRoot(),
     FormsModule,
     SettingsModule
   ],
