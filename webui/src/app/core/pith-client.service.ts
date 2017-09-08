@@ -19,18 +19,12 @@ abstract class RestModule {
       query = args[args.length-1];
       args = args.slice(0, -1);
     }
-    return this.pith.get(`${this.root.concat(args).map(encodeURIComponent).join('/')}`, query).catch((e, c) => {
-      this.pith.throw(new PithError(e.error));
-      return Observable.empty();
-    });
+    return this.pith.get(`${this.root.concat(args).map(encodeURIComponent).join('/')}`, query);
   }
 
   protected put(...args: any[]) {
     let body = args.pop();
-    return this.pith.put(`${this.root.concat(args).map(encodeURIComponent).join('/')}`, body).catch((e, c) => {
-      this.pith.throw(new PithError(e.error));
-      return Observable.empty();
-    });
+    return this.pith.put(`${this.root.concat(args).map(encodeURIComponent).join('/')}`, body);
   }
 
   protected on(event, callback) {
@@ -207,6 +201,7 @@ export class PithClientService {
   private root: string;
   private _errors: Subject<PithError> = new Subject();
   private _progress: Subject<any> = new BehaviorSubject({loading: false});
+  private loadingCounter = 0;
 
   constructor(
     private httpClient: HttpClient,
@@ -224,11 +219,25 @@ export class PithClientService {
     this.reportProgress({
       loading: true
     });
-    return this.httpClient.get(`${this.root}/${url}`, options).do(() => this.reportProgress({loading: false}));
+    return this.httpClient.get(`${this.root}/${url}`, options).do(() => this.reportProgress({loading: false})).catch((e, c) => {
+      this.throw(new PithError(e.error));
+      this.reportProgress({
+        loading: false,
+        error: true
+      });
+      return Observable.empty();
+    });
   }
 
   put(url: string, body: object) {
-    return this.httpClient.put(`${this.root}/${url}`, body).do(() => this.reportProgress({loading: false}));
+    return this.httpClient.put(`${this.root}/${url}`, body).do(() => this.reportProgress({loading: false})).catch((e, c) => {
+      this.throw(new PithError(e.error));
+      this.reportProgress({
+        loading: false,
+        error: true
+      });
+      return Observable.empty();
+    });
   }
 
   queryChannels() {
@@ -252,6 +261,12 @@ export class PithClientService {
   }
 
   private reportProgress(progress) {
+    if(progress.loading) {
+      this.loadingCounter++;
+    } else {
+      this.loadingCounter--;
+    }
+    progress.loading = this.loadingCounter > 0;
     this._progress.next(progress);
   }
 
