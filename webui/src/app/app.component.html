@@ -27,15 +27,11 @@
 
     <div class="navbar-flex player-box">
       <div class="playback-info" *ngIf="activePlayer">
-        <span class="playback-title">{{ status && status.position && status.position.title || "Unknown"}}</span>
+        <span class="playback-title">{{ status?.position?.title || "Unknown"}}</span>
         <div class="playback-bar">
-          <span class="playback-time">{{ status && status.position && status.position.time | time }}</span>
-          <ngb-progressbar [value]="status && status.position && status.position.time" [max]="status && status.position && status.position.duration"></ngb-progressbar>
-          <div class="progress progress-thin flex-grow" ng-click="main.handleSeekClick($event, this)">
-            <div class="progress-bar" role="progressbar"
-                 [style.width]="status && status.position && (status.position.time / status.position.duration * 100 + '%')"></div>
-          </div>
-          <span class="playback-runtime">{{ status && status.position && status.position.duration | time }}</span>
+          <span class="playback-time">{{ status?.position?.time | time }}</span>
+          <scrubber [value]="status?.position?.time" (valueChanged)="seekTo($event)" [max]="status?.position?.duration"></scrubber>
+          <span class="playback-runtime">{{ status?.position?.duration | time }}</span>
         </div>
       </div>
       <div class="nav navbar-nav navbar-flex noplayer" *ngIf="!activePlayer">

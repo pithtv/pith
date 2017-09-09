@@ -63,4 +63,8 @@ export class AppComponent {
     this.errorMessage = error.message;
     this.modalService.open(this.errorModal);
   }
+
+  seekTo(position) {
+    this.playerService.seek(position);
+  }
 }

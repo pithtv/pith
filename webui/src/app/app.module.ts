@@ -14,12 +14,12 @@ import {PrescalePipe} from "./util/prescale.pipe";
 import {ChannelBrowserComponent} from "./channelbrowser/channel-browser.component";
 import {ChannelDetailsComponent} from "./channelbrowser/channel-details.component";
 import {ChannelTvDetailsComponent} from "./channelbrowser/channel-tv-details.component";
-import {GalleryComponent} from "./util/gallery.component";
 import {PlayerService} from "./core/player.service";
 import {PithEventsService} from "./core/pith-events.service";
 import {TimePipe} from "./core/time.pipe";
 import {FormsModule} from "@angular/forms";
 import {SettingsModule} from "./settings/settings.module";
+import {ScrubberComponent} from "./util/scrubber.component";
 
 @NgModule({
   declarations: [
@@ -29,8 +29,8 @@ import {SettingsModule} from "./settings/settings.module";
     ChannelDetailsComponent,
     ChannelTvDetailsComponent,
     PrescalePipe,
-    GalleryComponent,
-    TimePipe
+    TimePipe,
+    ScrubberComponent
   ],
   imports: [
     BrowserModule,
