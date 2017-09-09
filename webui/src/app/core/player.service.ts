@@ -28,7 +28,7 @@ export class PlayerService {
       }
     });
 
-    this.pith.on("playerregistered").subscribe((event) => {
+    this.pith.on("playerregistered").subscribe(([event]) => {
       var player = new Player(this.pith, event.player);
       this._players = this._players.concat([player]);
       this._playersSubject.next(this._players);
@@ -37,7 +37,7 @@ export class PlayerService {
       }
     });
 
-    this.pith.on("playerdisappeared").subscribe((event) => {
+    this.pith.on("playerdisappeared").subscribe(([event]) => {
       var player = event.player;
       this._players = this._players.filter((e) => e.id !== player.id);
       this._playersSubject.next(this._players);
