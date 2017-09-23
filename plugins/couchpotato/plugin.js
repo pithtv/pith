@@ -55,7 +55,13 @@ class CouchPotatoChannel extends Channel {
     mapMovie(movie) {
         let release = movie.releases.find(r => r.status == 'done');
         let movieFile = release && release.files.movie && release.files.movie[0];
-        let stat = movieFile && fs.statSync(path.dirname(movieFile));
+        let stat;
+        try {
+            stat = movieFile && fs.statSync(path.dirname(movieFile));
+        } catch(e) {
+            console.log(e);
+        }
+
         return {
             id: 'media/' + movie._id,
             title: movie.title,
