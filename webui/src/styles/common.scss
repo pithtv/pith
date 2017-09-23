@@ -69,3 +69,19 @@ $white_50: rgba(255,255,255,0.5);
   @extend .oi;
   @extend .oi-media-play;
 }
+
+
+// bootstrap fixes
+.dropdown {
+  white-space: nowrap;
+}
+
+.navbar-toggler.collapsed > .navbar-toggler-icon {
+  @extend .oi;
+  @extend .oi-chevron-bottom;
+}
+
+.navbar-toggler > .navbar-toggler-icon {
+  @extend .oi;
+  @extend .oi-chevron-top;
+}

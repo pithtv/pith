@@ -5,49 +5,55 @@
       <pith-logo></pith-logo>
     </a>
 
-    <div class="navbar-nav">
-      <div class="nav-item dropdown" ngbDropdown>
-        <a ngbDropdownToggle class="nav-link dropdown-toggle"><span class="oi oi-menu"></span></a>
-        <div ngbDropdownMenu>
-          <a *ngFor="let channel of channels | async" class="dropdown-item" routerLink="channel/{{channel.id}}">{{channel.title}}</a>
-          <div class="dropdown-divider"></div>
-          <a class="dropdown-item" routerLink="settings">Settings</a>
-        </div>
-      </div>
-      <div class="nav-item" [hidden]="!(status && status.actions.pause)">
-        <a class="nav-link" (click)="pause()"><span class="oi oi-media-pause"></span></a>
-      </div>
-      <div class="nav-item" [hidden]="!(status && status.actions.play)">
-        <a class="nav-link" (click)="play()"><span class="oi oi-media-play"></span></a>
-      </div>
-      <div class="nav-item" [hidden]="!(status && status.actions.stop)">
-        <a class="nav-link" (click)="stop()"><span class="oi oi-media-stop"></span></a>
+    <div class="nav-item dropdown" ngbDropdown>
+      <a ngbDropdownToggle class="nav-link dropdown-toggle"><span class="oi oi-menu"></span></a><div ngbDropdownMenu>
+        <a *ngFor="let channel of channels | async" class="dropdown-item" routerLink="channel/{{channel.id}}">{{channel.title}}</a>
+        <div class="dropdown-divider"></div>
+        <a class="dropdown-item" routerLink="settings">Settings</a>
       </div>
     </div>
 
-    <div class="navbar-flex player-box">
-      <div class="playback-info" *ngIf="activePlayer">
-        <span class="playback-title">{{ status?.position?.title || "Unknown"}}</span>
-        <div class="playback-bar">
-          <span class="playback-time">{{ status?.position?.time | time }}</span>
-          <scrubber [value]="status?.position?.time" (valueChanged)="seekTo($event)" [max]="status?.position?.duration"></scrubber>
-          <span class="playback-runtime">{{ status?.position?.duration | time }}</span>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTogglerDemo03" aria-controls="navbarTogglerDemo03" aria-expanded="false" aria-label="Toggle navigation" (click)="toggleNavBar()" [class.collapsed]="navbarCollapsed">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" [class.show]="!navbarCollapsed">
+      <div class="navbar-nav playback-controls">
+        <div class="nav-item" [hidden]="!(status && status.actions.pause)">
+          <a class="nav-link" (click)="pause()"><span class="oi oi-media-pause"></span></a>
+        </div>
+        <div class="nav-item" [hidden]="!(status && status.actions.play)">
+          <a class="nav-link" (click)="play()"><span class="oi oi-media-play"></span></a>
+        </div>
+        <div class="nav-item" [hidden]="!(status && status.actions.stop)">
+          <a class="nav-link" (click)="stop()"><span class="oi oi-media-stop"></span></a>
         </div>
       </div>
-      <div class="nav navbar-nav navbar-flex noplayer" *ngIf="!activePlayer">
-        No player selected
-      </div>
-    </div>
 
-    <div class="navbar-nav">
-      <div ngbDropdown class="nav-item dropdown">
-        <a ngbDropdownToggle class="nav-link dropdown-toggle"><img *ngIf="activePlayer?.icons"
-                                                                   [src]="activePlayer.icons['48x48'].url | prescale:'original'"
-                                                                   height="24"/></a>
-        <div ngbDropdownMenu class="dropdown-menu-right">
-          <a class="dropdown-item" (click)="selectPlayer(webPlayer)">Browser</a>
-          <a *ngFor="let player of players | async" class="dropdown-item" (click)="selectPlayer(player)"><img
-            [src]="player.icons['48x48'].url | prescale:'original'" height="24"> {{player.friendlyName}}</a>
+      <div class="navbar-flex player-box">
+        <div class="playback-info" *ngIf="activePlayer">
+          <span class="playback-title">{{ status?.position?.title || "Unknown"}}</span>
+          <div class="playback-bar">
+            <span class="playback-time">{{ status?.position?.time | time }}</span>
+            <scrubber [value]="status?.position?.time" (valueChanged)="seekTo($event)" [max]="status?.position?.duration"></scrubber>
+            <span class="playback-runtime">{{ status?.position?.duration | time }}</span>
+          </div>
+        </div>
+        <div class="nav navbar-nav navbar-flex noplayer" *ngIf="!activePlayer">
+          No player selected
+        </div>
+      </div>
+
+      <div class="navbar-nav">
+        <div ngbDropdown class="nav-item dropdown">
+          <a ngbDropdownToggle class="nav-link dropdown-toggle"><img *ngIf="activePlayer?.icons"
+                                                                     [src]="activePlayer.icons['48x48'].url | prescale:'original'"
+                                                                     height="24"/></a>
+          <div ngbDropdownMenu class="dropdown-menu-right">
+            <a class="dropdown-item" (click)="selectPlayer(webPlayer)">Browser</a>
+            <a *ngFor="let player of players | async" class="dropdown-item" (click)="selectPlayer(player)"><img
+              [src]="player.icons['48x48'].url | prescale:'original'" height="24"> {{player.friendlyName}}</a>
+          </div>
         </div>
       </div>
     </div>

@@ -350,3 +350,20 @@ ul.detailtabs {
     font-weight: normal;
   }
 }
+
+@media(max-width: 900px) {
+  .bigthumb {
+    display: none;
+  }
+
+  .episodeguide > {
+    .detailtabs, .seasondetails {
+      left: 0;
+      right: 0;
+
+      .still {
+        display: none;
+      }
+    }
+  }
+}

@@ -19,6 +19,7 @@ export class AppComponent {
   @ViewChild("errorModal") errorModal;
   private errorMessage: string;
   private status: PlayerStatus;
+  private navbarCollapsed: boolean = true;
 
   constructor(private pithClient: PithClientService, private playerService: PlayerService, private modalService: NgbModal, private webPlayer: WebPlayer) {
     this.channels = pithClient.queryChannels();
@@ -67,5 +68,9 @@ export class AppComponent {
 
   seekTo(position) {
     this.playerService.seek(position);
+  }
+
+  toggleNavBar() {
+    this.navbarCollapsed = !this.navbarCollapsed;
   }
 }
