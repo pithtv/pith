@@ -27,7 +27,7 @@ export class WebPlayer implements Player {
   }
 
   load(channel: Channel, item: ChannelItem) {
-    channel.stream(item.id, {target: 'hls'}).subscribe(stream => {
+    channel.stream(item.id, {target: 'hls,webmp4'}).subscribe(stream => {
       this._stream.next(stream);
     });
   }

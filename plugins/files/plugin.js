@@ -128,47 +128,42 @@ FilesChannel.prototype = {
                 if(err) {
                     reject(err);
                 } else {
-                    if(options && options.target in profiles) {
-                        let profile = profiles[options.target];
-                        let url = `${channel.pith.rootUrl}stream/${itemPath}?transcode=${options.target}`;
-                        if(profile.requiresPlaylist) {
-                            url += `&playlist=${profile.requiresPlaylist}`;
-                        }
+                    let duration = parseFloat(metadata.format.duration) * 1000;
 
-                        var desc = {
-                            url: url,
-                            mimetype: profiles[options.target].mimetype,
-                            seekable: profile.seekable,
-                            duration: parseFloat(metadata.format.duration) * 1000
-                        };
+                    var desc = {
+                        url: channel.pith.rootUrl + "stream/" + itemPath,
+                        mimetype: item.mimetype,
+                        seekable: true,
+                        format: {
+                            container: metadata.format.tags.major_brand,
+                            streams: metadata.streams.map(stream => ({
+                                index: stream.index,
+                                codec: stream.codec_name,
+                                profile: stream.profile,
+                                pixelFormat: stream.pix_fmt
+                            }))
+                        },
+                        duration: duration
+                    };
 
-                        resolve(desc);
-                    } else if(options && options.target == 'hls') {
-                        var desc = {
-                            url: channel.pith.rootUrl + "stream/" + itemPath + "?m3u8=true",
-                            duration: parseFloat(metadata.format.duration) * 1000
-                        };
-                        resolve(desc);
-                    } else {
-                        var desc = {
-                            url: channel.pith.rootUrl + "stream/" + itemPath,
-                            mimetype: item.mimetype,
-                            seekable: true,
-                            format: {
-                                container: metadata.format.tags.major_brand,
-                                streams: metadata.streams.map(stream => ({
-                                    index: stream.index,
-                                    codec: stream.codec_name,
-                                    profile: stream.profile,
-                                    pixelFormat: stream.pix_fmt
-                                }))
+                    if(options && options.target) {
+                        desc.streams = options.target.split(",").map((profileName) => {
+                            let profile = profiles[profileName];
+                            let url = `${channel.pith.rootUrl}stream/${itemPath}?transcode=${profileName}`;
+                            if(profile.requiresPlaylist) {
+                                url += `&playlist=${profile.requiresPlaylist}`;
                             }
-                        };
 
-                        desc.duration = parseFloat(metadata.format.duration) * 1000;
-
-                        resolve(desc);
+                            return {
+                                url: url,
+                                mimetype: profile.mimetype,
+                                seekable: profile.seekable,
+                                duration: duration
+                            };
+                        });
                     }
+
+                    resolve(desc);
                 }
             });
         });

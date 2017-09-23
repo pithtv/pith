@@ -26,21 +26,33 @@ export class VideoPlayerComponent {
   ngAfterViewInit() {
     this.webPlayer.activeStream.subscribe(stream => {
       if(stream) {
-        this.load(stream);
+        this.loadStream(stream);
       }
     })
   }
 
-  load(stream, options?: any) {
-    // if(options && options.offset) {
-    //   this.url = stream.stream.url + "&start=" + options.offset / 1000;
-    //   this.offset = options.offset;
-    // } else {
-    //   this.url = stream.stream.url;
-    //   this.offset = 0;
-    // }
-    this.stream = stream;
-    this.url = stream.stream.url;
+  loadStream(stream) {
+    let substream = stream.stream.streams.find(substream => {
+      return this.video.nativeElement.canPlayType(substream.mimetype)
+    });
+    if (!substream) {
+      alert("No playable stream found");
+      return;
+    }
+
+    this.load(substream);
+  }
+
+  load(substream, options?: any) {
+    if(options && options.offset) {
+      this.url = substream.url + "&start=" + options.offset / 1000;
+      this.offset = options.offset;
+    } else {
+      this.url = substream.url;
+      this.offset = 0;
+    }
+
+    this.stream = substream;
 
     if(!this.refreshInterval) {
       this.refreshInterval = setInterval(() => {
@@ -64,7 +76,7 @@ export class VideoPlayerComponent {
   }
 
   seekTo(time) {
-    if(this.stream.stream.seekable) {
+    if(this.stream.seekable) {
       this.video.nativeElement.currentTime = time / 1000;
     } else {
       this.load(this.stream, {offset: time});
