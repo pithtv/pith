@@ -90,10 +90,10 @@ LibraryChannel.prototype = {
         }
     },
     
-    getStream: function(item) {
+    getStream: function(item, options) {
         var channel = this;
         var targetChannel = channel.pithApp.getChannelInstance(item.channelId);
-        return targetChannel.getItem(item.originalId).then(item => targetChannel.getStream(item));
+        return targetChannel.getItem(item.originalId).then(item => targetChannel.getStream(item, options));
     },
 
     getLastPlayStateFromItem: function(item) {

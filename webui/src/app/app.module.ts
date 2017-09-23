@@ -20,6 +20,8 @@ import {TimePipe} from "./core/time.pipe";
 import {FormsModule} from "@angular/forms";
 import {SettingsModule} from "./settings/settings.module";
 import {ScrubberComponent} from "./util/scrubber.component";
+import {WebPlayer} from "./videoplayer/web-player";
+import {VideoPlayerComponent} from "./videoplayer/video-player.component";
 
 @NgModule({
   declarations: [
@@ -30,7 +32,8 @@ import {ScrubberComponent} from "./util/scrubber.component";
     ChannelTvDetailsComponent,
     PrescalePipe,
     TimePipe,
-    ScrubberComponent
+    ScrubberComponent,
+    VideoPlayerComponent
   ],
   imports: [
     BrowserModule,
@@ -44,7 +47,8 @@ import {ScrubberComponent} from "./util/scrubber.component";
   providers: [
     PithClientService,
     PithEventsService,
-    PlayerService
+    PlayerService,
+    WebPlayer
   ],
   bootstrap: [AppComponent]
 })

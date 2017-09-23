@@ -41,10 +41,11 @@
 
     <div class="navbar-nav">
       <div ngbDropdown class="nav-item dropdown">
-        <a ngbDropdownToggle class="nav-link dropdown-toggle"><img *ngIf="activePlayer"
+        <a ngbDropdownToggle class="nav-link dropdown-toggle"><img *ngIf="activePlayer?.icons"
                                                                    [src]="activePlayer.icons['48x48'].url | prescale:'original'"
                                                                    height="24"/></a>
         <div ngbDropdownMenu class="dropdown-menu-right">
+          <a class="dropdown-item" (click)="selectPlayer(webPlayer)">Browser</a>
           <a *ngFor="let player of players | async" class="dropdown-item" (click)="selectPlayer(player)"><img
             [src]="player.icons['48x48'].url | prescale:'original'" height="24"> {{player.friendlyName}}</a>
         </div>
@@ -62,5 +63,7 @@
     {{errorMessage}}
   </div>
 </ng-template>
+
+<video-player></video-player>
 
 <router-outlet></router-outlet>

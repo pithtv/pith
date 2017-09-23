@@ -100,10 +100,10 @@ class CouchPotatoChannel extends Channel {
         return filesChannel.resolveFile(item.filePath);
     }
 
-    getStream(item) {
+    getStream(item, options) {
         let filesChannel = this.pith.getChannelInstance('files');
         return this.getFile(item).then(file => {
-            return filesChannel.getStream(file)
+            return filesChannel.getStream(file, options)
         });
     }
 

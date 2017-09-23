@@ -1,4 +1,4 @@
-import {Channel, ChannelItem, PithClientService, Player, PlayerStatus} from "./pith-client.service";
+import {Channel, ChannelItem, PithClientService, RemotePlayer, PlayerStatus} from "./pith-client.service";
 import {Observable} from "rxjs/Observable";
 import {Injectable} from "@angular/core";
 import {Subject} from "rxjs/Subject";
@@ -12,11 +12,11 @@ enum Status {
 
 @Injectable()
 export class PlayerService {
-  private _activePlayer: Player;
+  private _activePlayer: RemotePlayer;
   private _players = [];
 
-  readonly _activePlayerSubject: Subject<Player> = new BehaviorSubject(null);
-  readonly _playersSubject: Subject<Player[]> = new BehaviorSubject([]);
+  readonly _activePlayerSubject: Subject<RemotePlayer> = new BehaviorSubject(null);
+  readonly _playersSubject: Subject<RemotePlayer[]> = new BehaviorSubject([]);
   readonly _status: Subject<PlayerStatus> = new BehaviorSubject(null);
 
   constructor(private pith: PithClientService) {
@@ -29,7 +29,7 @@ export class PlayerService {
     });
 
     this.pith.on("playerregistered").subscribe(([event]) => {
-      var player = new Player(this.pith, event.player);
+      var player = new RemotePlayer(this.pith, event.player);
       this._players = this._players.concat([player]);
       this._playersSubject.next(this._players);
       if(!this._activePlayer) {

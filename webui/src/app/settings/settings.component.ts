@@ -13,6 +13,6 @@ export class SettingsComponent {
   }
 
   save(settings) {
-    console.log(settings);
+    this.pithClientService.storeSettings(settings);
   }
 }

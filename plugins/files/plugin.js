@@ -8,6 +8,7 @@ var playstate = require("./playstate");
 var ff = require("fluent-ffmpeg");
 var Channel = require("../../lib/channel");
 var wrapToPromise = require("../../lib/util").wrapToPromise;
+var profiles = require("../../lib/profiles");
 
 var metaDataProviders = [
     require("./movie-nfo"),
@@ -118,7 +119,7 @@ FilesChannel.prototype = {
         });
     },
     
-    getStream: function(item) {
+    getStream: function(item, options) {
         return new Promise((resolve, reject) => {
             var channel = this;
             var itemId = item.id;
@@ -127,14 +128,47 @@ FilesChannel.prototype = {
                 if(err) {
                     reject(err);
                 } else {
-                    var desc = {
-                        url: channel.pith.rootUrl + "stream/" + itemPath,
-                        mimetype: item.mimetype
-                    };
+                    if(options && options.target in profiles) {
+                        let profile = profiles[options.target];
+                        let url = `${channel.pith.rootUrl}stream/${itemPath}?transcode=${options.target}`;
+                        if(profile.requiresPlaylist) {
+                            url += `&playlist=${profile.requiresPlaylist}`;
+                        }
 
-                    desc.duration = parseFloat(metadata.format.duration) * 1000;
+                        var desc = {
+                            url: url,
+                            mimetype: profiles[options.target].mimetype,
+                            seekable: profile.seekable,
+                            duration: parseFloat(metadata.format.duration) * 1000
+                        };
 
-                    resolve(desc);
+                        resolve(desc);
+                    } else if(options && options.target == 'hls') {
+                        var desc = {
+                            url: channel.pith.rootUrl + "stream/" + itemPath + "?m3u8=true",
+                            duration: parseFloat(metadata.format.duration) * 1000
+                        };
+                        resolve(desc);
+                    } else {
+                        var desc = {
+                            url: channel.pith.rootUrl + "stream/" + itemPath,
+                            mimetype: item.mimetype,
+                            seekable: true,
+                            format: {
+                                container: metadata.format.tags.major_brand,
+                                streams: metadata.streams.map(stream => ({
+                                    index: stream.index,
+                                    codec: stream.codec_name,
+                                    profile: stream.profile,
+                                    pixelFormat: stream.pix_fmt
+                                }))
+                            }
+                        };
+
+                        desc.duration = parseFloat(metadata.format.duration) * 1000;
+
+                        resolve(desc);
+                    }
                 }
             });
         });

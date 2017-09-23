@@ -1,16 +1,17 @@
 import {Component, ViewChild} from '@angular/core';
-import {Channel, PithClientService, PithError, Player, PlayerStatus} from "./core/pith-client.service"
+import {Channel, PithClientService, PithError, RemotePlayer, PlayerStatus} from "./core/pith-client.service"
 import {Observable} from "rxjs/Observable";
 import {PlayerService} from "./core/player.service";
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import {Subscription} from "rxjs/Subscription";
+import {WebPlayer} from "./videoplayer/web-player";
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html'
 })
 export class AppComponent {
-  activePlayer: Player;
+  activePlayer: RemotePlayer;
   channels: Observable<Channel[]>;
   title = 'app';
   statusSubscription: Subscription;
@@ -19,7 +20,7 @@ export class AppComponent {
   private errorMessage: string;
   private status: PlayerStatus;
 
-  constructor(private pithClient: PithClientService, private playerService: PlayerService, private modalService: NgbModal) {
+  constructor(private pithClient: PithClientService, private playerService: PlayerService, private modalService: NgbModal, private webPlayer: WebPlayer) {
     this.channels = pithClient.queryChannels();
     pithClient.errors.subscribe(error => {
       this.showError(error);

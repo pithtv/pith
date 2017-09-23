@@ -41,7 +41,18 @@ export class PlayerStatus {
   }
 }
 
-export class Player extends RestModule {
+export interface Player {
+  readonly icons: object[];
+  readonly friendlyName: string;
+  readonly status: Observable<PlayerStatus>;
+  load (channel: Channel, item: ChannelItem);
+  play();
+  pause()
+  stop();
+  seek(time: number);
+}
+
+export class RemotePlayer extends RestModule {
   readonly id: string;
   readonly icons: object[];
   readonly friendlyName: string;
@@ -147,6 +158,10 @@ export class Channel extends RestModule {
   setPlayState(path, playstate) {
     this.put('playstate', path, playstate).subscribe();
   }
+
+  stream(path, options?: any) {
+    return this.get('stream', path || "", options);
+  }
 }
 
 export class PithSettings {
@@ -244,7 +259,7 @@ export class PithClientService {
   }
 
   queryPlayers() {
-    return (this.get("players") as Observable<object[]>).map(p => p.map(p => new Player(this, p)));
+    return (this.get("players") as Observable<object[]>).map(p => p.map(p => new RemotePlayer(this, p)));
   }
 
   getChannel(id: string): Observable<Channel> {
@@ -279,6 +294,10 @@ export class PithClientService {
 
   loadSettings() {
     return (this.get("settings") as Observable<PithSettings>);
+  }
+
+  storeSettings(settings: PithSettings) {
+    return this.put("settings", settings).subscribe();
   }
 }
 
