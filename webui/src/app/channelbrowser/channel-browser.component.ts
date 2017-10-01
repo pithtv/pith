@@ -45,7 +45,7 @@ export class ChannelBrowserComponent {
   @ViewChildren('cell') cells;
 
   resetItemOffsets() {
-    console.log(this.itemsPerRow = Math.floor((window.innerWidth - 20) / 110)); // defined in poster.scss through the media queries
+    this.itemsPerRow = Math.floor((window.innerWidth - 20) / 110); // defined in poster.scss through the media queries
   }
 
   ngAfterViewInit() {
@@ -84,6 +84,7 @@ export class ChannelBrowserComponent {
     }).subscribe((channel: Channel) => {
       this.channel = channel;
       this.currentContainerId = "";
+      this.currentPath = [];
       this.fetchContents();
     });
   }
