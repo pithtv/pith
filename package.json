@@ -22,6 +22,7 @@
     "nodeunit": "*",
     "plugin": "*",
     "request": "*",
+    "retrieve-keyframes": "^2.13.1",
     "sprintf-js": "^1.0.2",
     "ssdp-client": "*",
     "static-favicon": "~1.0.0",
