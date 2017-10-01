@@ -1,4 +1,4 @@
-import {Component, EventEmitter, Input, Output} from "@angular/core";
+import {Component, EventEmitter, Input, Output, ViewChild} from "@angular/core";
 
 @Component({
   selector: "scrubber",
@@ -9,8 +9,10 @@ export class ScrubberComponent {
   @Input("max") max: number;
   @Output("valueChanged") valueChanged:EventEmitter<number> = new EventEmitter();
 
+  @ViewChild("container") container;
+
   handleSeekClick(event) {
-    let targetTime = this.max * event.layerX / event.target.offsetWidth;
+    let targetTime = this.max * event.layerX / this.container.nativeElement.offsetWidth;
     this.valueChanged.emit(targetTime);
   }
 }
