@@ -18,6 +18,7 @@ export class VideoPlayerComponent {
   url: string;
   offset: number = 0;
   private refreshInterval: any;
+  private keyframes: any[];
 
   constructor(private webPlayer: WebPlayer) {
 
@@ -31,13 +32,21 @@ export class VideoPlayerComponent {
     })
   }
 
-  loadStream(stream) {
+  loadStream({item, channel, stream}) {
     let substream = stream.stream.streams.find(substream => {
       return this.video.nativeElement.canPlayType(substream.mimetype)
     });
     if (!substream) {
       alert("No playable stream found");
       return;
+    }
+
+    this.keyframes = null;
+
+    if(!substream.seekable) {
+      this.webPlayer.findKeyFrames(channel, item).subscribe((keyframes) => {
+        this.keyframes = keyframes;
+      })
     }
 
     this.load(substream);
@@ -65,6 +74,7 @@ export class VideoPlayerComponent {
     clearInterval(this.refreshInterval);
     this.refreshInterval = null;
     this.stream = null;
+    this.url = null;
   }
 
   play() {
@@ -79,7 +89,15 @@ export class VideoPlayerComponent {
     if(this.stream.seekable) {
       this.video.nativeElement.currentTime = time / 1000;
     } else {
-      this.load(this.stream, {offset: time});
+      if(this.keyframes) {
+        // find last keyframe before offset
+        let idx = this.keyframes.findIndex(keyframe => keyframe.timestamp >= time);
+        let offset = this.keyframes[idx - 1].timestamp - ((window)['seekOffset'] || 0);
+        console.log(`Requested ${time}, getting you ${offset}`);
+        this.load(this.stream, {offset: offset});
+      } else {
+        this.load(this.stream, {offset: time});
+      }
     }
   }
 

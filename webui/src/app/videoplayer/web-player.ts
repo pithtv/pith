@@ -28,8 +28,12 @@ export class WebPlayer implements Player {
 
   load(channel: Channel, item: ChannelItem) {
     channel.stream(item.id, {target: 'hls,webmp4'}).subscribe(stream => {
-      this._stream.next(stream);
+      this._stream.next({ channel, item, stream });
     });
+  }
+
+  findKeyFrames(channel: Channel, item: ChannelItem) {
+    return channel.stream(item.id, {includeKeyFrames: true}).map((stream: any) => stream.stream.keyframes);
   }
 
   get status() {

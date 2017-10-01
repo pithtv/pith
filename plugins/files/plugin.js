@@ -9,6 +9,7 @@ var ff = require("fluent-ffmpeg");
 var Channel = require("../../lib/channel");
 var wrapToPromise = require("../../lib/util").wrapToPromise;
 var profiles = require("../../lib/profiles");
+var keyframes = require("../../lib/keyframes");
 
 var metaDataProviders = [
     require("./movie-nfo"),
@@ -124,7 +125,7 @@ FilesChannel.prototype = {
             var channel = this;
             var itemId = item.id;
             var itemPath = itemId.split($path.sep).map(encodeURIComponent).join("/");
-            ff.ffprobe(this.getFile(item.id), function(err, metadata) {
+            ff.ffprobe(this.getFile(item.id), (err, metadata) => {
                 if(err) {
                     reject(err);
                 } else {
@@ -163,7 +164,16 @@ FilesChannel.prototype = {
                         });
                     }
 
-                    resolve(desc);
+                    if(options && options.includeKeyFrames) {
+                        keyframes(this.getFile(item.id), metadata).then(frames => {
+                            desc.keyframes = frames;
+                            resolve(desc);
+                        }).catch(() => {
+                            resolve(desc);
+                        });
+                    } else {
+                        resolve(desc);
+                    }
                 }
             });
         });
