@@ -41,9 +41,6 @@ require("./lib/global")(function(err, Global) {
             app.use(Global.settings.apiContext, rest(pithApp));
             app.use("/webui", express.static("webui/dist"));
             app.use("/scale", scaler.handle);
-            app.get("/", function(req, res) {
-                res.redirect(Global.settings.webUiContext);
-            });
 
             // exclude all private members in JSON messages (those starting with underscore)
             function jsonReplacer(k,v) {
@@ -89,6 +86,10 @@ require("./lib/global")(function(err, Global) {
                     });
                 });
             });
+
+            app.use((req, res, next) => {
+                res.redirect('/webui/');
+            })
         }
     );
 });
