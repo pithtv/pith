@@ -10,6 +10,7 @@ var Channel = require("../../lib/channel");
 var wrapToPromise = require("../../lib/util").wrapToPromise;
 var profiles = require("../../lib/profiles");
 var keyframes = require("../../lib/keyframes");
+var preview = require("./preview");
 
 var metaDataProviders = [
     require("./movie-nfo"),
@@ -35,6 +36,7 @@ function FilesChannel(pith, statestore) {
     });
     
     pith.handle.use('/stream', vidstreamer);
+    pith.handle.use('/preview', preview(path => this.getFile(path)));
 }
 
 FilesChannel.prototype = {
@@ -69,13 +71,13 @@ FilesChannel.prototype = {
         });
     },
 
-    getFile: function(path, cb) {
+    getFile: function(path) {
         return $path.resolve(this.rootDir, path);
     },
     
     getItem: function(itemId, detailed) {
         return new Promise((resolve, reject) => {
-            if(arguments.length == 1) {
+            if(detailed === undefined) {
                 detailed = true;
             }
 
@@ -89,6 +91,7 @@ FilesChannel.prototype = {
 
                 if(stats && stats.isDirectory()) {
                     item.type = 'container';
+                    item.preferredView = "still";
                 } else {
                     item.type = 'file';
                     var extension = $path.extname(itemId);
