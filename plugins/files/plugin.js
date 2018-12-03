@@ -1,55 +1,56 @@
-var fs = require("fs");
-var mimetypes = require("../../lib/mimetypes");
-var vidstreamer = require("../../lib/vidstreamer");
-var async = require("async");
-var $path = require("path");
-var settings = require("../../lib/global")().settings;
-var playstate = require("./playstate");
-var ff = require("fluent-ffmpeg");
-var Channel = require("../../lib/channel");
-var wrapToPromise = require("../../lib/util").wrapToPromise;
-var profiles = require("../../lib/profiles");
-var keyframes = require("../../lib/keyframes");
-var preview = require("./preview");
+const fs = require("fs");
+const mimetypes = require("../../lib/mimetypes");
+const vidstreamer = require("../../lib/vidstreamer");
+const async = require("async");
+const $path = require("path");
+const settings = require("../../lib/global")().settings;
+const playstate = require("./playstate");
+const ff = require("fluent-ffmpeg");
+const Channel = require("../../lib/channel");
+const wrapToPromise = require("../../lib/util").wrapToPromise;
+const profiles = require("../../lib/profiles");
+const keyframes = require("../../lib/keyframes");
+const preview = require("./preview");
 
-var metaDataProviders = [
+const metaDataProviders = [
     require("./movie-nfo"),
 //    require("./tvshow-nfo"),
     require("./thumbnails"),
     require("./fanart")
 ];
 
-function FilesChannel(pith, statestore) {
-    Channel.apply(this);
+class FilesChannel extends Channel {
+    constructor(pith, statestore) {
+        super();
 
-    this.rootDir = settings.files.rootDir;
-    this.pith = pith;
-    
-    var channel = this;
-    
-    this.statestore = statestore;
-    
-    vidstreamer.settings({
-        getFile: function(path, cb) {
-            cb(channel.getFile(path));
-        }
-    });
-    
-    pith.handle.use('/stream', vidstreamer);
-    pith.handle.use('/preview', preview(path => this.getFile(path)));
-}
+        this.rootDir = settings.files.rootDir;
+        this.pith = pith;
 
-FilesChannel.prototype = {
-    listContents: function(containerId) {
+        const channel = this;
+
+        this.statestore = statestore;
+
+        vidstreamer.settings({
+            getFile: function(path, cb) {
+                cb(channel.getFile(path));
+            }
+        });
+
+        pith.handle.use('/stream', vidstreamer);
+        pith.handle.use('/preview', preview(path => this.getFile(path)));
+    }
+
+    listContents(containerId) {
         return wrapToPromise(cb => {
-            var rootDir = this.rootDir, path;
+            const rootDir = this.rootDir;
+            let path;
             if(containerId) {
                 path = $path.resolve(rootDir, containerId);
             } else {
                 path = rootDir;
             }
 
-            var filesChannel = this;
+            const filesChannel = this;
 
             fs.readdir(path, function(err, files) {
                 if(err) {
@@ -58,8 +59,8 @@ FilesChannel.prototype = {
                     async.map(files.filter(function(e) {
                         return (e[0] != "." || settings.files.showHiddenFiles) && settings.files.excludeExtensions.indexOf($path.extname(e)) == -1;
                     }), function(file, cb) {
-                        var filepath = $path.resolve(path, file);
-                        var itemId = $path.relative(rootDir, filepath);
+                        const filepath = $path.resolve(path, file);
+                        const itemId = $path.relative(rootDir, filepath);
                         filesChannel.getItem(itemId, false).then(function(item) {
                             cb(false, item);
                         }).catch(cb);
@@ -69,22 +70,22 @@ FilesChannel.prototype = {
                 }
             });
         });
-    },
+    }
 
-    getFile: function(path) {
+    getFile(path) {
         return $path.resolve(this.rootDir, path);
-    },
-    
-    getItem: function(itemId, detailed) {
+    }
+
+    getItem(itemId, detailed) {
         return new Promise((resolve, reject) => {
             if(detailed === undefined) {
                 detailed = true;
             }
 
-            var filepath = $path.resolve(this.rootDir, itemId);
-            var channel = this;
+            const filepath = $path.resolve(this.rootDir, itemId);
+            const channel = this;
             fs.stat(filepath, function(err, stats) {
-                var item = {
+                const item = {
                     title: $path.basename(itemId),
                     id: itemId
                 };
@@ -94,7 +95,7 @@ FilesChannel.prototype = {
                     item.preferredView = "still";
                 } else {
                     item.type = 'file';
-                    var extension = $path.extname(itemId);
+                    const extension = $path.extname(itemId);
                     item.mimetype = mimetypes[extension];
                     item.playable = item.mimetype && true;
 
@@ -104,7 +105,7 @@ FilesChannel.prototype = {
                     item.fsPath = filepath;
                 }
 
-                var applicableProviders = metaDataProviders.filter(function(f) {
+                const applicableProviders = metaDataProviders.filter(function (f) {
                     return f.appliesTo(channel, filepath, item);
                 });
 
@@ -121,20 +122,20 @@ FilesChannel.prototype = {
                 }
             });
         });
-    },
-    
-    getStream: function(item, options) {
+    }
+
+    getStream(item, options) {
         return new Promise((resolve, reject) => {
-            var channel = this;
-            var itemId = item.id;
-            var itemPath = itemId.split($path.sep).map(encodeURIComponent).join("/");
+            const channel = this;
+            const itemId = item.id;
+            const itemPath = itemId.split($path.sep).map(encodeURIComponent).join("/");
             ff.ffprobe(this.getFile(item.id), (err, metadata) => {
                 if(err) {
                     reject(err);
                 } else {
                     let duration = parseFloat(metadata.format.duration) * 1000;
 
-                    var desc = {
+                    const desc = {
                         url: channel.pith.rootUrl + "stream/" + itemPath,
                         mimetype: item.mimetype,
                         seekable: true,
@@ -180,18 +181,18 @@ FilesChannel.prototype = {
                 }
             });
         });
-    },
-    
-    getLastPlayState: function(itemId) {
-        var state = this.statestore.get(itemId);
-        return Promise.resolve(state);
-    },
+    }
 
-    getLastPlayStateFromItem: function(item) {
+    getLastPlayState(itemId) {
+        const state = this.statestore.get(itemId);
+        return Promise.resolve(state);
+    }
+
+    getLastPlayStateFromItem(item) {
         return this.getLastPlayState(item.id);
-    },
-    
-    putPlayState: function(itemId, state) {
+    }
+
+    putPlayState(itemId, state) {
         try {
             state.id = itemId;
             this.statestore.put(state);
@@ -199,11 +200,11 @@ FilesChannel.prototype = {
         } catch(e) {
             return Promise.reject(e);
         }
-    },
+    }
 
-    resolveFile: function(file) {
+    resolveFile(file) {
         if(file.startsWith(this.rootDir)) {
-            var relative = file.substring(this.rootDir.length);
+            let relative = file.substring(this.rootDir.length);
             if(relative.startsWith('/')) {
                 relative = relative.substring(1);
             }
@@ -212,7 +213,7 @@ FilesChannel.prototype = {
             return Promise.reject("File not contained within media root");
         }
     }
-};
+}
 
 module.exports = {
     init: function(opts) {

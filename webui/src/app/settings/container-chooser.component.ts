@@ -16,7 +16,7 @@ export class ContainerChooserComponent {
   contents: (Channel|ChannelItem)[];
   view: (Channel|ChannelItem)[];
 
-  constructor(private activeModal: NgbActiveModal, private pith: PithClientService) {
+  constructor(public activeModal: NgbActiveModal, private pith: PithClientService) {
     this.refresh();
   }
 

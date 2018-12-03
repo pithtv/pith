@@ -2,10 +2,10 @@
 import {empty as observableEmpty, Observable, Subject, BehaviorSubject} from 'rxjs';
 
 import {tap, map, catchError} from 'rxjs/operators';
-import {HttpClient, HttpParams} from "@angular/common/http";
+import {HttpClient, HttpParams} from '@angular/common/http';
 import 'rxjs/Rx';
-import {Injectable} from "@angular/core";
-import {PithEventsService} from "./pith-events.service";
+import {Injectable} from '@angular/core';
+import {PithEventsService} from './pith-events.service';
 
 abstract class RestModule {
   constructor(private pith: PithClientService, properties?: object) {
@@ -16,15 +16,15 @@ abstract class RestModule {
 
   protected get(...args: any[]) {
     let query: object;
-    if(typeof args[args.length-1] == 'object') {
-      query = args[args.length-1];
+    if (typeof args[args.length - 1] == 'object') {
+      query = args[args.length - 1];
       args = args.slice(0, -1);
     }
     return this.pith.get(`${this.root.concat(args).map(encodeURIComponent).join('/')}`, query);
   }
 
   protected put(...args: any[]) {
-    let body = args.pop();
+    const body = args.pop();
     return this.pith.put(`${this.root.concat(args).map(encodeURIComponent).join('/')}`, body);
   }
 
@@ -35,6 +35,7 @@ abstract class RestModule {
 
 export class PlayerStatus {
   private timestamp: Date;
+  actions: {play: boolean, stop: boolean, pause: boolean};
 
   constructor(obj: any) {
     Object.assign(this, obj);
@@ -66,8 +67,8 @@ export class RemotePlayer extends RestModule {
     this.friendlyName = properties.friendlyName;
     this.icons = properties.icons;
 
-    this.on("playerstatechange", event => {
-      if(event.player.id === this.id) {
+    this.on('playerstatechange', event => {
+      if (event.player.id === this.id) {
         this._statusSubject.next(new PlayerStatus(event.status));
       }
     });
@@ -78,23 +79,23 @@ export class RemotePlayer extends RestModule {
   }
 
   load(channel: Channel, item: ChannelItem) {
-    this.get("load", channel.id, item.id).subscribe();
+    this.get('load', channel.id, item.id).subscribe();
   }
 
   play() {
-    this.get("play").subscribe();
+    this.get('play').subscribe();
   }
 
   pause() {
-    this.get("pause").subscribe();
+    this.get('pause').subscribe();
   }
 
   stop() {
-    this.get("stop").subscribe();
+    this.get('stop').subscribe();
   }
 
   seek(time: number) {
-    this.get("seek", {time: Math.floor(time)}).subscribe();
+    this.get('seek', {time: Math.floor(time)}).subscribe();
   }
 
   get status() {
@@ -119,6 +120,10 @@ export class ChannelItem {
   hasNew: boolean;
   unavailable: boolean;
   type: string;
+  year: string;
+  playable: boolean;
+  imdbId: string;
+  tmdbId: string;
 
   showname: string;
   episode: number;
@@ -153,11 +158,11 @@ export class Channel extends RestModule {
   }
 
   listContents(path): Observable<ChannelItem[]> {
-    return this.get('list', path || "", {includePlayStates:true}).pipe(map((results: object[]) => results.map(r => new ChannelItem(r))));
+    return this.get('list', path || '', {includePlayStates: true}).pipe(map((results: object[]) => results.map(r => new ChannelItem(r))));
   }
 
   getDetails(path) {
-    return this.get('detail', path || "", {includePlayStates:true}).pipe(map(result => new ChannelItem(result)));
+    return this.get('detail', path || '', {includePlayStates: true}).pipe(map(result => new ChannelItem(result)));
   }
 
   togglePlayState(item) {
@@ -174,13 +179,13 @@ export class Channel extends RestModule {
   }
 
   stream(path, options?: any) {
-    return this.get('stream', path || "", options);
+    return this.get('stream', path || '', options);
   }
 }
 
 export class PithSettings {
   apiContext: string;
-  bindAddress: string
+  bindAddress: string;
   couchpotato: {
     enabled: boolean,
     url: string,
@@ -212,7 +217,7 @@ export class PithSettings {
     apikey: string
   };
   tingoPath: string;
-};
+}
 
 export class PithError {
   message: string;
@@ -235,45 +240,45 @@ export class PithClientService {
     private httpClient: HttpClient,
     private eventService: PithEventsService
   ) {
-    this.root = "/rest";
+    this.root = '/rest';
   }
 
   get(url, query?: object) {
-    let options = {};
-    if(query) {
-      let p = Object.keys(query).reduce((p, k) => p.append(k, query[k]), new HttpParams());
+    const options = {};
+    if (query) {
+      const p = Object.keys(query).reduce((p, k) => p.append(k, query[k]), new HttpParams());
       options['params'] = p;
     }
     this.reportProgress({
       loading: true
     });
-    return this.httpClient.get(`${this.root}/${url}`, options).pipe(tap(() => this.reportProgress({loading: false})),catchError((e, c) => {
+    return this.httpClient.get(`${this.root}/${url}`, options).pipe(tap(() => this.reportProgress({loading: false})), catchError((e, c) => {
       this.throw(new PithError(e.error));
       this.reportProgress({
         loading: false,
         error: true
       });
       return observableEmpty();
-    }),);
+    }), );
   }
 
   put(url: string, body: object) {
-    return this.httpClient.put(`${this.root}/${url}`, body).pipe(tap(() => this.reportProgress({loading: false})),catchError((e, c) => {
+    return this.httpClient.put(`${this.root}/${url}`, body).pipe(tap(() => this.reportProgress({loading: false})), catchError((e, c) => {
       this.throw(new PithError(e.error));
       this.reportProgress({
         loading: false,
         error: true
       });
       return observableEmpty();
-    }),);
+    }), );
   }
 
   queryChannels() {
-    return (this.get("channels") as Observable<object[]>).pipe(map(p => p.map(p => new Channel(this, p))));
+    return (this.get('channels') as Observable<object[]>).pipe(map(p => p.map(p => new Channel(this, p))));
   }
 
   queryPlayers() {
-    return (this.get("players") as Observable<object[]>).pipe(map(p => p.map(p => new RemotePlayer(this, p))));
+    return (this.get('players') as Observable<object[]>).pipe(map(p => p.map(p => new RemotePlayer(this, p))));
   }
 
   getChannel(id: string): Observable<Channel> {
@@ -289,7 +294,7 @@ export class PithClientService {
   }
 
   private reportProgress(progress) {
-    if(progress.loading) {
+    if (progress.loading) {
       this.loadingCounter++;
     } else {
       this.loadingCounter--;
@@ -307,11 +312,11 @@ export class PithClientService {
   }
 
   loadSettings() {
-    return (this.get("settings") as Observable<PithSettings>);
+    return (this.get('settings') as Observable<PithSettings>);
   }
 
   storeSettings(settings: PithSettings) {
-    return this.put("settings", settings).subscribe();
+    return this.put('settings', settings).subscribe();
   }
 }
 

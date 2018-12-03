@@ -25,12 +25,12 @@ const animationTiming = '500ms ease';
   ]
 })
 export class ChannelBrowserComponent implements AfterViewInit, OnInit {
-  protected itemDetails: ChannelItem;
-  protected channel: Channel;
+  itemDetails: ChannelItem;
+  channel: Channel;
   private currentContainerId: string;
   private contents: ChannelItem[];
-  protected filteredContents: ChannelItem[];
-  private currentPath: ChannelItem[] = [];
+  filteredContents: ChannelItem[];
+  currentPath: ChannelItem[] = [];
 
   protected showDetailsId: string;
   protected showDetailsIdx: number;

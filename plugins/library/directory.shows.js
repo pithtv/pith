@@ -2,7 +2,6 @@
 
 var async = require("async");
 var global = require("../../lib/global")();
-var extend = require("node.extend");
 var TvShowUtils = require("../../lib/tvshowutils");
 
 const SOME_INPROGRESS=1, SOME_WATCHED=2, SOME_UNWATCHED=4;
@@ -35,7 +34,7 @@ module.exports = function(plugin) {
                 });
                 var playState = seasons && TvShowUtils.aggregatePlayState(seasons);
                 var lastPlayable = findLastPlayable(episodes);
-                cb(false, extend({}, m, {
+                cb(false, Object.assign({}, m, {
                     id: 'shows/' + m.id,
                     showId: m.id,
                     type: 'container',
