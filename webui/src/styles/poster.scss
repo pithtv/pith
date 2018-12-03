@@ -196,7 +196,7 @@
       max-height: calc(100vw * 0.68);
       z-index: 10;
       background: white;
-      box-shadow: 5px 0px 25px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 5px 25px rgba(0, 0, 0, 0.5);
       border-radius: 10px;
 
       font-weight: bold;
@@ -225,6 +225,7 @@
         height: 100%;
       }
 
+      channel-details,
       channel-tv-details {
         display: flex;
         flex-direction: row;
@@ -234,10 +235,30 @@
         right: 0;
         bottom: 0;
 
+        .details,
         .episodeguide {
           flex: 1;
           position: relative;
-          margin: 20px 10px 0 10px;
+          margin: 20px 0 0 10px;
+
+          display: flex;
+          flex-direction: column;
+        }
+
+        .details {
+          padding-right: 10px;
+        }
+
+        .episodeguide {
+          .seasondetails {
+            flex: 1;
+            overflow-x: auto;
+            background: $white_50;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding: 10px;
+            font-weight: normal;
+          }
         }
       }
     }
@@ -362,13 +383,13 @@ ul.detailtabs {
   display: inline-block;
   margin-left: 0;
   font-weight: normal;
-  white-space: nowrap;
   padding: 0;
 
   > li {
     display: inline-block;
     color: $black;
     padding: 2px 15px;
+    cursor: pointer;
 
     &.selected {
       background: linear-gradient($color_fuscous_gray_approx, $color_storm_dust_approx);
@@ -380,29 +401,6 @@ ul.detailtabs {
     content: 'Season:';
     padding: 2px 15px;
     font-weight: bold;
-  }
-}
-
-.episodeguide > {
-  .detailtabs {
-    position: absolute;
-    left: 0px;
-    right: 0px;
-    overflow-x: auto;
-  }
-
-  .seasondetails {
-    position: absolute;
-    left: 0px;
-    right: 0px;
-    overflow-x: auto;
-    background: $white_50;
-    top: 30px;
-    bottom: 0;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    padding: 10px;
-    font-weight: normal;
   }
 }
 

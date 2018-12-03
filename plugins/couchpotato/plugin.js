@@ -1,13 +1,11 @@
 "use strict";
 
-var settings = require("../../lib/global")().settings;
-var fetch = require('node-fetch');
-var parseUrl = require('url').parse;
-var Channel = require("../../lib/channel");
-var global = require("../../lib/global")();
-var parseDate = require("../../lib/util").parseDate;
-var fs = require('fs');
-var path = require('path');
+const settings = require("../../lib/global")().settings;
+const fetch = require('node-fetch');
+const parseUrl = require('url').parse;
+const Channel = require("../../lib/channel");
+const fs = require('fs');
+const path = require('path');
 
 function parseItemId(itemId) {
     if(itemId) {
@@ -73,8 +71,8 @@ class CouchPotatoChannel extends Channel {
             tagline: movie.info.tagline,
             genres: movie.info.genres,
             imdbId: movie.identifiers.imdb,
-            poster: movie.info.images.poster[0],
-            backdrop: movie.info.images.backdrop[0],
+            poster: movie.info.images.poster_original && movie.info.images.poster_original[0] || movie.info.images.poster[0],
+            backdrop: movie.info.images.backdrop_original && movie.info.images.backdrop_original[0] || movie.info.images.backdrop[0],
             // releaseDate: movie.info.released,
             runtime: movie.info.runtime,
             actors: movie.info.actors,

@@ -4,3 +4,6 @@
 
 *.settings
 /.idea/
+
+/webui/node_modules/
+/webui/dist/
