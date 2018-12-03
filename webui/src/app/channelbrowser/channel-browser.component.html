@@ -30,10 +30,8 @@
       [class.inprogress]="item.playState?.status == 'inprogress'"
       [class.hasnew]="item.hasNew"
       [class.unavailable]="item.unavailable"
-      [class.expanded]="showDetails && expandedId == item.id"
       [class.showdetails]="showDetailsId == item.id"
       [id]="item.id"
-      #cell
       [@expand]="idx == showDetailsIdx ? 'expanded' : (rowIdx(idx) == rowIdx(showDetailsIdx)) ? 'assumeexpanded' : 'collapsed'"
   >
 

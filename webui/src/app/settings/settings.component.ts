@@ -1,6 +1,6 @@
 import {PithClientService, PithSettings} from "../core/pith-client.service";
 import {Component} from "@angular/core";
-import {Observable} from "rxjs/Observable";
+import {Observable} from "rxjs";
 
 @Component({
   templateUrl: 'settings.component.html'

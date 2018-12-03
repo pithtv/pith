@@ -1,5 +1,7 @@
+
+import {map} from 'rxjs/operators';
 import {Channel, ChannelItem, Player, PlayerStatus} from "../core/pith-client.service";
-import {BehaviorSubject} from "rxjs/BehaviorSubject";
+import {BehaviorSubject} from "rxjs";
 
 export class WebPlayer implements Player {
   icons: object[];
@@ -33,7 +35,7 @@ export class WebPlayer implements Player {
   }
 
   findKeyFrames(channel: Channel, item: ChannelItem) {
-    return channel.stream(item.id, {includeKeyFrames: true}).map((stream: any) => stream.stream.keyframes);
+    return channel.stream(item.id, {includeKeyFrames: true}).pipe(map((stream: any) => stream.stream.keyframes));
   }
 
   get status() {

@@ -1,8 +1,6 @@
 import {Channel, ChannelItem, PithClientService, RemotePlayer, PlayerStatus} from "./pith-client.service";
-import {Observable} from "rxjs/Observable";
+import {Observable, Subject, BehaviorSubject} from "rxjs";
 import {Injectable} from "@angular/core";
-import {Subject} from "rxjs/Subject";
-import {BehaviorSubject} from "rxjs/BehaviorSubject";
 
 enum Status {
   PAUSED,

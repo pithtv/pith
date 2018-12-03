@@ -1,9 +1,8 @@
 import {Component, ViewChild} from '@angular/core';
 import {Channel, PithClientService, PithError, RemotePlayer, PlayerStatus} from "./core/pith-client.service"
-import {Observable} from "rxjs/Observable";
+import {Observable, Subscription} from "rxjs";
 import {PlayerService} from "./core/player.service";
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
-import {Subscription} from "rxjs/Subscription";
 import {WebPlayer} from "./videoplayer/web-player";
 
 @Component({

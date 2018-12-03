@@ -1,9 +1,10 @@
+
+import {empty as observableEmpty, Observable, Subject, BehaviorSubject} from 'rxjs';
+
+import {tap, map, catchError} from 'rxjs/operators';
 import {HttpClient, HttpParams} from "@angular/common/http";
 import 'rxjs/Rx';
-import {Observable} from "rxjs/Observable";
 import {Injectable} from "@angular/core";
-import {Subject} from "rxjs/Subject";
-import {BehaviorSubject} from "rxjs/BehaviorSubject";
 import {PithEventsService} from "./pith-events.service";
 
 abstract class RestModule {
@@ -47,7 +48,7 @@ export interface Player {
   readonly status: Observable<PlayerStatus>;
   load (channel: Channel, item: ChannelItem);
   play();
-  pause()
+  pause();
   stop();
   seek(time: number);
 }
@@ -109,6 +110,18 @@ export class ChannelItem {
   mediatype: string;
   playState: any;
   sortableFields: string[];
+  tagline: string;
+  rating: string;
+  genres: string[];
+  plot: string;
+  overview: string;
+  hasNew: boolean;
+  unavailable: boolean;
+  type: string;
+
+  showname: string;
+  episode: number;
+  season: number;
 
   constructor(p: Object) {
     Object.assign(this, p);
@@ -139,11 +152,11 @@ export class Channel extends RestModule {
   }
 
   listContents(path): Observable<ChannelItem[]> {
-    return this.get('list', path || "", {includePlayStates:true}).map((results: object[]) => results.map(r => new ChannelItem(r)));
+    return this.get('list', path || "", {includePlayStates:true}).pipe(map((results: object[]) => results.map(r => new ChannelItem(r))));
   }
 
   getDetails(path) {
-    return this.get('detail', path || "", {includePlayStates:true}).map(result => new ChannelItem(result));
+    return this.get('detail', path || "", {includePlayStates:true}).pipe(map(result => new ChannelItem(result)));
   }
 
   togglePlayState(item) {
@@ -233,37 +246,37 @@ export class PithClientService {
     this.reportProgress({
       loading: true
     });
-    return this.httpClient.get(`${this.root}/${url}`, options).do(() => this.reportProgress({loading: false})).catch((e, c) => {
+    return this.httpClient.get(`${this.root}/${url}`, options).pipe(tap(() => this.reportProgress({loading: false})),catchError((e, c) => {
       this.throw(new PithError(e.error));
       this.reportProgress({
         loading: false,
         error: true
       });
-      return Observable.empty();
-    });
+      return observableEmpty();
+    }),);
   }
 
   put(url: string, body: object) {
-    return this.httpClient.put(`${this.root}/${url}`, body).do(() => this.reportProgress({loading: false})).catch((e, c) => {
+    return this.httpClient.put(`${this.root}/${url}`, body).pipe(tap(() => this.reportProgress({loading: false})),catchError((e, c) => {
       this.throw(new PithError(e.error));
       this.reportProgress({
         loading: false,
         error: true
       });
-      return Observable.empty();
-    });
+      return observableEmpty();
+    }),);
   }
 
   queryChannels() {
-    return (this.get("channels") as Observable<object[]>).map(p => p.map(p => new Channel(this, p)));
+    return (this.get("channels") as Observable<object[]>).pipe(map(p => p.map(p => new Channel(this, p))));
   }
 
   queryPlayers() {
-    return (this.get("players") as Observable<object[]>).map(p => p.map(p => new RemotePlayer(this, p)));
+    return (this.get("players") as Observable<object[]>).pipe(map(p => p.map(p => new RemotePlayer(this, p))));
   }
 
   getChannel(id: string): Observable<Channel> {
-    return this.queryChannels().map((channels => channels.find(channel => channel.id == id)));
+    return this.queryChannels().pipe(map((channels => channels.find(channel => channel.id == id))));
   }
 
   get errors() {
