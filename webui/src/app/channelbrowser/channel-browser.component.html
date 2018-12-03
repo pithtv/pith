@@ -19,9 +19,9 @@
   </div>
 </div>
 
-<ul class="contentbrowser poster px-3" #container>
+<ul class="contentbrowser poster px-3" #container infiniteScroll [infiniteScrollDistance]="2" [infiniteScrollThrottle]="50" (scrolled)="loadMore()">
   <li class="contentitem"
-      *ngFor="let item of filteredContents; index as idx"
+      *ngFor="let item of filteredContents | slice:0:limit; index as idx"
       [class.withthumb]="item.poster || item.still"
       [class.withposter]="item.poster"
       [class.withstill]="item.still"

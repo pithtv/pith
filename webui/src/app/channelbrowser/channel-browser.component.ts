@@ -40,6 +40,8 @@ export class ChannelBrowserComponent implements AfterViewInit, OnInit {
 
   private itemsPerRow: number;
 
+  limit = 150;
+
   @ViewChild('container') container;
   @ViewChildren('cell') cells;
 
@@ -159,5 +161,9 @@ export class ChannelBrowserComponent implements AfterViewInit, OnInit {
 
   rowIdx(idx) {
     return Math.floor(idx / this.itemsPerRow);
+  }
+
+  loadMore() {
+    this.limit += 150;
   }
 }

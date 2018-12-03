@@ -23,6 +23,7 @@ import {ScrubberComponent} from './util/scrubber.component';
 import {WebPlayer} from './videoplayer/web-player';
 import {VideoPlayerComponent} from './videoplayer/video-player.component';
 import {CommonModule} from "@angular/common";
+import {InfiniteScrollModule} from "ngx-infinite-scroll";
 
 @NgModule({
   declarations: [
@@ -40,6 +41,7 @@ import {CommonModule} from "@angular/common";
     TimePipe
   ],
   imports: [
+    InfiniteScrollModule,
     CommonModule,
     BrowserModule,
     BrowserAnimationsModule,
