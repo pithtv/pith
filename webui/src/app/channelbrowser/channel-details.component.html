@@ -1,4 +1,4 @@
-<img *ngIf="item.poster || item.still" [src]="(item.poster) || (item.still)" class="bigthumb"/>
+<img *ngIf="item.poster || item.still" [src]="(item.poster | prescale:'700x1050') || (item.still | prescale:'1920x1080')" class="bigthumb"/>
 <div class="details">
   <span class="contextinfo"><span class="itemshowname" *ngIf="item.showname && item.showname != itemDetails.showname">{{item.showname}}</span><span class="itemseason" *ngIf="item.season && (item.showname !== itemDetails.showname || item.season !== itemDetails.season)">{{item.season}}</span><span class="itemepisode" *ngIf="item.episode">{{item.episode}}</span></span>
   <span class="itemtitle">{{item.title}} <span *ngIf="item.year" class="itemyear">{{item.year}}</span></span>
