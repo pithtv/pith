@@ -1,49 +1,49 @@
 "use strict";
 
-var express = require("express");
-var plugin = require("plugin")();
-var EventEmitter = require("./lib/events");
-var async = require("async");
-var global = require("./lib/global")();
+const express = require("express");
+const EventEmitter = require("./lib/events");
+const global = require("./lib/global")();
 
-var route = express.Router();
+const route = express.Router();
 
-var sequence = 0;
+let sequence = 0;
 
 function newId() {
     return "id"+(sequence++);
 }
 
-function Pith (opts) {
-    for(var x in opts) {
-        this[x] = opts[x];
-    }
-    this.load();
-}
+class Pith extends EventEmitter {
+    constructor(opts) {
+        super();
 
-Pith.prototype = {
-    route: route,
+        this.route = route;
+        this.handle = route;
+        this.channels = [];
+        this.channelMap = {};
+        this.channelInstances = {};
+
+        this.players = [];
+        this.playerMap = {};
+
+        for (let x in opts) {
+            this[x] = opts[x];
+        }
+        this.load()
+    }
     
-    channels: [],
-    channelMap: {},
-    channelInstances: {},
-    
-    players: [],
-    playerMap: {},
-    
-    getChannelInstance: function (channelId) {
-        var channelInstance = this.channelInstances[channelId];
+    getChannelInstance(channelId) {
+        let channelInstance = this.channelInstances[channelId];
         if (channelInstance === undefined) {
-            var channel = this.channelMap[channelId];
+            const channel = this.channelMap[channelId];
             if(channel !== undefined) {
                 channelInstance = this.channelInstances[channelId] = channel.init({pith: this});
                 channelInstance.id = channelId;
             }
         }
         return channelInstance;
-    },
+    }
     
-    registerChannel: function (channel) {
+    registerChannel(channel) {
         this.channels.push(channel);
         this.channelMap[channel.id] = channel;
         this.channels.sort(function (a, b) {
@@ -52,82 +52,53 @@ Pith.prototype = {
             else return 1;
         });
         this.emit("channelRegistered", {channel: channel});
-    },
+    }
     
-    registerPlayer: function (player) {
+    registerPlayer(player) {
         if(!player.id) player.id = newId();
         this.players.push(player);
         this.playerMap[player.id] = player;
         this.emit("playerregistered", {player: player});
 
-        var self = this;
-        player.on("statechange", function(status) {
+        player.on("statechange", (status) => {
             status.serverTimestamp = new Date().getTime();
-            self.emit("playerstatechange", {player: player, status: status});
+            this.emit("playerstatechange", {player: player, status: status});
         });
-    },
+    }
     
-    unregisterPlayer: function(player) {
-        this.players = this.players.filter(function(e) {
-            return e.id !== player.id;
-        });
+    unregisterPlayer(player) {
+        this.players = this.players.filter(e => e.id !== player.id);
         this.playerMap[player.id] = undefined;
         this.emit("playerdisappeared", {player: player});
-    },
+    }
     
-    updatePlayerStates: function() {
-        var newTs = new Date().getTime();
-        this.players.forEach(function(e) {
-            try {
-                if(e.status.state && e.status.state.playing) {
-                    var delta = (newTs - e.status.serverTimestamp) / 1000;
-                    e.status.position.time += delta;
-                    e.status.serverTimestamp = newTs;
-                }
-            } catch(e) {
-                
+    updatePlayerStates() {
+        const newTs = new Date().getTime();
+        this.players.forEach((e) => {
+            if(e.status.state && e.status.state.playing) {
+                const delta = (newTs - e.status.serverTimestamp) / 1000;
+                e.status.position.time += delta;
+                e.status.serverTimestamp = newTs;
             }
         });
-    },
+    }
     
-    listPlayers: function(cb) {
+    listPlayers(cb) {
         this.updatePlayerStates();
         cb(this.players);  
-    },
+    }
     
-    listChannels: function(cb) {
+    listChannels(cb) {
         cb(this.channels);
-    },
-    
-    getChannelContentDetail: function (channelId, containerId, cb) {
-        this.getChannelInstance(channelId).getItem(containerId).then(result => cb(false, result)).catch(cb);
-    },
-    
-    listChannelContents: function (channelId, containerId, cb, options) {
-        var ci = this.getChannelInstance(channelId);
-        ci.listContents(containerId).then(function(contents) {
-            if(options.includePlayStates) {
-                async.map(contents, function(item, m) {
-                    ci.getLastPlayState(item.id, function(err, state) {
-                        item.playState = state;
-                        m(err, item);
-                    });
-                }, function(err, result) {
-                    cb(err, result);
-                });
-            } else {
-                cb(null, contents);
-            }
-        }).catch(err => cb(err));
-    },
-    
-    getLastPlayState: function(channelId, itemId, cb) {
-        var channelInstance = this.getChannelInstance(channelId);
+    }
+
+    getLastPlayState(channelId, itemId, cb) {
+        const channelInstance = this.getChannelInstance(channelId);
         channelInstance.getLastPlayState(itemId).then(result => cb(false, result)).catch(cb);
-    },
+    }
     
-    putPlayState: function(channelId, itemId, state, cb) {
-        var channelInstance = this.getChannelInstance(channelId);
+    putPlayState(channelId, itemId, state, cb) {
+        const channelInstance = this.getChannelInstance(channelId);
         if(channelInstance) {
             if (state.status !== undefined || state.duration > 600) {
                 if (!state.status) {
@@ -143,16 +114,15 @@ Pith.prototype = {
                 }
             }
         }
-    },
+    }
     
-    loadMedia: function(channelId, itemId, playerId, cb, opts) {
-        var self = this;
-        var player = this.playerMap[playerId];
+    loadMedia(channelId, itemId, playerId, cb, opts) {
+        let player = this.playerMap[playerId];
         if(!player) {
             cb(new Error("Unknown player", playerId));
             return;
         }
-        var channel = self.getChannelInstance(channelId);
+        let channel = this.getChannelInstance(channelId);
         channel.getItem(itemId).then((item) => {
             player.load(channel, item, function(err) {
                 if(err) {
@@ -164,37 +134,33 @@ Pith.prototype = {
                 }
             });
         }).catch(err => cb(err));
-    },
+    }
     
-    controlPlayback: function(playerId, command, query, cb) {
-        var player = this.playerMap[playerId];
+    controlPlayback(playerId, command, query, cb) {
+        const player = this.playerMap[playerId];
         if(typeof query === 'function') {
             cb = query;
             query = undefined;
         }
         player[command](cb, query);
-    },
+    }
     
-    load: function() {
+    load() {
         require("./plugins/files/plugin").init({pith: this});
         require("./plugins/library/plugin").init({pith: this});
         require("./plugins/upnp-mediarenderer/plugin").init({pith: this});
         require("./plugins/yamaha/plugin").init({pith: this});
         require("./plugins/sonarr/plugin").init({pith: this});
         require("./plugins/couchpotato/plugin").init({pith: this});
-    },
+    }
 
-    settings: function(settings) {
+    settings(settings) {
         if(arguments.length === 0) {
             return global.settings;
         } else {
             global.storeSettings(settings);
         }
-    },
-    
-    handle: route
-};
-
-Pith.prototype.__proto__ = EventEmitter.prototype;
+    }
+}
 
 module.exports = Pith;
