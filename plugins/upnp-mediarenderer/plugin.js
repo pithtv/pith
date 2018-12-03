@@ -1,70 +1,38 @@
-var ssdp = require("ssdp-client");
-var xml2js = require("xml2js").parseString;
-var events = require("events");
-var entities = require("entities");
-var Device = require("upnp-client-minimal");
-var sprintf = require("sprintf-js").sprintf;
+const ssdp = require("ssdp-client");
+const xml2js = require("xml2js").parseString;
+const {EventEmitter} = require("events");
+const entities = require("entities");
+const Device = require("upnp-client-minimal");
+const sprintf = require("sprintf-js").sprintf;
 
-var Global = require("../../lib/global")();
+const Global = require("../../lib/global")();
 
-var client = ssdp({unicastHost: Global.bindAddress});
+const client = ssdp({unicastHost: Global.bindAddress});
 
-var iconTypePreference = [
+const iconTypePreference = [
     'image/jpeg',
     'image/bmp',
     'image/gif',
-    'image/png'];
+    'image/png'
+];
 
-var players = {};
-
-function MediaRenderer(device, opts) {
-    this._device = device;
-    this._opts = opts;
-
-    this.id = device.UDN;
-    
-    this.friendlyName = device.friendlyName;
-    
-    this.icons = {};
-    
-    var self = this;
-    
-    device.icons.forEach(function(e) {
-        var dimensions = e.width + "x" + e.height;
-        var icon = {
-            type: e.mimetype,
-            url: e.url,
-            width: e.width[0],
-            height: e.height[0]
-        };
-        if(!self.icons[dimensions] || // no icon of the given dimensions found yet
-            iconTypePreference.indexOf(icon.type) > iconTypePreference.indexOf(self.icons[dimensions].type) // or the new icon type has greater preference over existing one
-        ) {
-           self.icons[dimensions] = icon;
-        }
-    });
-    
-    this._avTransport = device.services['urn:upnp-org:serviceId:AVTransport'];
-    
-    this.status = {};
-    
-    this.startWatching();
-}
+const players = {};
 
 function parseTime(time) {
     if(!time) {
         return undefined;
     } else {
         return time.split(":").reduce(function(a,b) {
-           return a*60 + parseInt(b,10); 
+            return a*60 + parseInt(b,10);
         }, 0);
     }
 }
 
 function format(n, parts, f) {
-    var out = [], nn = n;
+    const out = [];
+    let nn = n;
     while(parts.length) {
-        var p = parts.pop(), pn = nn % p;
+        const p = parts.pop(), pn = nn % p;
         out.unshift(pn);
         nn = (nn - pn) / p;
     }
@@ -83,7 +51,7 @@ function formatMsDuration(time) {
 
 function _(t) {
     if(!t) return t;
-    var x = t._ || t;
+    const x = t._ || t;
     if(typeof x === 'string') {
         return x;
     } else {
@@ -91,17 +59,53 @@ function _(t) {
     }
 }
 
-MediaRenderer.prototype = {
-    load: function(channel, item, cb) {
-        var renderer = this;
-        
+class MediaRenderer extends EventEmitter {
+    constructor(device, opts) {
+        super();
+
+        this._device = device;
+        this._opts = opts;
+
+        this.id = device.UDN;
+
+        this.friendlyName = device.friendlyName;
+
+        this.icons = {};
+
+        const self = this;
+
+        device.icons.forEach(function (e) {
+            const dimensions = e.width + "x" + e.height;
+            const icon = {
+                type: e.mimetype,
+                url: e.url,
+                width: e.width[0],
+                height: e.height[0]
+            };
+            if (!self.icons[dimensions] || // no icon of the given dimensions found yet
+                iconTypePreference.indexOf(icon.type) > iconTypePreference.indexOf(self.icons[dimensions].type) // or the new icon type has greater preference over existing one
+            ) {
+                self.icons[dimensions] = icon;
+            }
+        });
+
+        this._avTransport = device.services['urn:upnp-org:serviceId:AVTransport'];
+
+        this.status = {};
+
+        this.startWatching();
+    }
+
+    load(channel, item, cb) {
+        const renderer = this;
+
         channel.getStream(item).then(stream => {
-            var mediaUrl = stream.url;
+            const mediaUrl = stream.url;
             console.log("Loading " + mediaUrl);
-            
+
             function doLoad() {
-                var type = stream.mimetype.split('/')[0];
-                
+                const type = stream.mimetype.split('/')[0];
+
                 renderer._avTransport.SetAVTransportURI({
                     InstanceID: 0,
                     CurrentURI: mediaUrl,
@@ -118,7 +122,7 @@ MediaRenderer.prototype = {
                             '</DIDL-Lite>\n')
                 }, cb);
             }
-            
+
             if(renderer.status.actions.stop) {
                 renderer.stop(function(err) {
                     doLoad();
@@ -127,24 +131,24 @@ MediaRenderer.prototype = {
                 doLoad();
             }
         }).catch(cb);
-    },
-    
-    play: function(cb, time) {
-        var renderer = this;
+    }
+
+    play(cb, time) {
+        const renderer = this;
         this._avTransport.Play({
             InstanceID: 0,
             Speed: 1
-        }, function(err) {
+        }, err => {
             if(err) {
                 console.error(err);
                 if(cb) cb(err);
                 return;
             }
-            
+
             if(time) {
-                var timeout = new Date().getTime() + 3000;
-                
-                function waitForSeek(status) {
+                const timeout = new Date().getTime() + 3000;
+
+                const waitForSeek = function(status) {
                     if(status.actions.seek) {
                         renderer.seek(function(err) {
                             if(err) {
@@ -159,42 +163,42 @@ MediaRenderer.prototype = {
                         cb("Seeking not available");
                     }
                 }
-                
+
                 renderer.once('statechange', waitForSeek);
             } else {
                 cb();
             }
         });
-    },
-    
-    stop: function(cb) {
+    }
+
+    stop(cb) {
         this._avTransport.Stop({
             InstanceID: 0
         }, cb);
-    },
-    
-    pause: function(cb) {
+    }
+
+    pause(cb) {
         this._avTransport.Pause({
             InstanceID: 0
         }, cb);
-    },
-    
-    seek: function(cb, query) {
-        var time = formatTime(query.time);
+    }
+
+    seek(cb, query) {
+        const time = formatTime(query.time);
         this._avTransport.Seek({
             InstanceID: 0,
             Unit: "REL_TIME",
             Target: time
         }, cb);
-    },
-    
-    getPositionInfo: function(cb) {
-        this._avTransport.GetPositionInfo({InstanceID: 0}, function(err, positionInfo) {
+    }
+
+    getPositionInfo(cb) {
+        this._avTransport.GetPositionInfo({InstanceID: 0}, (err, positionInfo) => {
             if(err) {
                 cb(err); return;
             }
-            
-            var pos = {
+
+            const pos = {
                 track: positionInfo.Track,
                 AbsCount: positionInfo.AbsCount,
                 RelCount: positionInfo.RelCount,
@@ -203,13 +207,13 @@ MediaRenderer.prototype = {
                 uri: positionInfo.TrackURI,
                 duration: parseTime(_(positionInfo.TrackDuration))
             };
-                
+
             if(positionInfo.TrackMetaData && typeof positionInfo.TrackMetaData === 'string') {
-                xml2js(positionInfo.TrackMetaData, function(err, meta) {
+                xml2js(positionInfo.TrackMetaData, (err, meta) => {
                     if(!err) {
-                        var didlLite = meta['DIDL-Lite'].item[0];
-                        for(var x in didlLite) {
-                            var val = didlLite[x][0];
+                        const didlLite = meta['DIDL-Lite'].item[0];
+                        for(let x in didlLite) {
+                            const val = didlLite[x][0];
                             switch(x) {
                                 case 'dc:title': pos.title = val; break;
                                 case 'upnp:genre': pos.genre = val; break;
@@ -224,82 +228,77 @@ MediaRenderer.prototype = {
                 });
             }
         });
-    },
-    
-    updatePositionInfo: function(cb) {
-        var renderer = this;
-        renderer.getPositionInfo(function(err, positionInfo) {
+    }
+
+    updatePositionInfo(cb) {
+        this.getPositionInfo((err, positionInfo) => {
             if(!err) {
                 if(positionInfo.channelId) {
-                    renderer._opts.pith.putPlayState(positionInfo.channelId, positionInfo.itemId, {time: positionInfo.time, duration: positionInfo.duration});
+                    this._opts.pith.putPlayState(positionInfo.channelId, positionInfo.itemId, {time: positionInfo.time, duration: positionInfo.duration});
                 }
-                
-                renderer.status.position = positionInfo;
-                renderer.emit('statechange', renderer.status);
+
+                this.status.position = positionInfo;
+                this.emit('statechange', this.status);
             }
             if(cb) {
                 cb(err);
             }
         });
-    },
-    
-    startWatching: function() {
-        var self = this;
-        
-        this._avTransport.on('LastChange', function(changeEvent) {
-            xml2js(changeEvent, function(err, body) {
+    }
+
+    startWatching() {
+        this._avTransport.on('LastChange', (changeEvent) => {
+            xml2js(changeEvent, (err, body) => {
                 if(!body) {
                     console.error("Body empty?");
                 } else if(err) {
                     console.error(err);
                 } else {
-                    var didl = body.Event.InstanceID[0];
+                    const didl = body.Event.InstanceID[0];
 
                     if(didl.CurrentTransportActions) {
-                        var actions = didl.CurrentTransportActions[0].$.val.match(/(([^,\\]|\\\\|\\,|\\)+)/g);
-                        self.status.actions = {};
-                        if(actions) actions.forEach(function(state) {
-                            self.status.actions[state.toLowerCase()] = true;
+                        const actions = didl.CurrentTransportActions[0].$.val.match(/(([^,\\]|\\\\|\\,|\\)+)/g);
+                        this.status.actions = {};
+                        if(actions) actions.forEach((state) => {
+                            this.status.actions[state.toLowerCase()] = true;
                         });
                     }
                     if(didl.TransportState) {
                         var state = didl.TransportState[0];
-                        var status;
+                        let status;
                         switch(state.$.val) {
                                 case 'PAUSED_PLAYBACK': status = {paused: true}; break;
                                 case 'PLAYING': status = {playing: true}; break;
                                 case 'STOPPED': status = {stopped: true}; break;
                                 case 'TRANSITIONING': status = {transitioning: true}; break;
                         }
-                        self.status.state = status;
+                        this.status.state = status;
                     }
 
-                    self.updatePositionInfo();
-
+                    this.updatePositionInfo();
                 }
             });
 
         });
-        
-        this.positionTimer = setInterval(function() {
-            self.updatePositionInfo();
+
+        this.positionTimer = setInterval(() => {
+            this.updatePositionInfo();
         }, 1000);
-    },
-    
-    offline: function() {
+    }
+
+    offline() {
         console.log("Device went offline: " + this.friendlyName);
         if(this.positionTimer) {
             clearInterval(this.positionTimer);
             this.positionTimer = null;
         }
     }
-};
-
-MediaRenderer.prototype.__proto__ = events.EventEmitter.prototype;
+}
 
 module.exports = {
-    init: function init(opts) {
-        var plugin = this;
+    init(opts) {
+        const plugin = this;
+
         function handlePresence(data, rinfo) {
             if(!players[data.USN]) {
                 players[data.USN] = {}; // placeholder so we don't make them twice in case the alive is triggered before createMediaRenderer finishes
@@ -316,7 +315,7 @@ module.exports = {
         client.subscribe('urn:schemas-upnp-org:device:MediaRenderer:1')
             .on('response', handlePresence)
             .on('alive', handlePresence)
-            .on('byebye', function inByeBye(data, rinfo) {
+            .on('byebye', (data, rinfo) => {
                 if(players[data.USN]) {
                     players[data.USN].offline();
                     opts.pith.unregisterPlayer(players[data.USN]);
@@ -325,8 +324,8 @@ module.exports = {
             });
     },
 
-    handlePlayerAppearance: function(headers, rinfo, opts, cb) {
-        var plugin = this;
+    handlePlayerAppearance(headers, rinfo, opts, cb) {
+        const plugin = this;
         Device({descriptorUrl: headers.LOCATION}, function(err, device) {
             if(err) {
                 cb(err);
@@ -338,7 +337,7 @@ module.exports = {
         });
     },
 
-    createRenderer: function(device, opts, callback) {
+    createRenderer(device, opts, callback) {
         callback(false, new MediaRenderer(device, opts));
     },
 
