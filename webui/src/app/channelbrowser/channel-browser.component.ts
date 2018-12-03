@@ -8,7 +8,21 @@ import {animate, state, style, transition, trigger} from '@angular/animations';
 const animationTiming = '500ms ease';
 
 @Component({
-  templateUrl: './channel-browser.component.html'
+  templateUrl: './channel-browser.component.html',
+  animations: [
+    trigger(
+      'enterAnimation', [
+        transition(':enter', [
+          style({transform: 'scale(0.5)', opacity: 0}),
+          animate('200ms', style({transform: 'scale(1)', opacity: 1}))
+        ]),
+        transition(':leave', [
+          style({transform: 'scale(1)', opacity: 1}),
+          animate('200ms', style({transform: 'scale(0.5)', opacity: 0}))
+        ])
+      ]
+    )
+  ]
 })
 export class ChannelBrowserComponent implements AfterViewInit, OnInit {
   protected itemDetails: ChannelItem;
