@@ -5,7 +5,7 @@
   "scripts": {
     "ng": "./node_modules/@angular/cli/bin/ng",
     "start": "./node_modules/@angular/cli/bin/ng serve --proxy-config proxy.conf.json --host=0.0.0.0 --disable-host-check",
-    "build": "./node_modules/@angular/cli/bin/ng build --bh /webui/",
+    "build": "./node_modules/@angular/cli/bin/ng build --base-href /webui/",
     "test": "./node_modules/@angular/cli/bin/ng test",
     "lint": "./node_modules/@angular/cli/bin/ng lint",
     "e2e": "./node_modules/@angular/cli/bin/ng e2e"
