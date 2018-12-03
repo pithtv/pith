@@ -8,23 +8,7 @@ import {animate, state, style, transition, trigger} from '@angular/animations';
 const animationTiming = '500ms ease';
 
 @Component({
-  templateUrl: './channel-browser.component.html',
-  animations: [
-    trigger('expand',
-      [
-        state('expanded', style({'margin-bottom': '392px'})),
-        state('collapsed', style({'margin-bottom': '0'})),
-        state('assumeexpanded', style({'margin-bottom': '0'})),
-        transition('expanded => collapsed, collapsed => expanded', animate(animationTiming))
-      ]),
-    trigger('visibility',
-      [
-        state('expanded', style({'height': '*'})),
-        state('assumeexpanded', style({'height': '0'})),
-        state('collapsed', style({'height': '0', display: 'none'})),
-        transition('expanded => collapsed, collapsed => expanded', animate(animationTiming))
-      ])
-  ]
+  templateUrl: './channel-browser.component.html'
 })
 export class ChannelBrowserComponent implements AfterViewInit, OnInit {
   protected itemDetails: ChannelItem;

@@ -15,7 +15,7 @@
 
   <div class="col-md-3 align-self-center input-group">
     <input type="text" [(ngModel)]="searchString" role="search" placeholder="Search" class="form-control"/>
-    <span class="input-group-addon"><span class="oi oi-magnifying-glass"></span></span>
+    <span class="input-group-append"><span class="input-group-text"><span class="oi oi-magnifying-glass"></span></span></span>
   </div>
 </div>
 
@@ -32,23 +32,21 @@
       [class.unavailable]="item.unavailable"
       [class.showdetails]="showDetailsId == item.id"
       [id]="item.id"
-      [@expand]="idx == showDetailsIdx ? 'expanded' : (rowIdx(idx) == rowIdx(showDetailsIdx)) ? 'assumeexpanded' : 'collapsed'"
   >
 
-    <a (click)="(item.type == 'container' && item.mediatype!='show') ? open(item) : toggle(item, idx)">
+    <a class="thumbnail" (click)="(item.type == 'container' && item.mediatype!='show') ? open(item) : toggle(item, idx)">
       <div *ngIf="item.poster || item.still" class="th"
-           [style.background-image]="'url(' + ((item.poster | prescale:'100x150') || (item.still | prescale:'266x150'))+ ')'">
+           [style.background-image]="'url(' + ((item.poster | prescale:(showDetailsId == item.id ? '300x450' : '100x150')) || (item.still | prescale:'266x150'))+ ')'">
       </div>
       <span class="contextinfo"><span class="title" *ngIf="item.title">{{item.title}}</span><span
         class="itemshowname" *ngIf="item.showname && item.showname != itemDetails.showname">{{item.showname}}</span><span
         class="itemseason"   *ngIf="item.season && (item.showname !== itemDetails.showname || item.season !== itemDetails.season)">{{item.season}}</span><span
         class="itemepisode"  *ngIf="item.episode">{{item.episode}}</span></span>
     </a>
-    <div class="iteminfo" [@visibility]="idx == showDetailsIdx ? 'expanded' : (rowIdx(idx) == rowIdx(showDetailsIdx)) ? 'assumeexpanded' : 'collapsed'">
-      <div *ngIf="showDetailsId == item.id">
-        <channel-details *ngIf="item.type != 'container'" [item]="item" [channel]="channel"></channel-details>
-        <channel-tv-details *ngIf="item.mediatype == 'show'" [item]="item" [channel]="channel"></channel-tv-details>
-      </div>
+    <div class="iteminfo" *ngIf="showDetailsId == item.id">
+      <a class="closebtn" (click)="toggle(null)"><svg viewbox="0 0 150 150" width="30px" height="30px"><use href="#close"></use></svg></a>
+      <channel-details *ngIf="item.type != 'container'" [item]="item" [channel]="channel"></channel-details>
+      <channel-tv-details *ngIf="item.mediatype == 'show'" [item]="item" [channel]="channel"></channel-tv-details>
     </div>
   </li>
 </ul>

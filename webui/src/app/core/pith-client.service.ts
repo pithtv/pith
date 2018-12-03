@@ -106,6 +106,7 @@ export class ChannelItem {
   id: string;
   still: string;
   poster: string;
+  backdrop: string;
   title: string;
   mediatype: string;
   playState: any;
