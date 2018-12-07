@@ -24,6 +24,8 @@ import {WebPlayer} from './videoplayer/web-player';
 import {VideoPlayerComponent} from './videoplayer/video-player.component';
 import {CommonModule} from "@angular/common";
 import {InfiniteScrollModule} from "ngx-infinite-scroll";
+import { ServiceWorkerModule } from '@angular/service-worker';
+import { environment } from '../environments/environment';
 
 @NgModule({
   declarations: [
@@ -49,7 +51,8 @@ import {InfiniteScrollModule} from "ngx-infinite-scroll";
     AppRoutingModule,
     NgbModule,
     FormsModule,
-    SettingsModule
+    SettingsModule,
+    ServiceWorkerModule.register('ngsw-worker.js', { enabled: environment.production })
   ],
   providers: [
     PithClientService,
