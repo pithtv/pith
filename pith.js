@@ -152,6 +152,7 @@ class Pith extends EventEmitter {
         require("./plugins/yamaha/plugin").init({pith: this});
         require("./plugins/sonarr/plugin").init({pith: this});
         require("./plugins/couchpotato/plugin").init({pith: this});
+        require("./plugins/upnp-mediaserver/plugin").init({pith: this});
     }
 
     settings(settings) {

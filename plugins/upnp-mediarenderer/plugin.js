@@ -1,4 +1,4 @@
-const ssdp = require("ssdp-client");
+const ssdp = require("../../lib/ssdp");
 const xml2js = require("xml2js").parseString;
 const {EventEmitter} = require("events");
 const entities = require("entities");
