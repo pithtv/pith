@@ -121,12 +121,13 @@ class SonarrChannel extends Channel {
         })
     }
 
-    listContents(containerId) {
-        return this._get('api/series').then(
-            series => series.sort((a,b) => a.title.localeCompare(b.title))
-        ).then(
-            series => series.map(show => this.queryEpisodes(show.id).then(episodes => this.convertSeries(show, episodes)))
-        );
+    async listContents(containerId) {
+        let series = await this._get('api/series');
+        series.sort((a,b) => a.title.localeCompare(b.title));
+        return await Promise.all(series.map(async show => {
+            let episodes = await this.queryEpisodes(show.id);
+            return await this.convertSeries(show, episodes);
+        }));
     }
 
     getItem(itemId, detailed) {

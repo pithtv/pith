@@ -2,6 +2,7 @@ const {MediaServer} = require("./MediaServer");
 const {wrap, wrapNoErr} = require('../../lib/async');
 const Global = require("../../lib/global")();
 const upnp = require('../../lib/upnp');
+const entities = require('entities');
 
 function upnpClassFromItem(item) {
     if (item.type === 'container') {
@@ -98,11 +99,11 @@ class MediaServerDelegate {
                     protocolInfo: `http-get:*:${item.mimetype}:DLNA.ORG_OP=01;DLNA.ORG_CI=0`
                 },
                 item.poster ? {
-                    uri: item.poster,
+                    uri: entities.encodeXML(item.poster),
                     protocolInfo: "xbmc.org:*:poster:*"
                 } : undefined,
                 item.fanart ? {
-                    uri: item.fanart,
+                    uri: entities.encodeXML(item.fanart),
                     protocolInfo: "xbmc.org:*:fanart:*"
                 } : undefined
             ]
