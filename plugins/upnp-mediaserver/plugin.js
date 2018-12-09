@@ -1,27 +1,34 @@
 const {MediaServer} = require("./MediaServer");
 const {wrap, wrapNoErr} = require('../../lib/async');
 const Global = require("../../lib/global")();
-const {formatTime,formatMsDuration} = require('../../lib/upnp');
+const {formatTime, formatMsDuration} = require('../../lib/upnp');
 
 function upnpClassFromItem(item) {
-    if(item.type === 'container') {
-        switch(item.mediatype) {
+    if (item.type === 'container') {
+        switch (item.mediatype) {
             case 'show':
             case 'season':
                 return 'object.container.album.videoAlbum';
             default:
                 return 'object.container';
         }
-    } else if(item.type === 'file') {
-        switch(item.mimetype && item.mimetype.split('/')[0]) {
-            case 'video': switch(item.mediatype) {
-                case 'movie': return 'object.item.videoItem.movie';
-                case 'episode': return 'object.item.videoItem.videoBroadcast';
-                default: return 'object.item.videoItem';
-            }
-            case 'image': return 'object.item.imageItem';
-            case 'audio': return 'object.item.musicItem';
-            default: return 'object.item';
+    } else if (item.type === 'file') {
+        switch (item.mimetype && item.mimetype.split('/')[0]) {
+            case 'video':
+                switch (item.mediatype) {
+                    case 'movie':
+                        return 'object.item.videoItem.movie';
+                    case 'episode':
+                        return 'object.item.videoItem.videoBroadcast';
+                    default:
+                        return 'object.item.videoItem';
+                }
+            case 'image':
+                return 'object.item.imageItem';
+            case 'audio':
+                return 'object.item.musicItem';
+            default:
+                return 'object.item';
         }
     }
 }
@@ -32,7 +39,7 @@ class MediaServerDelegate {
     }
 
     async fetchChildren(id, opts) {
-        if(id == 0) {
+        if (id == 0) {
             let channels = await wrapNoErr(cb => this.pith.listChannels(cb));
             let items = channels.map(channel => ({
                 id: `channel:${channel.id}`,
@@ -50,7 +57,7 @@ class MediaServerDelegate {
                 totalItems: items.length
             };
         } else {
-            let [,channelId,,itemId] = id.match(/^channel:(\w+)(:(.*))?$/);
+            let [, channelId, , itemId] = id.match(/^channel:(\w+)(:(.*))?$/);
             let channel = this.pith.getChannelInstance(channelId);
             let contents = await channel.listContents(itemId);
             let items = contents.map(item => this.mapObject(channel, item, id, channelId));
@@ -84,8 +91,8 @@ class MediaServerDelegate {
     }
 
     async fetchObject(id) {
-        let [,channelId,,itemId] = id.match(/^channel:(\w+)(:(.*))?$/);
-        if(itemId) {
+        let [, channelId, , itemId] = id.match(/^channel:(\w+)(:(.*))?$/);
+        if (itemId) {
             let channel = this.pith.getChannelInstance(channelId);
             let contents = await channel.getItem(itemId);
             let item = this.mapObject(channel, contents, id, channelId);
@@ -99,7 +106,12 @@ class MediaServerDelegate {
 
 module.exports = {
     init(opts) {
-        let mediaserver = new MediaServer({name: 'MediaServer', address: Global.bindAddress, delegate: new MediaServerDelegate(opts.pith)});
+        let mediaserver = new MediaServer({
+            name: 'MediaServer',
+            address: Global.bindAddress,
+            delegate: new MediaServerDelegate(opts.pith),
+            uuid: Global.persistentUuid('MediaServer')
+        });
         mediaserver.on('ready', () => {
             mediaserver.ssdpAnnounce();
         })

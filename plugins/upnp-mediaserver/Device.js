@@ -53,7 +53,6 @@ class Device extends DeviceControlProtocol {
     async init() {
         try {
             this.address = this.address || '0.0.0.0';
-            this.uuid = await this.getUuid();
 
             let httpServer = http.createServer(this.httpListener.bind(this));
             await wrap(cb => httpServer.listen(0, this.address, cb));
@@ -128,11 +127,6 @@ class Device extends DeviceControlProtocol {
             }
         }
         cb(null, {method, mx, st, address: rinfo.address, port: rinfo.port });
-    }
-
-    async getUuid() {
-        // TODO persist the uuid
-        return makeUuid();
     }
 
     buildDescription() {
