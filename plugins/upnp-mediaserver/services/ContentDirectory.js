@@ -112,6 +112,7 @@ class ContentDirectory extends Service {
         function buildResources(resources) {
             if(resources) {
                 return resources.map(r => {
+                    if(!r) return '';
                     let x = "<res";
                     if(r.duration) x+= ` duration="${entities.encodeXML(r.duration)}"`;
                     if(r.protocolInfo) x+= ` protocolInfo="${entities.encodeXML(r.protocolInfo)}"`;

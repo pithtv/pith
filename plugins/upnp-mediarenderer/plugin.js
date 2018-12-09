@@ -3,7 +3,6 @@ const xml2js = require("xml2js").parseString;
 const {EventEmitter} = require("events");
 const entities = require("entities");
 const Device = require("upnp-client-minimal");
-const sprintf = require("sprintf-js").sprintf;
 const {formatTime,formatMsDuration} = require('../../lib/upnp');
 
 const Global = require("../../lib/global")();
@@ -27,19 +26,6 @@ function parseTime(time) {
             return a*60 + parseInt(b,10);
         }, 0);
     }
-}
-
-function format(n, parts, f) {
-    const out = [];
-    let nn = n;
-    while(parts.length) {
-        const p = parts.pop(), pn = nn % p;
-        out.unshift(pn);
-        nn = (nn - pn) / p;
-    }
-    out.unshift(nn);
-    out.unshift(f);
-    return sprintf.apply(null, out);
 }
 
 function _(t) {

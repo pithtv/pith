@@ -6,6 +6,7 @@ const parseUrl = require('url').parse;
 const Channel = require("../../lib/channel");
 const fs = require('fs');
 const path = require('path');
+const mimetypes = require('../../lib/mimetypes');
 
 function parseItemId(itemId) {
     if(itemId) {
@@ -60,9 +61,11 @@ class CouchPotatoChannel extends Channel {
             console.log(e);
         }
 
+        let filePath = release && release.files.movie[0];
         return {
             id: 'media/' + movie._id,
             mediatype: 'movie',
+            mimetype: filePath && mimetypes.fromFilePath(filePath),
             title: movie.title,
             type: 'file',
             playable: release && true,
@@ -77,7 +80,7 @@ class CouchPotatoChannel extends Channel {
             runtime: movie.info.runtime,
             actors: movie.info.actors,
             writers: movie.info.writers,
-            filePath: release && release.files.movie[0],
+            filePath: filePath,
             hasNew: movie.tags && movie.tags.indexOf("recent") > -1,
             creationTime: stat && stat.mtime
         };

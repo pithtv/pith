@@ -1,7 +1,7 @@
 const {MediaServer} = require("./MediaServer");
 const {wrap, wrapNoErr} = require('../../lib/async');
 const Global = require("../../lib/global")();
-const {formatTime, formatMsDuration} = require('../../lib/upnp');
+const upnp = require('../../lib/upnp');
 
 function upnpClassFromItem(item) {
     if (item.type === 'container') {
@@ -78,14 +78,33 @@ class MediaServerDelegate {
             properties: {
                 "dc:title": item.title,
                 "upnp:class": upnpClassFromItem(item),
-                "dc:date": item.airDate,
-                "upnp:genre": item.genres
+                "dc:date": upnp.formatDate(item.airDate) || upnp.formatDate(item.releaseDate) || (item.year && `${item.year}-01-01`) || undefined,
+                "upnp:genre": item.genres,
+                "upnp:author": item.writers,
+                "upnp:director": item.director,
+                "upnp:longDescription": item.plot,
+                "xbmc:dateadded": item.creationTime,
+                "xbmc:rating": item.tmdbRating,
+                "xbmc:votes": item.tmdbVoteCount,
+                "xbmc:uniqueIdentifier": item.imdbId,
+                "xbmc:artwork": [
+                    item.fanart ? {_attribs: { type: "fanart"}, _value: item.fanart} : undefined,
+                    item.poster ? {_attribs: { type: "poster"}, _value: item.poster} : undefined
+                ]
             },
             resources: [
                 {
                     uri: `${Global.rootUrl}/rest/channel/${channelId}/redirect/${encodeURIComponent(item.id)}`,
                     protocolInfo: `http-get:*:${item.mimetype}:DLNA.ORG_OP=01;DLNA.ORG_CI=0`
-                }
+                },
+                item.poster ? {
+                    uri: item.poster,
+                    protocolInfo: "xbmc.org:*:poster:*"
+                } : undefined,
+                item.fanart ? {
+                    uri: item.fanart,
+                    protocolInfo: "xbmc.org:*:fanart:*"
+                } : undefined
             ]
         });
     }
