@@ -4,6 +4,7 @@ const {EventEmitter} = require("events");
 const entities = require("entities");
 const Device = require("upnp-client-minimal");
 const sprintf = require("sprintf-js").sprintf;
+const {formatTime,formatMsDuration} = require('../../lib/upnp');
 
 const Global = require("../../lib/global")();
 
@@ -39,14 +40,6 @@ function format(n, parts, f) {
     out.unshift(nn);
     out.unshift(f);
     return sprintf.apply(null, out);
-}
-
-function formatTime(time) {
-    return format(time, [60, 60], "%02d:%02d:%02d");
-}
-
-function formatMsDuration(time) {
-    return format(time, [60, 60, 1000], "%d:%02d:%02d.%03d");
 }
 
 function _(t) {

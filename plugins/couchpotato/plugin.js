@@ -62,6 +62,7 @@ class CouchPotatoChannel extends Channel {
 
         return {
             id: 'media/' + movie._id,
+            mediatype: 'movie',
             title: movie.title,
             type: 'file',
             playable: release && true,
@@ -73,7 +74,6 @@ class CouchPotatoChannel extends Channel {
             imdbId: movie.identifiers.imdb,
             poster: movie.info.images.poster_original && movie.info.images.poster_original[0] || movie.info.images.poster[0],
             backdrop: movie.info.images.backdrop_original && movie.info.images.backdrop_original[0] || movie.info.images.backdrop[0],
-            // releaseDate: movie.info.released,
             runtime: movie.info.runtime,
             actors: movie.info.actors,
             writers: movie.info.writers,

@@ -6,7 +6,7 @@ const async = require("async");
 const winston = require("winston");
 const global = require("../../lib/global")();
 const Channel = require("../../lib/channel");
-const wrapToPromise = require("../../lib/util").wrapToPromise;
+const wrapToPromise = require("../../lib/async").wrap;
 
 const moviesDirectory = require("./directory.movies");
 const showsDirectory = require("./directory.shows");

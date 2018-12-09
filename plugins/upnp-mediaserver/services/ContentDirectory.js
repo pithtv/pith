@@ -15,66 +15,124 @@
 
 const {Service} = require("./Service");
 const {SoapError} = require("../Error");
+const {toXml} = require('../../../lib/util');
+const entities = require('entities');
 
 class ContentDirectory extends Service {
     constructor(device) {
         super({
+            _stateVars: {
                 SystemUpdateID: {value: 0, evented: true},
                 ContainerUpdateIDs: {value: '', evented: true},
                 SearchCapabilities: {value: '', evented: true},
                 SortCapabilities: {values: '', evented: false}
             },
-            {
-                device,
-                type: 'ContentDirectory',
-                serviceDescription: __dirname + '/ContentDirectory.xml',
-                optionalActions: [
-                    'Search',
-                    'CreateObject',
-                    'DestroyObject',
-                    'UpdateObject',
-                    'ImportResource',
-                    'ExportResource',
-                    'StopTransferResource',
-                    'GetTransferProgress'
-                ],
-                stateActions: {
-                    GetSearchCapabilities: 'SearchCaps',
-                    GetSortCapabilities: 'SortCaps',
-                    GetSystemUpdateID: 'Id'
-                }
-            });
+            device,
+            type: 'ContentDirectory',
+            serviceDescription: __dirname + '/ContentDirectory.xml',
+            optionalActions: [
+                'Search',
+                'CreateObject',
+                'DestroyObject',
+                'UpdateObject',
+                'ImportResource',
+                'ExportResource',
+                'StopTransferResource',
+                'GetTransferProgress'
+            ],
+            stateActions: {
+                GetSearchCapabilities: 'SearchCaps',
+                GetSortCapabilities: 'SortCaps',
+                GetSystemUpdateID: 'Id'
+            }
+        });
     }
 
-    actionHandler(action, options, cb) {
+    async actionHandler(action, options) {
         if (this.optionalActions.includes(action)) {
-            return this.optionalAction(cb);
+            return await this.optionalAction();
         }
         if (action in this.stateActions) {
-            return this.getStateVar(action, this.stateActions[action], cb);
+            return await this.getStateVar(action, this.stateActions[action]);
         }
 
         switch (action) {
             case 'Browse':
-                let browseCallback = (err, resp) => cb(null, err ? this.buildSoapError(err) : resp);
-                switch (options.BrowseFlag.toString()) {
-                    case 'BrowseMetaData':
-                        this.browseMetaData(options, browseCallback);
-                        break;
-                    case 'BrowseDirectChildren':
-                        this.browseChildren(options, browseCallback);
-                        break;
-                    default:
-                        browseCallback(new SoapError(402));
+                try {
+                    switch (options.BrowseFlag.toString()) {
+                        case 'BrowseMetadata':
+                            return await this.browseMetaData(options);
+                        case 'BrowseDirectChildren':
+                            return await this.browseChildren(options);
+                        default:
+                            return (new SoapError(402));
+                    }
+                } catch(err) {
+                    console.error(err);
+                    return this.buildSoapError(err);
                 }
-                break;
             default:
-                cb(null, this.buildSoapError(new SoapError(401)));
+                return this.buildSoapError(new SoapError(401));
         }
     }
 
-    browseChildren(options, cb) {
+    async browseChildren(options) {
+        let id = (options.ObjectID[0] || 0);
+        let start = parseInt(options.StartingIndex || 0);
+        let max = parseInt(options.RequestedCount || 0);
+        let sort = options.SortCriteria;
 
+        let result = await this.device.delegate.fetchChildren(id, {
+            sort, start, max
+        });
+
+        let didl = this.buildDidl(result.items);
+        return this.buildSoapResponse('Browse', {
+            Result: didl,
+            NumberReturned: result.items.length,
+            TotalMatches: result.totalItems,
+            UpdateID: result.updateId
+        }, 'xmlns:u="urn:schemas-upnp-org:service:ContentDirectory:1"');
+    }
+
+    async browseMetaData(options) {
+        let id = (options.ObjectID[0] || 0);
+        let result = await this.device.delegate.fetchObject(id);
+
+        let didl = this.buildDidl([result.item]);
+        return this.buildSoapResponse('Browse', {
+            Result: didl,
+            NumberReturned: 1,
+            TotalMatches: 1,
+            UpdateID: result.updateId
+        }, 'xmlns:u="urn:schemas-upnp-org:service:ContentDirectory:1"');
+    }
+
+    buildDidl(arr) {
+        function buildResources(resources) {
+            if(resources) {
+                return resources.map(r => {
+                    let x = "<res";
+                    if(r.duration) x+= ` duration="${entities.encodeXML(r.duration)}"`;
+                    if(r.protocolInfo) x+= ` protocolInfo="${entities.encodeXML(r.protocolInfo)}"`;
+                    x += `>${r.uri}</res>`;
+                    return x;
+                }).join('');
+            } else {
+                return '';
+            }
+        }
+
+        function buildItem(object) {
+            return `<${object.type} id="${entities.encodeXML(object.id.toString())}" parentID="${entities.encodeXML(object.parentId.toString())}" restricted="1" searchable="0">${toXml(object.properties)}${buildResources(object.resources)}</${object.type}>`;
+        }
+
+        return `<DIDL-Lite xmlns="urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/"
+           xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:upnp="urn:schemas-upnp-org:metadata-1-0/upnp/"
+           xmlns:dlna="urn:schemas-dlna-org:metadata-1-0/" xmlns:sec="http://www.sec.co.kr/"
+           xmlns:xbmc="urn:schemas-xbmc-org:metadata-1-0/">
+           ${arr.map(object => buildItem(object)).join('')}
+        </DIDL-Lite>`;
     }
 }
 

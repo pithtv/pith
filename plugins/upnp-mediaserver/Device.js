@@ -175,7 +175,7 @@ class Device extends DeviceControlProtocol {
                 let h = Object.assign({}, {
                     server: null
                 }, data && {
-                    'Content-Type': 'application/xml',
+                    'Content-Type': 'text/xml; charset="utf-8"',
                     'Content-Length': data.length
                 }, headers);
                 res.writeHead(200, this.makeHeaders(h));

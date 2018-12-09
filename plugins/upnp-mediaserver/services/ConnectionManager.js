@@ -19,10 +19,11 @@ const {SoapError} = require("../Error");
 class ConnectionManager extends Service {
     constructor(device) {
         super({
-            SourceProtocolInfo: {value: '', evented: true},
-            SinkProtocolInfo: {value: '', evented: true},
-            CurrentConnectionIDs: {value: 0, evented: true}
-        }, {
+            _stateVars: {
+                SourceProtocolInfo: {value: '', evented: true},
+                SinkProtocolInfo: {value: '', evented: true},
+                CurrentConnectionIDs: {value: 0, evented: true}
+            },
             device: device,
             type: 'ConnectionManager',
             serviceDescription: __dirname + '/ConnectionManager.xml',
@@ -33,36 +34,38 @@ class ConnectionManager extends Service {
         });
     }
 
-    actionHandler(action, options, cb) {
+    async actionHandler(action, options, cb) {
         if (this.optionalActions.includes(action)) {
-            this.optionalAction(cb);
+            return await this.optionalAction();
         }
-
         if (action in this.stateActions) {
-            this.getStateVar(action, this.stateActions[action], cb);
+            return await this.getStateVar(action, this.stateActions[action]);
         }
 
-        switch (action) {
-            case 'GetProtocolInfo':
-                this.makeProtocolInfo(cb);
-                break;
-            case 'GetCurrentConnectionInfo':
-                this.makeConnectionInfo(cb);
-                break;
-            default:
-                cb(null, this.buildSoapError(new SoapError(401)));
+        try {
+            switch (action) {
+                case 'GetProtocolInfo':
+                    return this.makeProtocolInfo();
+                case 'GetCurrentConnectionInfo':
+                    return this.makeConnectionInfo();
+                    break;
+                default:
+                    return this.buildSoapError(new SoapError(401));
+            }
+        } catch(err) {
+            return this.buildSoapError(err);
         }
     }
 
     makeProtocolInfo(cb) {
-        cb(null, this.buildSoapResponse('GetProtocolInfo', {
+        return this.buildSoapResponse('GetProtocolInfo', {
             Source: this.stateVars.SourceProtocolInfo,
             Sink: ''
-        }));
+        });
     }
 
     makeConnectionInfo(cb) {
-        cb(null, this.buildSoapResponse('GetCurrentConnectionInfo', {
+        return this.buildSoapResponse('GetCurrentConnectionInfo', {
             RcsID: -1,
             AVTransportID: -1,
             ProtocolInfo: this.protocols.join(','),
@@ -70,7 +73,7 @@ class ConnectionManager extends Service {
             PeerConnectionID: -1,
             Direction: 'Output',
             Status: 'OK'
-        }));
+        });
     }
 }
 

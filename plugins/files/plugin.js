@@ -7,7 +7,7 @@ const settings = require("../../lib/global")().settings;
 const playstate = require("./playstate");
 const ff = require("fluent-ffmpeg");
 const Channel = require("../../lib/channel");
-const wrapToPromise = require("../../lib/util").wrapToPromise;
+const wrapToPromise = require("../../lib/async").wrap;
 const profiles = require("../../lib/profiles");
 const keyframes = require("../../lib/keyframes");
 const preview = require("./preview");
@@ -103,6 +103,10 @@ class FilesChannel extends Channel {
                     item.modificationTime = stats && stats.mtime;
                     item.creationTime = stats && stats.ctime;
                     item.fsPath = filepath;
+
+                    if(item.playable) {
+                        item.streamUrl = `${channel.pith.rootUrl}stream/${itemId}`;
+                    }
                 }
 
                 const applicableProviders = metaDataProviders.filter(function (f) {
@@ -136,7 +140,7 @@ class FilesChannel extends Channel {
                     let duration = parseFloat(metadata.format.duration) * 1000;
 
                     const desc = {
-                        url: channel.pith.rootUrl + "stream/" + itemPath,
+                        url: item.streamUrl,
                         mimetype: item.mimetype,
                         seekable: true,
                         format: {

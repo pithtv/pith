@@ -17,25 +17,15 @@ const {DeviceControlProtocol} = require("../DeviceControlProtocol");
 const { processors, Parser } = require('xml2js');
 const gen_uuid = require('node-uuid');
 const {HttpError, SoapError} = require("../Error");
-const entities = require('entities');
 const fs = require('fs');
 const url = require('url');
 const http = require('http');
-
-function toXml(args) {
-    if(typeof args === 'object') {
-        return Object.entries(args).map(([key, value]) => `<${key}>${toXml(value)}</${key}>`).join('');
-    } else if(typeof args === 'string') {
-        return entities.encodeXML(args);
-    } else {
-        return args.toString();
-    }
-}
+const async = require('../../../lib/async');
+const { toXml } = require('../../../lib/util');
 
 class Service extends DeviceControlProtocol {
-    constructor(_stateVars, ...opts) {
+    constructor(...opts) {
         super(...opts);
-        this._stateVars = _stateVars;
 
         this.stateVars = {};
 
@@ -54,26 +44,9 @@ class Service extends DeviceControlProtocol {
         ));
     }
 
-    // TODO promisify
-    action(action, data, cb) {
-        new Parser({tagNameProcessors: [processors.stripPrefix]}).parseString(data, (err, data) => {
-            if(err) cb(err);
-            else this.actionHandler(action, data['Envelope']['Body'][0][action][0], cb);
-        });
-    }
-
-    // TODO whats this?
-    attribute(attr) {
-        Object.defineProperty(this.prototype, attr, {
-            get() {
-                return this.get(attr);
-            },
-            set(value) {
-                let attrs = {};
-                attrs[attr] = value;
-                this.set(attrs);
-            }
-        });
+    async action(action, data) {
+        let parsedData = await async.wrap(cb => new Parser({tagNameProcessors: [processors.stripPrefix]}).parseString(data, cb));
+        return await this.actionHandler(action, parsedData['Envelope']['Body'][0][action][0]);
     }
 
     subscribe(urls, reqTimeout) {
@@ -104,20 +77,18 @@ class Service extends DeviceControlProtocol {
         delete this.subs[sid];
     }
 
-    optionalAction(cb) {
-        // TODO what's this? seems error should be first argument anyway?
-        cb(null, new SoapError(602));
+    async optionalAction() {
+        return new SoapError(602);
     }
 
-    // TODO promisify
-    getStateVar(action, elName, cb) {
+    async getStateVar(action, elName) {
         let varName = /^(Get)?(\w+)$/.exec(action)[2];
         if(varName in this._stateVars) {
             let el = {};
             el[elName] = this.stateVars[varName];
-            cb(null, this.buildSoapResponse(action, el));
+            return this.buildSoapResponse(action, el);
         } else {
-            cb(new SoapError(404));
+            throw new SoapError(404);
         }
     }
 
@@ -125,20 +96,20 @@ class Service extends DeviceControlProtocol {
         Object.values(this.subs).forEach(subscription => subscription.notify());
     }
 
-    buildSoapResponse(action, args) {
-        return `<?xml version="1.0"?>
-        <s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
-            <s:Body>
-                <u:${action}Response>
-                    ${toXml(args)}
-                </u:${action}Response>
-            </s:Body>
-        </s:Envelope>`;
+    buildSoapResponse(action, args, ns) {
+        return `<?xml version="1.0" encoding="UTF-8"?>\n`+
+        `<s:Envelope s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">`+
+            `<s:Body>`+
+                `<u:${action}Response ${ns}>`+
+                    toXml(args)+
+                `</u:${action}Response>`+
+            `</s:Body>`+
+        `</s:Envelope>`;
     }
 
     buildSoapError(error) {
-        return `<?xml version="1.0"?>
-        <s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+        return `<?xml version="1.0" encoding="UTF-8"?>
+        <s:Envelope s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">
             <s:Body>
                 <s:Fault>
                     <faultcode>S:Client</faultcode>
@@ -211,7 +182,9 @@ class Service extends DeviceControlProtocol {
                 let data = '';
                 req.on('data', chunk => data += chunk);
                 req.on('end', () => {
-                    this.action(serviceAction, data, (err, soapResponse) => cb(err, soapResponse, {ext: null}));
+                    this.action(serviceAction, data).then(soapResponse =>
+                        cb(null, soapResponse, {ext: null})
+                    ).catch(cb);
                 });
                 break;
             case 'event':
