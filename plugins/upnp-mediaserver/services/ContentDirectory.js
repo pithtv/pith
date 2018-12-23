@@ -100,6 +100,7 @@ class ContentDirectory extends Service {
         let result = await this.device.delegate.fetchObject(id);
 
         let didl = this.buildDidl([result.item]);
+        console.debug(didl);
         return this.buildSoapResponse('Browse', {
             Result: didl,
             NumberReturned: 1,

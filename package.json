@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "build": "npm --prefix webui install && npm --prefix webui run-script build-prod",
-    "start": "node app"
+    "start": "node $NODE_DEBUG_OPTION app"
   },
   "dependencies": {
     "MD5": "^1.3.0",

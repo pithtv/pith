@@ -62,14 +62,9 @@ class SonarrChannel extends Channel {
             title: show.title,
             overview: show.overview,
             poster: img('poster'),
+            banner: img('banner'),
             type: 'container',
-            seasons: show.seasons.map(sonarrSeason => ({
-                id: `sonarr.show.${show.id}.season.${sonarrSeason.seasonNumber}`,
-                mediatype: 'season',
-                season: sonarrSeason.seasonNumber,
-                type: 'container',
-                unavailable: sonarrSeason.episodeCount == 0
-            }))
+            seasons: show.seasons.map(sonarrSeason => this.convertSeason(show, sonarrSeason))
         };
 
         let mappedEpisodes;
@@ -98,18 +93,28 @@ class SonarrChannel extends Channel {
         }
     }
 
+    convertSeason(show, sonarrSeason) {
+        return ({
+            id: `sonarr.show.${show.id}.season.${sonarrSeason.seasonNumber}`,
+            title: `Season ${sonarrSeason.seasonNumber}`,
+            mediatype: 'season',
+            season: sonarrSeason.seasonNumber,
+            type: 'container',
+            unavailable: sonarrSeason.episodeCount == 0
+        });
+    }
+
     convertEpisode(sonarrEpisode) {
         let episode = {
             id: `sonarr.episode.${sonarrEpisode.id}`,
-            type: 'item',
+            type: 'file',
             mediatype: 'episode',
-            airDate: sonarrEpisode.airDate,
+            airDate: sonarrEpisode.airDate && new Date(sonarrEpisode.airDate),
             dateScanned: sonarrEpisode.episodeFile && parseDate(sonarrEpisode.episodeFile.dateAdded),
             season: sonarrEpisode.seasonNumber,
             episode: sonarrEpisode.episodeNumber,
             overview: sonarrEpisode.overview,
             playable: sonarrEpisode.hasFile,
-            // still: "http://image.tmdb.org/t/p/original/mxSQsHOJdVrUvHC4qoAAubVgiph.jpg",
             title: sonarrEpisode.title,
             unavailable: !sonarrEpisode.hasFile,
             sonarrEpisodeFileId: sonarrEpisode.episodeFileId,
@@ -122,12 +127,26 @@ class SonarrChannel extends Channel {
     }
 
     async listContents(containerId) {
-        let series = await this._get('api/series');
-        series.sort((a,b) => a.title.localeCompare(b.title));
-        return await Promise.all(series.map(async show => {
-            let episodes = await this.queryEpisodes(show.id);
-            return await this.convertSeries(show, episodes);
-        }));
+        if(containerId) {
+            let [,showId,,seasonId] = containerId.match(/^sonarr\.show\.([^.]*)(\.season\.([^.]*))?/);
+            if(showId !== undefined && seasonId === undefined) {
+                let series = await this._get(`/api/series/${showId}`);
+                let seasons = series.seasons;
+                return seasons.map(sonarrSeason => this.convertSeason(series, sonarrSeason));
+            } else if(showId !== undefined && seasonId !== undefined) {
+                let allEpisodes = await this._get(`/api/episode?seriesId=${showId}`);
+                let seasonNumber = parseInt(seasonId);
+                let seasonEpisodes = allEpisodes.filter(e => e.seasonNumber === seasonNumber);
+                return Promise.all(seasonEpisodes.map(e => this.convertEpisode(e)));
+            }
+        } else {
+            let series = await this._get('api/series');
+            series.sort((a, b) => a.title.localeCompare(b.title));
+            return await Promise.all(series.map(async show => {
+                let episodes = await this.queryEpisodes(show.id);
+                return await this.convertSeries(show, episodes);
+            }));
+        }
     }
 
     getItem(itemId, detailed) {
