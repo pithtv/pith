@@ -109,6 +109,7 @@ export class ChannelItem {
   poster: string;
   backdrop: string;
   title: string;
+  airDate: string;
   mediatype: string;
   playState: any;
   sortableFields: string[];
