@@ -103,10 +103,6 @@ class FilesChannel extends Channel {
                     item.modificationTime = stats && stats.mtime;
                     item.creationTime = stats && stats.ctime;
                     item.fsPath = filepath;
-
-                    if(item.playable) {
-                        item.streamUrl = `${channel.pith.rootUrl}stream/${itemId}`;
-                    }
                 }
 
                 const applicableProviders = metaDataProviders.filter(function (f) {
@@ -140,7 +136,7 @@ class FilesChannel extends Channel {
                     let duration = parseFloat(metadata.format.duration) * 1000;
 
                     const desc = {
-                        url: item.streamUrl,
+                        url: `${channel.pith.rootUrl}stream/${itemPath}`,
                         mimetype: item.mimetype,
                         seekable: true,
                         format: {
