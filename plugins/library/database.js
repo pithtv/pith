@@ -1,6 +1,7 @@
 "use strict";
 
 var async = require("async");
+var { wrap } = require("../../lib/async");
 var uuid = require("node-uuid").v1;
 
 module.exports = function(db) {
@@ -167,23 +168,14 @@ module.exports = function(db) {
         });
     }
 
-    function findEpisodes(item, callback) {
-        return series.find(
-            {
-                episodes: {
-                    $elemMatch: item
-                }
-            },
-            {
-                episodes: {
-                    $elemMatch: item
-                }
-            }
-        ).toArray().then(function(result) {
-            return result.reduce(function(a,b) {
-                return a.concat(b.episodes);
-            }, []);
-        });
+    function findEpisodes(item, sort) {
+        return series.aggregate([
+            { $unwind: '$episodes' },
+            { $replaceRoot: {newRoot: '$episodes'}},
+            { $match: item },
+            { $sort: sort }
+            ]
+        ).toArray();
     }
 
     function storeEpisode(item, callback) {
@@ -223,7 +215,7 @@ module.exports = function(db) {
     }
 
     function findShows(selector, sorting) {
-        return series.find(selector).sort(sorting).toArray();
+        return wrap(cb => series.find(selector).sort(sorting).toArray(cb));
     }
     
     function findMovieByOriginalId(channelId, itemId, callback) {

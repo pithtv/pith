@@ -33,3 +33,12 @@
         </div>
     </div>
 </div>
+
+<div class="card my-3">
+  <div class="card-header">
+    <input type="checkbox" [(ngModel)]="settings.upnpsharing.enabled" id="upnpsharingEnabled" /> <label class="m-0" for="upnpsharingEnabled">UPnP Sharing</label>
+  </div>
+  <div class="card-body" [hidden]="!settings.upnpsharing.enabled">
+    With UPnP sharing you'll be able to browse your Pith library from within your favorite UPnP client, such as Kodi or VLC.
+  </div>
+</div>

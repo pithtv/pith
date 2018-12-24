@@ -7,18 +7,12 @@
       <label for="dbEngine">Database engine</label>
       <select [(ngModel)]="settings.dbEngine" id="dbEngine" class="form-control">
         <option value="mongodb">MongoDB</option>
-        <option value="tingodb">TingoDB</option>
       </select>
     </div>
     <div class="form-group" *ngIf="settings.dbEngine === 'mongodb'">
       <label forId="mongoUrl">MongoDB Connection String</label>
       <input type="text" [(ngModel)]="settings.mongoUrl" class="form-control" name="mongoUrl" id="mongoUrl"
              [disabled]="settings.dbEngine !== 'mongodb'" [required]="settings.dbEngine === 'mongodb'"/>
-    </div>
-    <div class="form-group" *ngIf="settings.dbEngine === 'tingodb'">
-      <label forId="tingoPath">TingoDB database filepath</label>
-      <input type="text" [(ngModel)]="settings.tingoPath" class="form-control" name="tingoPath" id="tingoPath"
-             [disabled]="settings.dbEngine !== 'tingodb'" [required]="settings.dbEngine === 'tingodb'"/>
     </div>
   </div>
 </div>

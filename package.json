@@ -23,7 +23,6 @@
     "request": "^2.88.0",
     "retrieve-keyframes": "^2.13.1",
     "sprintf-js": "^1.0.2",
-    "tingodb": "^0.6.1",
     "upnp-client-minimal": "^0.0.4",
     "winston": "^3.1.0",
     "ws": "^6.1.2",

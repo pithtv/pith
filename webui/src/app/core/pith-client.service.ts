@@ -191,6 +191,10 @@ export class PithSettings {
     url: string,
     apikey: string
   };
+  upnpsharing: {
+    enabled: boolean,
+    port?: number
+  };
   dbEngine: string;
   files: {
     rootDir: string,
@@ -216,7 +220,6 @@ export class PithSettings {
     url: string,
     apikey: string
   };
-  tingoPath: string;
 }
 
 export class PithError {

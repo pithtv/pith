@@ -4,6 +4,7 @@ const Global = require("../../lib/global")();
 const upnp = require('../../lib/upnp');
 const entities = require('entities');
 const { sprintf } = require('sprintf-js');
+const settings = require("../../lib/global")().settings;
 
 function upnpClassFromItem(item) {
     if (item.type === 'container') {
@@ -184,14 +185,16 @@ class MediaServerDelegate {
 
 module.exports = {
     init(opts) {
-        let mediaserver = new MediaServer({
-            name: 'MediaServer',
-            address: Global.bindAddress,
-            delegate: new MediaServerDelegate(opts.pith),
-            uuid: Global.persistentUuid('MediaServer')
-        });
-        mediaserver.on('ready', () => {
-            mediaserver.ssdpAnnounce();
-        })
+        if(settings.upnpsharing && settings.upnpsharing.enabled) {
+            let mediaserver = new MediaServer({
+                name: 'MediaServer',
+                address: Global.bindAddress,
+                delegate: new MediaServerDelegate(opts.pith),
+                uuid: Global.persistentUuid('MediaServer')
+            });
+            mediaserver.on('ready', () => {
+                mediaserver.ssdpAnnounce();
+            })
+        }
     }
 };

@@ -125,7 +125,7 @@ module.exports = function(plugin) {
         visible: true,
         type: "container",
         _getContents: function(containerId, cb) {
-            db.findEpisodes({dateScanned: {$gt: new Date(new Date() - 7*24*60*60*1000)}}, {order: {dateScanned: -1}}).then(function(result) {
+            db.findEpisodes({dateScanned: {$gt: new Date(new Date() - 7*24*60*60*1000)}}, {dateScanned: -1}).then(function(result) {
                 async.mapSeries(result, mapEpisode, cb);
             }).catch(function(err) {
                 cb(err);    
@@ -140,7 +140,7 @@ module.exports = function(plugin) {
         visible: true,
         type: "container",
         _getContents: function(containerId, cb) {
-            db.findEpisodes({airDate: {$gt: new Date(new Date() - 7*24*60*60*1000), $lt:new Date()}}, {order: {airDate: -1}}).then(function(result) {
+            db.findEpisodes({airDate: {$gt: new Date(new Date() - 7*24*60*60*1000), $lt:new Date()}}, {airDate: -1}).then(function(result) {
                 async.mapSeries(result, mapEpisode, cb);
             });
         }
