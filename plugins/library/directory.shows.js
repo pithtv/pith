@@ -4,8 +4,6 @@ var async = require("async");
 var global = require("../../lib/global")();
 var TvShowUtils = require("../../lib/tvshowutils");
 
-const SOME_INPROGRESS=1, SOME_WATCHED=2, SOME_UNWATCHED=4;
-
 module.exports = function(plugin) {
 
     var db = plugin.db;
@@ -15,7 +13,7 @@ module.exports = function(plugin) {
     }
 
     function findLastPlayable(episodes) {
-        for(var x=episodes.length - 1;x>=0;x--) {
+        for(let x=episodes.length - 1;x>=0;x--) {
             if(episodes[x].originalId) return episodes[x];
         }
     }
@@ -26,7 +24,7 @@ module.exports = function(plugin) {
             else {
                 var seasons = m.seasons && m.seasons.map(mapSeason).map(function(season) {
                     var seasonEps = episodes.filter(function(ep) {
-                        return ep.season == season.season;
+                        return ep.season === season.season;
                     });
                     var playstate = TvShowUtils.aggregatePlayState(seasonEps);
                     season.playState = playstate;
@@ -43,7 +41,7 @@ module.exports = function(plugin) {
                     episodes: episodes,
                     seasons: seasons,
                     playState: playState,
-                    hasNew: lastPlayable && (!lastPlayable.playState || lastPlayable.playState.status != 'watched') && lastPlayable.dateScanned > (new Date(new Date() - 1000 * 60 * 60 * 24 * global.settings.maxAgeForNew))
+                    hasNew: lastPlayable && (!lastPlayable.playState || lastPlayable.playState.status !== 'watched') && lastPlayable.dateScanned > (new Date(new Date() - 1000 * 60 * 60 * 24 * global.settings.maxAgeForNew))
                 }));
             }
         });
@@ -61,7 +59,7 @@ module.exports = function(plugin) {
     function mapEpisode(m, cb) {
         plugin.getLastPlayStateFromItem(m).then(playState => {
             cb(false,
-                extend({}, m, {
+                Object.assign({}, m, {
                     id: 'shows/' + m.showId + '/' + m.season + '/' + m.episode,
                     episodeId: m.id,
                     type: 'item',
@@ -85,11 +83,11 @@ module.exports = function(plugin) {
                 }, cb);
             } else {
                 var p = containerId.split('/');
-                if(p.length == 1) {
+                if(p.length === 1) {
                     db.findSeasons({showId: containerId}, {season: 1}).then(function (result) {
                         cb(false, result.map(mapSeason));
                     }).catch(cb);
-                } else if(p.length == 2) {
+                } else if(p.length === 2) {
                     db.findEpisodes({showId: p[0], season: parseInt(p[1])}, {episode: 1}).then(function (result) {
                         async.mapSeries(result, mapEpisode, cb);
                     });
@@ -101,16 +99,16 @@ module.exports = function(plugin) {
                 cb(null, {id: 'shows', title: 'All Shows'});
             } else {
                 var p = itemId.split('/');
-                if(p.length == 1) {
+                if(p.length === 1) {
                     db.findShow({id: itemId}, function (err, show) {
                         if (err || !show) cb(err, show);
                         else mapShow(show, cb);
                     });
-                } else if(p.length == 2) {
+                } else if(p.length === 2) {
                     db.findSeason({showId: p[0], season: p[1]}).then(function(result) {
                         cb(err, mapSeason(result));
                     });
-                } else if(p.length == 3) {
+                } else if(p.length === 3) {
                     db.findEpisode({showId: p[0], season: parseInt(p[1]), episode: parseInt(p[2])}, function(err, result) {
                         if(err || !result) cb(err);
                         else mapEpisode(result, cb);
