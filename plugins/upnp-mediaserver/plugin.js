@@ -21,7 +21,10 @@ function upnpClassFromItem(item) {
                     case 'movie':
                         return 'object.item.videoItem.movie';
                     case 'episode':
-                        return 'object.item.videoItem.videoBroadcast';
+                        if(item.unavailable)
+                            return 'object.item.epgItem.videoProgram';
+                        else
+                            return 'object.item.videoItem.videoBroadcast';
                     default:
                         return 'object.item.videoItem';
                 }
@@ -64,7 +67,7 @@ class MediaServerDelegate {
             let [, channelId, , itemId] = id.match(/^channel:(\w+)(:(.*))?$/);
             let channel = this.pith.getChannelInstance(channelId);
             let contents = await channel.listContents(itemId);
-            let items = contents.map(item => this.mapObject(channel, item, id, channelId));
+            let items = contents.filter(item => !item.unavailable).map(item => this.mapObject(channel, item, id, channelId));
             return {
                 updateId: 0,
                 items: items,
@@ -81,7 +84,7 @@ class MediaServerDelegate {
             type: item.type === 'container' ? 'container' : 'item',
             properties: this.toDidl(item),
             resources: [
-                {
+                item.playable && {
                     uri: `${Global.rootUrl}/rest/channel/${channelId}/redirect/${encodeURIComponent(item.id)}`,
                     protocolInfo: `http-get:*:${item.mimetype}:DLNA.ORG_OP=01;DLNA.ORG_CI=0`
                 },
@@ -89,8 +92,8 @@ class MediaServerDelegate {
                     uri: entities.encodeXML(item.poster),
                     protocolInfo: "xbmc.org:*:poster:*"
                 } : undefined,
-                item.fanart ? {
-                    uri: entities.encodeXML(item.fanart),
+                item.backdrop ? {
+                    uri: entities.encodeXML(item.backdrop),
                     protocolInfo: "xbmc.org:*:fanart:*"
                 } : undefined
             ]
@@ -138,8 +141,9 @@ class MediaServerDelegate {
             case 'episode':
                 Object.assign(didl, {
                     // "dc:publisher": "",
+                    "dc:title": `S${ item.season }E${ item.episode } : ${ item.title }`,
                     "upnp:programTitle": `S${ item.season }E${ item.episode } : ${ item.title }`,
-                    "upnp:seriesTitle": item.seriesTitle,
+                    "upnp:seriesTitle": item.showname,
                     "upnp:episodeNumber": sprintf('%02d%02d', item.season, item.episode),
                     "upnp:episodeSeason": 0
                 });
@@ -147,14 +151,15 @@ class MediaServerDelegate {
             case 'season':
                 Object.assign(didl, {
                     // "dc:publisher": "",
-                    "upnp:seriesTitle": item.seriesTitle,
-                    "upnp:episodeNumber": item.episodeCount,
-                    "upnp:episodeSeason": 0 // this is how Kodi sends it
+                    "upnp:seriesTitle": item.showname,
+                    "upnp:episodeNumber": item.noEpisodes,
+                    "upnp:episodeSeason": 0
                 });
                 break;
             case 'show':
                 Object.assign(didl, {
                     // "dc:publisher": "",
+                    "upnp:episodeNumber": item.noEpisodes
                 });
                 break;
         }
@@ -163,6 +168,7 @@ class MediaServerDelegate {
     }
 
     async fetchObject(id) {
+        console.debug(`fetchObject for ${id}`);
         let [, channelId, , itemId] = id.match(/^channel:(\w+)(:(.*))?$/);
         if (itemId) {
             let channel = this.pith.getChannelInstance(channelId);
