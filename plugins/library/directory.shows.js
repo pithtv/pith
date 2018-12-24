@@ -48,7 +48,7 @@ module.exports = function(plugin) {
     }
 
     function mapSeason(m) {
-        return extend({}, m, {
+        return Object.assign({}, m, {
             id: 'shows/' + m.showId + '/' + m.season,
             seasonId: m.id,
             type: 'container',
