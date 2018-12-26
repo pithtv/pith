@@ -51,6 +51,14 @@ class CouchPotatoChannel extends Channel {
         });
     }
 
+    extractPosterFromCache(movie) {
+        let path = movie.files.image_poster[0];
+        if(path) {
+            let uuid = path.substr(path.lastIndexOf('/'));
+            return this.url.resolve(`api/${this.apikey}/file.cache/${uuid}`);
+        }
+    }
+
     mapMovie(movie) {
         let release = movie.releases.find(r => r.status == 'done');
         let movieFile = release && release.files.movie && release.files.movie[0];
@@ -75,7 +83,7 @@ class CouchPotatoChannel extends Channel {
             tagline: movie.info.tagline,
             genres: movie.info.genres,
             imdbId: movie.identifiers.imdb,
-            poster: movie.info.images.poster_original && movie.info.images.poster_original[0] || movie.info.images.poster[0],
+            poster: movie.info.images.poster_original && movie.info.images.poster_original[0] || movie.info.images.poster[0] || this.extractPosterFromCache(movie),
             backdrop: movie.info.images.backdrop_original && movie.info.images.backdrop_original[0] || movie.info.images.backdrop[0],
             runtime: movie.info.runtime,
             actors: movie.info.actors,
