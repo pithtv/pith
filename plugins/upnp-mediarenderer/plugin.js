@@ -78,8 +78,8 @@ class MediaRenderer extends EventEmitter {
     load(channel, item, cb) {
         const renderer = this;
 
-        channel.getStream(item).then(stream => {
-            const mediaUrl = stream.url;
+        channel.getStream(item, {fingerprint: [Global.persistentUuid('instance'), channel.id, item.id].join(':')}).then(stream => {
+            const mediaUrl = `${stream.url}`;
             console.log("Loading " + mediaUrl);
 
             function doLoad() {
@@ -191,6 +191,7 @@ class MediaRenderer extends EventEmitter {
                 xml2js(positionInfo.TrackMetaData, (err, meta) => {
                     if(!err) {
                         const didlLite = meta['DIDL-Lite'].item[0];
+                        pos.fingerprint = decodeURIComponent(didlLite.$.id.match(Global.persistentUuid('instance') + "[^/]*"));
                         for(let x in didlLite) {
                             const val = didlLite[x][0];
                             switch(x) {
@@ -212,8 +213,16 @@ class MediaRenderer extends EventEmitter {
     updatePositionInfo(cb) {
         this.getPositionInfo((err, positionInfo) => {
             if(!err) {
-                if(positionInfo.channelId) {
-                    this._opts.pith.putPlayState(positionInfo.channelId, positionInfo.itemId, {time: positionInfo.time, duration: positionInfo.duration});
+                let channelId = positionInfo.channelId, itemId = positionInfo.itemId;
+                if(!channelId || !itemId) {
+                    const fingerprint = positionInfo.fingerprint;
+                    const parts = fingerprint.match(/^[^:]*:([^:]*):(.*)$/);
+                    if(parts) {
+                        [,channelId,itemId] = parts;
+                    }
+                }
+                if(channelId && itemId) {
+                    this._opts.pith.putPlayState(channelId, itemId, {time: positionInfo.time, duration: positionInfo.duration});
                 }
 
                 this.status.position = positionInfo;

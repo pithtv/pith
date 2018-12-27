@@ -36,7 +36,7 @@ class FilesChannel extends Channel {
             }
         });
 
-        pith.handle.use('/stream', vidstreamer);
+        pith.handle.use('/stream/:fingerprint', vidstreamer);
         pith.handle.use('/preview', preview(path => this.getFile(path)));
     }
 
@@ -136,7 +136,7 @@ class FilesChannel extends Channel {
                     let duration = parseFloat(metadata.format.duration) * 1000;
 
                     const desc = {
-                        url: `${channel.pith.rootUrl}stream/${itemPath}`,
+                        url: `${channel.pith.rootUrl}stream/${encodeURIComponent(options.fingerprint) || '0'}/${itemPath}`,
                         mimetype: item.mimetype,
                         seekable: true,
                         format: {
@@ -154,7 +154,7 @@ class FilesChannel extends Channel {
                     if(options && options.target) {
                         desc.streams = options.target.split(",").map((profileName) => {
                             let profile = profiles[profileName];
-                            let url = `${channel.pith.rootUrl}stream/${itemPath}?transcode=${profileName}`;
+                            let url = `${channel.pith.rootUrl}stream/${encodeURIComponent(options.fingerprint) || '0'}/${itemPath}?transcode=${profileName}`;
                             if(profile.requiresPlaylist) {
                                 url += `&playlist=${profile.requiresPlaylist}`;
                             }
