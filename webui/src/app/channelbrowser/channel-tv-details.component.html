@@ -1,5 +1,5 @@
 <img *ngIf="item.poster || item.still"
-     [src]="(item.poster | prescale:'1400x1050') || (item.still | prescale:'1920x1080')" class="bigthumb"/>
+     [src]="((item.poster || item.still) | prescale:'680x1000')" class="bigthumb"/>
 <div class="episodeguide">
   <ul class="detailtabs seasons">
     <li *ngFor="let season of item.seasons" (click)="selectSeason(season)"
@@ -9,8 +9,8 @@
   </ul>
   <ul class="seasondetails scrollnative">
     <li *ngFor="let episode of episodes"
-        [class.watched]="episode.playState &amp;&amp; episode.playState.status == 'watched'"
-        [class.inprogress]="episode.playState &amp;&amp; episode.playState.status == 'inprogress'"
+        [class.watched]="episode.playState && episode.playState.status == 'watched'"
+        [class.inprogress]="episode.playState && episode.playState.status == 'inprogress'"
         [class.unavailable]="episode.unavailable">
       <div [style.background-image]="episode.still && 'url(' + (episode.still | prescale:'266x150')+ ')'"
            [class.still]="true"

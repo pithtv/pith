@@ -1,4 +1,5 @@
-<img *ngIf="item.poster || item.still" [src]="(item.poster | prescale:'700x1050') || (item.still | prescale:'1920x1080')" class="bigthumb"/>
+<img *ngIf="item.poster || item.still" [src]="((item.poster || item.still) | prescale:'680x1000')"
+     class="bigthumb"/>
 <div class="details">
   <span class="contextinfo"><span class="itemshowname">{{item.showname}}</span><span class="itemseason">{{item.season}}</span><span class="itemepisode" *ngIf="item.episode">{{item.episode}}</span></span>
   <span class="itemtitle">
