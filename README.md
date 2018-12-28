@@ -37,8 +37,6 @@ Getting started
 Install node
 
     sudo apt-get install nodejs
-    
-Install ImageMagick: http://www.imagemagick.org/script/binary-releases.php or using your favorite package manager
 
 Clone the project:
 
