@@ -135,12 +135,14 @@ class FilesChannel extends Channel {
                 } else {
                     let duration = parseFloat(metadata.format.duration) * 1000;
 
+                    const baseUrl = `${channel.pith.rootUrl}stream/${encodeURIComponent(options && options.fingerprint) || '0'}/${itemPath}`;
+
                     const desc = {
-                        url: `${channel.pith.rootUrl}stream/${encodeURIComponent(options.fingerprint) || '0'}/${itemPath}`,
-                        mimetype: item.mimetype,
+                        url: baseUrl,
+                        mimetype: item.mimetype || 'application/octet-stream',
                         seekable: true,
                         format: {
-                            container: metadata.format.tags.major_brand,
+                            container: metadata.format.tags ? metadata.format.tags.major_brand : 'unknown',
                             streams: metadata.streams.map(stream => ({
                                 index: stream.index,
                                 codec: stream.codec_name,
@@ -154,7 +156,7 @@ class FilesChannel extends Channel {
                     if(options && options.target) {
                         desc.streams = options.target.split(",").map((profileName) => {
                             let profile = profiles[profileName];
-                            let url = `${channel.pith.rootUrl}stream/${encodeURIComponent(options.fingerprint) || '0'}/${itemPath}?transcode=${profileName}`;
+                            let url = `${baseUrl}?transcode=${profileName}`;
                             if(profile.requiresPlaylist) {
                                 url += `&playlist=${profile.requiresPlaylist}`;
                             }
