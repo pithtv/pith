@@ -161,10 +161,10 @@ class Service extends DeviceControlProtocol {
     buildServiceElement() {
         return toXml({
             serviceType: this.makeType(),
-            eventSubURL: `/service/${this.type}/event`,
-            controlURL: `/service/${this.type}/control`,
+            serviceId: `urn:upnp-org:serviceId:${this.type}`,
             SCPDURL: `/service/${this.type}/description`,
-            serviceId: `url:upnp-org:serviceId:${this.type}`
+            controlURL: `/service/${this.type}/control`,
+            eventSubURL: `/service/${this.type}/event`
         });
     }
 
