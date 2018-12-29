@@ -16,9 +16,9 @@
 const {DeviceControlProtocol} = require("./DeviceControlProtocol");
 const dgram = require('dgram');
 const os = require('os');
+const fs = require('fs');
 const http = require('http');
 const parser = require('http-string-parser');
-const makeUuid = require('node-uuid');
 const {HttpError} = require("./Error");
 const { queue, wrap } = require("../../lib/async");
 
@@ -30,7 +30,8 @@ class Device extends DeviceControlProtocol {
                 port: 1900,
                 timeout: 1800,
                 ttl: 4
-            }
+            },
+            iconSizes: []
         }, ...opts);
 
         this.broadcastSocket = dgram.createSocket({type: 'udp4', reuseAddr: true}, this.ssdpListener.bind(this));
@@ -103,7 +104,7 @@ class Device extends DeviceControlProtocol {
             host: `${this.ssdp.address}:${this.ssdp.port}`,
             location: this.makeUrl('/device/description'),
             server: `${os.type()}/${os.release()} UPnP/${this.upnp.version.join('.')} ${this.name}/1.0`,
-            usn: this.uuid + ((this.uuid == customHeaders.nt || this.uuid == customHeaders.st) ? '' : '::' + (customHeaders.nt || customHeaders.st))
+            usn: 'uuid:' + this.uuid + ((this.uuid == customHeaders.nt || this.uuid == customHeaders.st) ? '' : '::' + (customHeaders.nt || customHeaders.st))
         };
 
         let headers = {};
@@ -135,11 +136,23 @@ class Device extends DeviceControlProtocol {
             <specVersion><major>${this.upnp.version[0]}</major><minor>${this.upnp.version[1]}</minor></specVersion>
             <device>
                 <deviceType>${this.makeType()}</deviceType>
-                <friendlyName>${this.friendlyName || `${this.name} @ ${os.hostname()}`.substr(0, 64)}</friendlyName>
+                <friendlyName>${this.friendlyName || `${this.name} (${os.hostname()})`.substr(0, 64)}</friendlyName>
                 <manufacturer>${this.manufacturer}</manufacturer>
                 <modelName>${this.name.substr(0, 32)}</modelName>
-                <UDN>${this.uuid}</UDN>
-                <serviceList>${Object.entries(this.services).map(([key, value]) => '<service>' + value.buildServiceElement() + '</service>').join("")}</serviceList>
+                <UDN>uuid:${this.uuid}</UDN>
+                <presentationURL>${this.presentationURL}</presentationURL>
+                <iconList>${this.iconSizes.map(size => `
+                    <icon>
+                        <mimetype>image/png</mimetype>
+                        <width>${size}</width>
+                        <height>${size}</height>
+                        <depth>8</depth>
+                        <url>/icons/icon-${size}x${size}.png</url>
+                    </icon>`).join("")}
+                </iconList>
+                <serviceList>${Object.entries(this.services).map(([key, value]) => `
+                    <service>${value.buildServiceElement()}</service>`).join("")}
+                </serviceList>
             </device>
         </root>`;
     }
@@ -153,6 +166,15 @@ class Device extends DeviceControlProtocol {
                     break;
                 case 'service':
                     this.services[serviceType].requestHandler({action, req, id}, cb);
+                    break;
+                case 'icons':
+                    fs.readFile(`icons/${serviceType}`, (err, data) => {
+                        if(err) {
+                            cb(new HttpError(404));
+                        } else {
+                            cb(null, data, { 'Content-Type': 'image/png'});
+                        }
+                    });
                     break;
                 default:
                     cb(new HttpError(404));

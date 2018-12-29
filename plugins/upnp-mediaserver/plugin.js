@@ -187,10 +187,13 @@ module.exports = {
     init(opts) {
         if(settings.upnpsharing && settings.upnpsharing.enabled) {
             let mediaserver = new MediaServer({
-                name: 'MediaServer',
+                name: 'Pith',
+                manufacturer: 'Pith',
                 address: Global.bindAddress,
                 delegate: new MediaServerDelegate(opts.pith),
-                uuid: Global.persistentUuid('MediaServer')
+                uuid: Global.persistentUuid('MediaServer'),
+                presentationURL: Global.rootUrl,
+                iconSizes: [16,32,48,64,72,96,120,128,144,152,192,256,384,512]
             });
             mediaserver.on('ready', () => {
                 mediaserver.ssdpAnnounce();
