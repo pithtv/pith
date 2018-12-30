@@ -115,7 +115,7 @@ class Device extends DeviceControlProtocol {
     }
 
     makeNotificationTypes() {
-        return ['upnp:rootdevice', this.uuid, this.makeType()].concat(Object.values(this.services).map(service => this.makeType(service)));
+        return ['upnp:rootdevice', "uuid:" + this.uuid, this.makeType()].concat(Object.values(this.services).map(service => service.makeType()));
     }
 
     parseRequest(msg, rinfo, cb) { // TODO promise?

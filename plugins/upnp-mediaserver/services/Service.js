@@ -85,8 +85,8 @@ class Service extends DeviceControlProtocol {
         let varName = /^(Get)?(\w+)$/.exec(action)[2];
         if(varName in this._stateVars) {
             let el = {};
-            el[elName] = this.stateVars[varName];
-            return this.buildSoapResponse(action, el);
+            el[elName] = this._stateVars[varName].value;
+            return this.buildSoapResponse(action, el, this.ns ? `xmlns:u="${this.ns}"` : '');
         } else {
             throw new SoapError(404);
         }

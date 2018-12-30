@@ -25,7 +25,7 @@ class ContentDirectory extends Service {
                 SystemUpdateID: {value: 0, evented: true},
                 ContainerUpdateIDs: {value: '', evented: true},
                 SearchCapabilities: {value: '', evented: true},
-                SortCapabilities: {values: '', evented: false}
+                SortCapabilities: {value: '', evented: false}
             },
             device,
             type: 'ContentDirectory',
@@ -44,11 +44,14 @@ class ContentDirectory extends Service {
                 GetSearchCapabilities: 'SearchCaps',
                 GetSortCapabilities: 'SortCaps',
                 GetSystemUpdateID: 'Id'
-            }
+            },
+            ns: 'urn:schemas-upnp-org:service:ContentDirectory:1'
         });
     }
 
     async actionHandler(action, options) {
+        console.debug("ContentDirectory received " + action);
+
         if (this.optionalActions.includes(action)) {
             return await this.optionalAction();
         }
