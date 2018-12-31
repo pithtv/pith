@@ -19,13 +19,13 @@
 
     <div class="collapse navbar-collapse" [class.show]="!navbarCollapsed">
       <div class="navbar-nav playback-controls">
-        <div class="nav-item" [hidden]="!(status && status.actions.pause)">
+        <div class="nav-item" [hidden]="!(status?.actions?.pause)">
           <a class="nav-link" (click)="pause()"><span class="oi oi-media-pause"></span></a>
         </div>
-        <div class="nav-item" [hidden]="!(status && status.actions.play)">
+        <div class="nav-item" [hidden]="!(status?.actions?.play)">
           <a class="nav-link" (click)="play()"><span class="oi oi-media-play"></span></a>
         </div>
-        <div class="nav-item" [hidden]="!(status && status.actions.stop)">
+        <div class="nav-item" [hidden]="!(status?.actions?.stop)">
           <a class="nav-link" (click)="stop()"><span class="oi oi-media-stop"></span></a>
         </div>
       </div>
