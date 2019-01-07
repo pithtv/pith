@@ -24,7 +24,7 @@ class ContentDirectory extends Service {
             _stateVars: {
                 SystemUpdateID: {value: 0, evented: true},
                 ContainerUpdateIDs: {value: '', evented: true},
-                SearchCapabilities: {value: '', evented: true},
+                SearchCapabilities: {value: '', evented: false},
                 SortCapabilities: {value: '', evented: false}
             },
             device,
