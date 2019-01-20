@@ -1,5 +1,7 @@
 //original selectors
 //.contentbrowser.poster .contentitem .itemtagline, .contentbrowser.poster .contentitem .itemoverview
+$minLargeScreenWidth: 900px;
+
 %extend_2 {
   display: block;
   font-size: 80%;
@@ -190,15 +192,23 @@
 
     .iteminfo {
       position: fixed;
-      top: 80px;
-      left: 16px;
-      right: 16px;
-      bottom: 16px;
-      max-height: calc(100vw * 0.68);
+
+      top: 60px;
+      left: 0;
+      right: 0;
+      bottom: 0;
+
+      @media(min-width: $minLargeScreenWidth) {
+        top: 80px;
+        left: 16px;
+        right: 16px;
+        bottom: 16px;
+        max-height: calc(100vw * 0.68);
+        box-shadow: 0 5px 25px rgba(0, 0, 0, 0.5);
+        border-radius: 10px;
+      }
       z-index: 10;
       background: white;
-      box-shadow: 0 5px 25px rgba(0, 0, 0, 0.5);
-      border-radius: 10px;
 
       font-weight: bold;
       overflow: hidden;
@@ -231,16 +241,22 @@
         display: flex;
         flex-direction: row;
         position: absolute;
-        top: 0;
+        top: 50px;
         left: 0;
         right: 0;
         bottom: 0;
+
+        @media(min-width: $minLargeScreenWidth) {
+          top: 0;
+        }
 
         .details,
         .episodeguide {
           flex: 1;
           position: relative;
-          margin: 20px 0 0 10px;
+          @media(min-width: $minLargeScreenWidth) {
+            margin: 20px 0 0 10px;
+          }
 
           display: flex;
           flex-direction: column;
@@ -405,7 +421,7 @@ ul.detailtabs {
   }
 }
 
-@media(max-width: 900px) {
+@media(max-width: $minLargeScreenWidth) {
   .bigthumb {
     display: none;
   }
