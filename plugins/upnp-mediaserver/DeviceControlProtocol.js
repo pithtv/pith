@@ -32,7 +32,7 @@ class DeviceControlProtocol extends EventEmitter {
     }
 
     makeNS(category, suffix = '') {
-        return `urn:${this.schema.domain}:${category || this.device ? 'service' : 'device'}-${this.schema.version.join('-')}${suffix}`;
+        return `urn:${this.schema.domain}:${category || (this.device ? 'service' : 'device')}-${this.schema.version.join('-')}${suffix}`;
     }
 
     makeType() {
