@@ -30,6 +30,9 @@ class CouchPotatoChannel extends Channel {
         this.url = parseUrl(url.endsWith("/") ? url : url + "/");
         this.pith = pith;
         this.apikey = apikey;
+
+        this.createEventListener();
+        this.listing = this.retrieveContents();
     }
 
     _get(url) {
@@ -42,12 +45,37 @@ class CouchPotatoChannel extends Channel {
     }
 
     listContents(containerId) {
+        return this.listing;
+    }
+
+    retrieveContents() {
+        console.log("Fetching couchpotato index");
         return this._get('movie.list').then(result => {
+            console.log("Processing couchpotato index");
             if(result.empty) {
                 return [];
             } else {
                 return result.movies.filter(movie => movie.releases.length > 0).map(movie => (this.mapMovie(movie)));
             }
+        }).then(result => {
+            console.log("Couchpotato index fetched and processed");
+            this.listing = Promise.resolve(result);
+        });
+    }
+
+    createEventListener() {
+        console.log("Listening for new couchpotato event");
+        this._get('nonblock/notification.listener').then(result => {
+            console.log("Couchpotato event listener returned", JSON.stringify(result.result));
+            let events = result.result;
+            if(events.find(e => e.type == 'renamer.after')) {
+                // "renamer.after" indicates movie download was completed, so refresh internal listing
+                this.retrieveContents();
+            }
+            this.createEventListener();
+        }).catch(e => {
+            console.log("Couchpotato event listener threw", JSON.stringify(e));
+            this.createEventListener();
         });
     }
 
@@ -153,12 +181,13 @@ class CouchPotatoChannel extends Channel {
 module.exports = {
     init(opts) {
         if(settings.couchpotato && settings.couchpotato.enabled && settings.couchpotato.url) {
+            let channel = new CouchPotatoChannel(opts.pith, settings.couchpotato.url, settings.couchpotato.apikey);
             opts.pith.registerChannel({
                 id: 'couchpotato',
                 title: 'CouchPotato',
                 type: 'channel',
                 init(opts) {
-                    return new CouchPotatoChannel(opts.pith, settings.couchpotato.url, settings.couchpotato.apikey);
+                    return channel;
                 }
             })
         };
