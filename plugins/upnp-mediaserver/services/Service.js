@@ -126,7 +126,7 @@ class Service extends DeviceControlProtocol {
     }
 
     buildEvent(vars) {
-        return `<?xml version="1.0"?>
+        return `<?xml version="1.0" encoding="UTF-8"?>
         <e:propertyset xmlns:e="${this.makeNS('event')}">
             <e:property>${toXml(vars)}</e:property>
         </e:propertyset>`;
@@ -148,7 +148,7 @@ class Service extends DeviceControlProtocol {
                 port: u.port,
                 method: 'NOTIFY',
                 path: u.pathname,
-                header: this.device.makeHeaders(headers),
+                headers: this.device.makeHeaders(headers),
                 agent: false
             };
             let req = http.request(options);
