@@ -300,16 +300,20 @@ module.exports = {
                 });
             }
         }
+
+        function handleDisappearance(data) {
+            if(players[data.USN]) {
+                players[data.USN].offline();
+                opts.pith.unregisterPlayer(players[data.USN]);
+                players[data.USN] = undefined;
+            }
+        }
+
         client.subscribe('urn:schemas-upnp-org:device:MediaRenderer:1')
             .on('response', handlePresence)
             .on('alive', handlePresence)
-            .on('byebye', (data, rinfo) => {
-                if(players[data.USN]) {
-                    players[data.USN].offline();
-                    opts.pith.unregisterPlayer(players[data.USN]);
-                    players[data.USN] = undefined;
-                }
-            });
+            .on('byebye', handleDisappearance)
+            .on('timeout', handleDisappearance);
     },
 
     handlePlayerAppearance(headers, rinfo, opts, cb) {
