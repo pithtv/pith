@@ -41,6 +41,10 @@ function upnpClassFromItem(item) {
     }
 }
 
+function cacheAndResize(sourceUrl, width, height, format) {
+    return `${Global.rootUrl}/scale/${encodeURIComponent(sourceUrl)}?size=${width}x${height}&format=${format}`;
+}
+
 class MediaServerDelegate {
     constructor(pith) {
         this.pith = pith;
@@ -127,13 +131,13 @@ class MediaServerDelegate {
             "upnp:albumArtURI": coverArt && [
                 {
                     _attribs: {"dlna:profileID": "JPEG_TN"},
-                    _value: `${Global.rootUrl}/scale/${coverArt}?size=160x160&format=jpg`
+                    _value: cacheAndResize(coverArt, 160, 160, 'jpg')
                 },{
                     _attribs: {"dlna:profileID": "JPEG_SM"},
-                    _value: `${Global.rootUrl}/scale/${coverArt}?size=640x480&format=jpg`
+                    _value: cacheAndResize(coverArt, 640, 480, 'jpg')
                 },{
                     _attribs: {"dlna:profileID": "JPEG_MED"},
-                    _value: `${Global.rootUrl}/scale/${coverArt}?size=1024x768&format=jpg`
+                    _value: cacheAndResize(coverArt, 1024, 768, 'jpg')
                 }
             ]
         };
