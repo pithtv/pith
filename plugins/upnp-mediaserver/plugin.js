@@ -45,6 +45,10 @@ function cacheAndResize(sourceUrl, width, height, format) {
     return `${Global.rootUrl}/scale/${encodeURIComponent(sourceUrl)}?size=${width}x${height}&format=${format}`;
 }
 
+function cache(sourceUrl) {
+    return `${Global.rootUrl}/scale/${encodeURIComponent(sourceUrl)}?size=original`;
+}
+
 class MediaServerDelegate {
     constructor(pith) {
         this.pith = pith;
@@ -94,11 +98,11 @@ class MediaServerDelegate {
                     protocolInfo: `http-get:*:${item.mimetype}:DLNA.ORG_OP=01;DLNA.ORG_CI=0`
                 },
                 item.poster ? {
-                    uri: entities.encodeXML(item.poster),
+                    uri: entities.encodeXML(cache(item.poster)),
                     protocolInfo: "xbmc.org:*:poster:*"
                 } : undefined,
                 item.backdrop ? {
-                    uri: entities.encodeXML(item.backdrop),
+                    uri: entities.encodeXML(cache(item.backdrop)),
                     protocolInfo: "xbmc.org:*:fanart:*"
                 } : undefined
             ]
@@ -124,9 +128,9 @@ class MediaServerDelegate {
             "upnp:playbackCount": (item.playState && item.playState.status == 'watched' ? 1 : 0),
             "upnp:lastPlaybackPosition": (item.playState && item.playState.time),
             "xbmc:artwork": [
-                item.backdrop ? {_attribs: {type: "fanart"}, _value: item.backdrop} : undefined,
-                item.poster ? {_attribs: {type: "poster"}, _value: item.poster} : undefined,
-                item.banner ? {_attribs: {type: "banner"}, _value: item.banner} : undefined
+                item.backdrop ? {_attribs: {type: "fanart"}, _value: cache(item.backdrop)} : undefined,
+                item.poster ? {_attribs: {type: "poster"}, _value: cache(item.poster)} : undefined,
+                item.banner ? {_attribs: {type: "banner"}, _value: cache(item.banner)} : undefined
             ],
             "upnp:albumArtURI": coverArt && [
                 {
