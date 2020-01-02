@@ -13,6 +13,15 @@ require("./lib/global")(function(err, Global) {
         console.log(err)
     });
 
+    // workaround
+    Object.defineProperty(http.IncomingMessage.prototype, "upgrade", {
+        get() {
+            return "connection" in this.headers && "upgrade" in this.headers && this.headers.connection.startsWith("Upgrade") && this.headers.upgrade.toLowerCase() == 'websocket';
+        },
+        set(v) {
+        }
+    });
+
     Global.OpenDatabase(
         function startup(err, db) {
             if(err) {
