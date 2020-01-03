@@ -1,81 +1,65 @@
-var metadata = require("./metadata.tmdb.js");
-var async = require("async");
-var winston = require("winston");
-var global = require("../../lib/global")();
-var Channel = require("../../lib/channel");
-var filenameparser = require("../../lib/filenameparser");
+const metadata = require("./metadata.tmdb.js");
+const async = require("../../lib/async");
+const winston = require("winston");
+const filenameparser = require("../../lib/filenameparser");
 
-module.exports = function(opts) {
-    var db = opts.db;
+module.exports = opts => {
+    const db = opts.db;
     return {
-        scan: function (channelInstance, dir, cb) {
-            "use strict";
-
-            function listContents(container, done) {
+        scan: (channelInstance, dir, cb) => {
+            async function listContents(container) {
                 if (container) {
-                    channelInstance.listContents(container && container.id).then(function(contents) {
-                        if (contents && contents.length) {
-                            async.eachSeries(contents, function (item, cb) {
-                                if (item.type == 'container') {
-                                    listContents(item, cb);
-                                } else if (item.playable && item.mimetype.match(/^video\//)) {
-                                    db.findMovieByOriginalId(dir.channelId, item.id, function (err, result) {
-                                        if(err) {
-                                          winston.error("Error processing " + container.id + " : " + item.id, err);
-                                          cb();
-                                        } else if (!result) {
-                                            winston.info("Found new item " + item.id);
+                    let contents = await channelInstance.listContents(container && container.id);
+                    if (contents && contents.length) {
+                        for(let item of contents) {
+                            if (item.type == 'container') {
+                                await listContents(item);
+                            } else if (item.playable && item.mimetype.match(/^video\//)) {
+                                let result = await async.wrap(cb => db.findMovieByOriginalId(dir.channelId, item.id, cb));
+                                if (!result) {
+                                    winston.info("Found new item " + item.id);
 
-                                            item.modificationTime = container.modificationTime;
-                                            item.creationTime = container.creationTime;
+                                    item.modificationTime = container.modificationTime;
+                                    item.creationTime = container.creationTime;
 
-                                            var store = function(result) {
-                                                winston.info(result.title, result.year);
-                                                result.originalId = item.id;
-                                                result.channelId = dir.channelId;
-                                                result.id = item.id;
-                                                result.dateScanned = new Date();
-                                                db.storeMovie(result, function (err) {
-                                                    cb();
-                                                });
-                                            }
+                                    const store = async result => {
+                                        winston.info(result.title, result.year);
+                                        result.originalId = item.id;
+                                        result.channelId = dir.channelId;
+                                        result.id = item.id;
+                                        result.dateScanned = new Date();
+                                        await async.wrap(f => db.storeMovie(result, f));
+                                    };
 
-                                            metadata(item, 'movie', function (err, result) {
-                                                if (err) {
-                                                    var md = filenameparser(container.title, 'movie');
-                                                    if(md) {
-                                                        item.title = md.title;
-                                                        item.year = md.year;
-                                                    } else {
-                                                        item.title = container.title;
-                                                    }
-                                                    metadata(item, 'movie', function (err, result) {
-                                                        if (err) {
-                                                            cb();
-                                                        }
-                                                        else store(result);
-                                                    });
-                                                } else {
-                                                    store(result);
-                                                }
-                                            });
+                                    try {
+                                        item = await async.wrap(cb => metadata(item, 'movie', cb));
+                                        await store(item);
+                                    } catch(e) {
+                                        const md = filenameparser(container.title, 'movie');
+                                        if (md) {
+                                            item.title = md.title;
+                                            item.year = md.year;
                                         } else {
-                                            cb();
+                                            item.title = container.title;
                                         }
-                                    });
-                                } else {
-                                    cb();
+                                        try {
+                                            item = await async.wrap(cb => metadata(item, 'movie', cb));
+                                            await store(item);
+                                        } catch(e) {
+                                            winston.warn(`Fetching metadata failed`, e);
+                                        }
+                                    }
                                 }
-                            }, done);
-                        } else {
-                            done();
+                            }
                         }
-                    }).catch(err => done(err));
+                    } else {
+                        done();
+                    }
                 }
             }
 
-            channelInstance.getItem(dir.containerId).then(function(container) {
-                listContents(container, cb);
+            channelInstance.getItem(dir.containerId).then(container => {
+                listContents(container).then(result => cb(false, result)).catch(cb);
             });
         }
     }

@@ -52,20 +52,19 @@ class FilesChannel extends Channel {
 
             const filesChannel = this;
 
-            fs.readdir(path, function(err, files) {
-                if(err) {
+            fs.readdir(path, function (err, files) {
+                if (err) {
                     cb(err);
                 } else {
-                    async.map(files.filter(function(e) {
-                        return (e[0] != "." || settings.files.showHiddenFiles) && settings.files.excludeExtensions.indexOf($path.extname(e)) == -1;
-                    }), function(file, cb) {
+                    const filteredFiles = files.filter(e => (e[0] != "." || settings.files.showHiddenFiles) && settings.files.excludeExtensions.indexOf($path.extname(e)) == -1);
+                    Promise.all(filteredFiles.map(file => {
                         const filepath = $path.resolve(path, file);
                         const itemId = $path.relative(rootDir, filepath);
-                        filesChannel.getItem(itemId, false).then(function(item) {
-                            cb(false, item);
-                        }).catch(cb);
-                    }, function(err, contents) {
-                        cb(err, contents.filter(function(e) { return e !== undefined; }));
+                        return filesChannel.getItem(itemId, false);
+                    })).then(items => {
+                        cb(false, items.filter(e => e !== undefined))
+                    }).catch(err => {
+                        cb(err);
                     });
                 }
             });
@@ -78,19 +77,19 @@ class FilesChannel extends Channel {
 
     getItem(itemId, detailed) {
         return new Promise((resolve, reject) => {
-            if(detailed === undefined) {
+            if (detailed === undefined) {
                 detailed = true;
             }
 
             const filepath = $path.resolve(this.rootDir, itemId);
             const channel = this;
-            fs.stat(filepath, function(err, stats) {
+            fs.stat(filepath, function (err, stats) {
                 const item = {
                     title: $path.basename(itemId),
                     id: itemId
                 };
 
-                if(stats && stats.isDirectory()) {
+                if (stats && stats.isDirectory()) {
                     item.type = 'container';
                     item.preferredView = "still";
                 } else {
@@ -109,12 +108,12 @@ class FilesChannel extends Channel {
                     return f.appliesTo(channel, filepath, item);
                 });
 
-                if(applicableProviders.length) {
-                    async.parallel(applicableProviders.map(function(f) {
-                        return function(cb) {
+                if (applicableProviders.length) {
+                    async.parallel(applicableProviders.map(function (f) {
+                        return function (cb) {
                             f.get(channel, filepath, item, cb);
                         };
-                    }), function() {
+                    }), function () {
                         resolve(item);
                     });
                 } else {
@@ -130,7 +129,7 @@ class FilesChannel extends Channel {
             const itemId = item.id;
             const itemPath = itemId.split($path.sep).map(encodeURIComponent).join("/");
             ff.ffprobe(this.getFile(item.id), (err, metadata) => {
-                if(err) {
+                if (err) {
                     reject(err);
                 } else {
                     let duration = parseFloat(metadata.format.duration) * 1000;
@@ -153,11 +152,11 @@ class FilesChannel extends Channel {
                         duration: duration
                     };
 
-                    if(options && options.target) {
+                    if (options && options.target) {
                         desc.streams = options.target.split(",").map((profileName) => {
                             let profile = profiles[profileName];
                             let url = `${baseUrl}?transcode=${profileName}`;
-                            if(profile.requiresPlaylist) {
+                            if (profile.requiresPlaylist) {
                                 url += `&playlist=${profile.requiresPlaylist}`;
                             }
 
@@ -170,7 +169,7 @@ class FilesChannel extends Channel {
                         });
                     }
 
-                    if(options && options.includeKeyFrames) {
+                    if (options && options.includeKeyFrames) {
                         keyframes(this.getFile(item.id), metadata).then(frames => {
                             desc.keyframes = frames;
                             resolve(desc);
@@ -199,15 +198,15 @@ class FilesChannel extends Channel {
             state.id = itemId;
             this.statestore.put(state);
             return Promise.resolve();
-        } catch(e) {
+        } catch (e) {
             return Promise.reject(e);
         }
     }
 
     resolveFile(file) {
-        if(file.startsWith(this.rootDir)) {
+        if (file.startsWith(this.rootDir)) {
             let relative = file.substring(this.rootDir.length);
-            if(relative.startsWith('/')) {
+            if (relative.startsWith('/')) {
                 relative = relative.substring(1);
             }
             return this.getItem(relative);
@@ -218,13 +217,13 @@ class FilesChannel extends Channel {
 }
 
 module.exports = {
-    init: function(opts) {
-        playstate(opts.pith.db, function(err, statestore) {
+    init: function (opts) {
+        playstate(opts.pith.db, function (err, statestore) {
             opts.pith.registerChannel({
                 id: 'files',
                 title: 'Files',
                 type: 'channel',
-                init: function(opts) {
+                init: function (opts) {
                     return new FilesChannel(opts.pith, statestore);
                 },
                 sequence: 0
