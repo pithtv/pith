@@ -12,6 +12,15 @@ require("./lib/global")(function(err, Global) {
         console.log(err)
     });
 
+    // workaround
+    Object.defineProperty(http.IncomingMessage.prototype, "upgrade", {
+        get() {
+            return "connection" in this.headers && "upgrade" in this.headers && this.headers.connection.startsWith("Upgrade") && this.headers.upgrade.toLowerCase() == 'websocket';
+        },
+        set(v) {
+        }
+    });
+
     Global.OpenDatabase(
         function startup(err, db) {
             if(err) {
@@ -38,11 +47,8 @@ require("./lib/global")(function(err, Global) {
 
             app.use(pithPath, pithApp.handle);
             app.use(Global.settings.apiContext, rest(pithApp));
-            app.use(Global.settings.webUiContext, express.static("webui"));
+            app.use("/webui", express.static("webui/dist"));
             app.use("/scale", scaler.handle);
-            app.get("/", function(req, res) {
-                res.redirect(Global.settings.webUiContext);
-            });
 
             // exclude all private members in JSON messages (those starting with underscore)
             function jsonReplacer(k,v) {
@@ -55,6 +61,7 @@ require("./lib/global")(function(err, Global) {
             var server = new http.Server(app);
 
             server.listen(port, serverAddress);
+            server.listen(port);
 
             var wss = new ws.Server({server: server});
 
@@ -87,6 +94,10 @@ require("./lib/global")(function(err, Global) {
                     });
                 });
             });
+
+            app.use((req, res, next) => {
+                res.redirect('/webui/');
+            })
         }
     );
 });

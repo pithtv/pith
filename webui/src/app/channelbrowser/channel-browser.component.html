@@ -1,0 +1,52 @@
+<div class="row mx-0 pl-3 mb-2">
+  <ul class="col breadcrumb align-self-center mb-0 p-2">
+    <li class="breadcrumb-item"><a (click)="goToChannelRoot()" tabindex="0">{{channel?.title}}</a></li>
+    <li *ngFor="let pathItem of currentPath" class="breadcrumb-item"><a (click)="goBack(pathItem)" tabindex="1">{{pathItem.title}}</a></li>
+  </ul>
+
+  <div class="btn-group btn-group-sm viewselector" data-toggle="buttons" *ngIf="itemDetails?.sortableFields?.length">
+    <div class="dropdown" ngbDropdown>
+      <a class="btn dropdown-toggle" ngbDropdownToggle><i class="oi oi-sort-ascending"></i></a>
+      <ul class="dropdown-menu" role="menu" ngbDropdownMenu>
+        <li *ngFor="let sortField of itemDetails.sortableFields" class="dropdown-item"><a (click)="sort(sortField)">{{fieldDescriptions[sortField]}}</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="col-md-3 align-self-center input-group">
+    <input type="text" [(ngModel)]="searchString" role="search" placeholder="Search" class="form-control"/>
+    <span class="input-group-append"><span class="input-group-text"><span class="oi oi-magnifying-glass"></span></span></span>
+  </div>
+</div>
+
+<ul class="contentbrowser poster px-3" #container infiniteScroll [infiniteScrollDistance]="2" [infiniteScrollThrottle]="50" (scrolled)="loadMore()">
+  <li class="contentitem"
+      *ngFor="let item of filteredContents | slice:0:limit; index as idx"
+      [class.withthumb]="item.poster || item.still"
+      [class.withposter]="item.poster"
+      [class.withstill]="item.still"
+      [class.withinfo]="item.tagline || item.rating || (item.genres?.length) || item.plot || item.overview"
+      [class.watched]="item.playState?.status == 'watched'"
+      [class.inprogress]="item.playState?.status == 'inprogress'"
+      [class.hasnew]="item.hasNew"
+      [class.unavailable]="item.unavailable"
+      [class.showdetails]="showDetailsId == item.id"
+      [id]="item.id"
+  >
+
+    <a class="thumbnail" (click)="(item.type == 'container' && item.mediatype!='show') ? open(item) : toggle(item, idx)">
+      <div *ngIf="item.poster || item.still" class="th"
+           [style.background-image]="'url(' + ((item.poster | prescale:(showDetailsId == item.id ? '300x450' : '100x150')) || (item.still | prescale:'266x150'))+ ')'">
+      </div>
+      <span class="contextinfo"><span class="title" *ngIf="item.title">{{item.title}}</span><span
+        class="itemshowname" *ngIf="item.showname && item.showname != itemDetails.showname">{{item.showname}}</span><span
+        class="itemseason"   *ngIf="item.season && (item.showname !== itemDetails.showname || item.season !== itemDetails.season)">{{item.season}}</span><span
+        class="itemepisode"  *ngIf="item.episode">{{item.episode}}</span></span>
+    </a>
+    <div class="iteminfo" *ngIf="showDetailsId == item.id" @enterAnimation>
+      <a class="closebtn" (click)="toggle(null)"><svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewbox="0 0 150 150" width="30px" height="30px"><use xlink:href="#close"></use></svg></a>
+      <channel-details *ngIf="item.type != 'container'" [item]="item" [channel]="channel"></channel-details>
+      <channel-tv-details *ngIf="item.mediatype == 'show'" [item]="item" [channel]="channel"></channel-tv-details>
+    </div>
+  </li>
+</ul>

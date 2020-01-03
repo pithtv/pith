@@ -1,0 +1,96 @@
+@-webkit-keyframes rotation {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loading #path2997 {
+  -webkit-animation: rotation 1.5s linear infinite;
+  transform-origin: 38% 50%;
+  transition: 0.5s;
+}
+
+.stars[data-starrating] {
+  display: inline-block;
+  width: 80px;
+  height: 16px;
+  background-image: url(assets/img/staroutline.png);
+  background-size: 16px 16px;
+  position: relative;
+  color: rgba(0,0,0,0);
+  font-size: 0;
+}
+
+
+.stars:after {
+  background-image: url(assets/img/star.png);
+  background-size: 16px;
+  position: absolute;
+  display: block;
+  content: '.';
+  height: 100%;
+  top: 0px;
+}
+
+.stars[data-starrating^="0"]:after {
+  width: 0%;
+}
+.stars[data-starrating^="1"]:after {
+  width: 10%;
+}
+.stars[data-starrating^="2"]:after {
+  width: 20%;
+}
+.stars[data-starrating^="3"]:after {
+  width: 30%;
+}
+.stars[data-starrating^="4"]:after {
+  width: 40%;
+}
+.stars[data-starrating^="5"]:after {
+  width: 50%;
+}
+.stars[data-starrating^="6"]:after {
+  width: 60%;
+}
+.stars[data-starrating^="7"]:after {
+  width: 70%;
+}
+.stars[data-starrating^="8"]:after {
+  width: 80%;
+}
+.stars[data-starrating^="9"]:after {
+  width: 90%;
+}
+.stars[data-starrating="100"]:after {
+  width: 100%;
+}
+
+a.link-imdb {
+  height: 2ex;
+  width:3ex;
+  background: url(assets/img/imdb.png);
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center 0.5ex;
+  display: inline-block;
+}
+
+.ng-invalid {
+  @extend .is-invalid;
+}
+
+.container-fullwidth {
+  max-width: calc(100vw - 15px);
+}
+
+.navbar-nav.playback-controls {
+  flex-direction: row;
+  -webkit-box-orient: horizontal;
+  .nav-link {
+    padding: 0 0.5rem;
+  }
+}

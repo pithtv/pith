@@ -1,0 +1,48 @@
+//colors
+$color_pumice_approx: rgb(200,200,200);
+
+.contentbrowser.list {
+  list-style: none;
+  padding: 0;
+  .contentitem {
+    list-style: none;
+    padding: 10px;
+    font-size: 90%;
+    height: 130px;
+    overflow: hidden;
+    width: 100%;
+    border-bottom: 1px solid $color_pumice_approx;
+    .itemplot {
+      padding-top: 7px;
+      overflow: auto;
+      font-size: 90%;
+    }
+    .th {
+      position: relative;
+      width: 73px;
+      height: 110px;
+      float: left;
+      margin-right: 15px;
+    }
+    > .iteminfo {
+      > span {
+        display: block;
+      }
+      > .itemtagline {
+        display: none;
+      }
+    }
+    &.withthumb > .iteminfo > span {
+      margin-left: 88px;
+    }
+  }
+  .actions {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    font-size: 20px;
+  }
+  .stillimg {
+    display: none;
+  }
+}

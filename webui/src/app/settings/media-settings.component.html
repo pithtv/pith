@@ -1,0 +1,22 @@
+<div class="card my-3">
+  <div class="card-header">
+    General settings
+  </div>
+  <div class="card-body">
+    <div class="form-group">
+      <label for="rootDir">Media root directory</label>
+      <input [(ngModel)]="settings.files.rootDir" class="form-control" required name="rootDir" id="rootDir"/>
+    </div>
+    <div class="alert alert-danger alert-sm">
+      Changing this path will invalidate all file folders in your media folders. Be sure to remove any invalid folders
+      and clean the library if you change this value.
+    </div>
+
+    <div class="form-group">
+      <label for="scanInterval">Scan for new library items every (minutes):</label>
+      <input type="number" [ngModel]="settings.library.scanInterval / 60000" (ngModelChange)="settings.library.scanInterval = $event * 60000" class="form-control" required min="1" name="scanInterval" id="scanInterval"/>
+    </div>
+  </div>
+</div>
+
+<library-category-settings [settings]="settings"></library-category-settings>

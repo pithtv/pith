@@ -3,7 +3,7 @@ var $path = require("path");
 
 module.exports = {
     appliesTo: function(channel, filepath, item) {
-        return item.type == 'item';
+        return item.type == 'file';
     },
     get: function findThumbnails(channel, filepath, item, cb) {
         var tbnFile = filepath.replace(/\.[^.\/]*$/, ".tbn");
@@ -11,7 +11,7 @@ module.exports = {
             if(exists) {
                 var path = channel.rootDir;
                 var matchRootDir = new RegExp("^" + path);
-                var itemPath = tbnFile.replace(matchRootDir, '').split(path.sep).map(encodeURIComponent).join("/");
+                var itemPath = tbnFile.replace(matchRootDir, '').split($path.sep).map(encodeURIComponent).join("/");
                 item.thumbnail = channel.pith.rootPath + "/stream/" + itemPath;
                 cb();
             } else {
@@ -20,12 +20,12 @@ module.exports = {
                    if(exists) {
                        var path = channel.rootDir;
                        var matchRootDir = new RegExp("^" + path);
-                       var itemPath = tbnFile.replace(matchRootDir, '').split("/").map(encodeURIComponent).join("/");
+                       var itemPath = tbnFile.replace(matchRootDir, '').split($path.sep).map(encodeURIComponent).join("/");
                        item.thumbnail = channel.pith.rootPath + "/stream/" + itemPath;
-                       cb();
-                   } else {
-                       cb();
+                   } else if(item.mimetype && item.mimetype.startsWith("video")) {
+                       item.still = channel.pith.rootPath + "/preview/" + item.id.split($path.sep).map(encodeURIComponent).join("/") + "/0:10:00.jpg";
                    }
+                   cb();
                 });
             }
         });

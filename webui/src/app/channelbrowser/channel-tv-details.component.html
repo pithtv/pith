@@ -1,0 +1,31 @@
+<img *ngIf="item.poster || item.still"
+     [src]="((item.poster || item.still) | prescale:'680x1000')" class="bigthumb"/>
+<div class="episodeguide">
+  <ul class="detailtabs seasons">
+    <li *ngFor="let season of item.seasons" (click)="selectSeason(season)"
+        [class.selected]="selectedSeason == season"
+        [class.inprogress]="season.playState.status == 'inprogress'"
+        [class.watched]="season.playState.status == 'watched'">{{ season.season == 0 ? 'Specials' : season.season }}</li>
+  </ul>
+  <ul class="seasondetails scrollnative">
+    <li *ngFor="let episode of episodes"
+        [class.watched]="episode.playState && episode.playState.status == 'watched'"
+        [class.inprogress]="episode.playState && episode.playState.status == 'inprogress'"
+        [class.unavailable]="episode.unavailable">
+      <div [style.background-image]="episode.still && 'url(' + (episode.still | prescale:'266x150')+ ')'"
+           [class.still]="true"
+           [class.imagemissing]="!episode.still">
+      </div>
+      <a (click)="togglePlayState(episode)" class="action-markwatched" title="Mark watched" *ngIf="episode.playable">
+        <svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewbox="0 0 100 100" width="24px" height="20px"><use [attr.xlink:href]="'#' + (episode.playState && episode.playState.status || 'none')" transform="scale(0.17)"></use></svg>
+      </a>
+      <span class="episode-no">{{ episode.episode }}</span>
+      <span class="episode-title">{{ episode.title }}</span>
+      <span class="episode-airdate">{{ episode.airDate | date }}</span>
+      <span class="episode-actions">
+        <a (click)="load(episode)" class="action-play" title="Play" *ngIf="episode.playable"></a>
+      </span>
+      <span class="episode-synopsis">{{ episode.overview }}</span>
+    </li>
+  </ul>
+</div>

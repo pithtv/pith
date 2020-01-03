@@ -136,9 +136,9 @@ module.exports = function(opts) {
 
             function scan(container, done) {
                 if(container) {
-                    channelInstance.listContents(container.id, function(err, contents) {
-                        if(err || !contents) {
-                            done(err);
+                    channelInstance.listContents(container.id).then(function(contents) {
+                        if(!contents) {
+                            done();
                             return;
                         }
 
@@ -173,14 +173,13 @@ module.exports = function(opts) {
                                 cb();
                             }
                         }, done);
-                    })
+                    }).catch(err => done(err));
                 }
             }
 
-            channelInstance.getItem(dir.containerId, function (err, container) {
-            if(err) { cb(err); return; }
+            channelInstance.getItem(dir.containerId).then(function(container) {
                 scan(container, cb);
-            });
+            }).catch(cb);
         },
 
         updateAll: function(cb) {

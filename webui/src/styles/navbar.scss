@@ -1,0 +1,87 @@
+$navbar-clear-color: black;
+$navbar-clear-bg: rgba(245,245,245,0.9);
+
+body {
+  padding-top: 70px;
+}
+
+.navbar.navbar-clear {
+  background-color: $navbar-clear-bg;
+
+  .navbar-text {
+    color: $navbar-clear-color;
+  }
+}
+
+.navbar-brand {
+  .pith-logo {
+    transform: translateY(5px);
+  }
+}
+
+.navbar-box {
+  display: flex !important;
+  display: -webkit-box !important;
+  display: -moz-box !important;
+  -webkit-box-orient: horizontal;
+  -ms-box-orient: horizontal;
+  -moz-box-orient: horizontal;
+  padding-right: 5px;
+}
+
+.navbar-box > .navbar-nav {
+  float: none;
+}
+
+.navbar-flex {
+  -webkit-box-flex: 1;
+  -moz-box-flex: 1;
+  -ms-box-flex: 1;
+  flex: 1;
+}
+
+.nav-link {
+  cursor: pointer;
+}
+
+.player-box {
+  margin: 0 35px;
+  color: $navbar-clear-color;
+
+  .playback-info {
+    .playback-title {
+      display: block;
+      font-weight: bold;
+      text-align: center;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+
+    .playback-bar {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+
+      .playback-time, .playback-runtime {
+        display: inline-block;
+        width: 40px;
+        font-size: 10px;
+      }
+
+      .playback-runtime {
+        text-align: right;
+      }
+
+      .playback-time {
+      }
+
+      scrubber {
+        flex: 1;
+      }
+
+      .progress {
+        height: 10px;
+      }
+    }
+  }
+}

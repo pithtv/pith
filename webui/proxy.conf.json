@@ -1,0 +1,15 @@
+{
+  "/events": {
+    "target": "ws://localhost:3333",
+    "ws": true,
+    "secure": false
+  },
+  "/rest": {
+    "target": "http://localhost:3333",
+    "secure": false
+  },
+  "/scale": {
+    "target": "http://localhost:3333",
+    "secure": false
+  }
+}

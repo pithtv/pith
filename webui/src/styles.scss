@@ -1,0 +1,22 @@
+/* You can add global styles to this file, and also import other style files */
+
+$icon-font-path: '~bootstrap-sass/assets/fonts/bootstrap/';
+
+@import '~bootstrap/scss/bootstrap';
+
+$icon-font-path: '~open-iconic/font/fonts/';
+
+@import '~open-iconic/font/css/open-iconic-bootstrap';
+
+.pith-logo > svg {
+  width: 37px;
+  height: 37px;
+}
+
+@import "styles/common";
+@import "styles/list";
+@import "styles/poster";
+@import "styles/still";
+@import "styles/navbar";
+@import "styles/styles";
+@import "styles/video";

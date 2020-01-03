@@ -1,4 +1,4 @@
-"use strict";
+const async = require("../../lib/async");
 
 function mapMovie(e) {
     e.movieId = e.id;
@@ -6,37 +6,31 @@ function mapMovie(e) {
     return e;
 }
 
-module.exports = function(plugin) {
+module.exports = function (plugin) {
     var db = plugin.db;
     return [
         {
             id: "movies",
             title: "All movies",
             type: "container",
-            _getContents: function(containerId, cb) {
-                if(containerId == null) {
-                    db.findMovies({}, function (err, result) {
-                        cb(err, result.map(mapMovie));
-                    });
+            async _getContents(containerId) {
+                if (containerId == null) {
+                    let result = await async.wrap(cb => db.findMovies({}, cb));
+                    return result.map(mapMovie);
                 } else {
-                    cb(null, []);
+                    return [];
                 }
             },
-            _getItem: function(itemId, cb) {
-                if(itemId === null) {
-                    cb(null, {id: 'movies', title: 'All Movies'});
+            async _getItem(itemId) {
+                if (itemId === null) {
+                    return {id: 'movies', title: 'All Movies'};
                 } else {
-                    db.findMovies({id: itemId}, function (err, result) {
-                        if (err) {
-                            cb(err);
-                        } else {
-                            if (result[0]) {
-                                cb(null, mapMovie(result[0]));
-                            } else {
-                                cb(null, undefined);
-                            }
-                        }
-                    });
+                    let result = await async.wrap(cb => db.findMovies({id: itemId}, cb));
+                    if (result[0]) {
+                        return mapMovie(result[0]);
+                    } else {
+                        return {};
+                    }
                 }
             }
         },
@@ -44,25 +38,17 @@ module.exports = function(plugin) {
             id: "actors",
             title: "By actor",
             type: "container",
-            _getContents: function(containerId, cb) {
-                if(containerId) {
-                    db.findMovies({actorIds: containerId}, function(err, result){
-                        cb(err, result.map(mapMovie));
-                    });
+            async _getContents(containerId) {
+                if (containerId) {
+                    let result = await async.wrap(cb => db.findMovies({actorIds: containerId}, cb));
+                    return result.map(mapMovie);
                 } else {
-                    db.getActors(function(err, result) {
-                        if(err) {
-                            cb(err);
-                        } else {
-                            cb(null, result.map(function(e) {
-                                return {
-                                    id: "actors/" + e._id,
-                                    title: e.name,
-                                    type: "container"
-                                };
-                            }));
-                        }
-                    });
+                    let result = await async.wrap(cb => db.getActors(cb));
+                    return result.map(e => ({
+                        id: "actors/" + e._id,
+                        title: e.name,
+                        type: "container"
+                    }));
                 }
             }
         },
@@ -70,25 +56,17 @@ module.exports = function(plugin) {
             id: "directors",
             title: "By director",
             type: "container",
-            _getContents: function(containerId, cb) {
-                if(containerId) {
-                    db.findMovies({directorIds: containerId}, function(err, result){
-                        cb(err, result.map(mapMovie));
-                    });
+            async _getContents(containerId) {
+                if (containerId) {
+                    let result = await async.wrap(cb => db.findMovies({directorIds: containerId}, cb));
+                    return result.map(mapMovie);
                 } else {
-                    db.getDirectors(function(err, result) {
-                        if(err) {
-                            cb(err);
-                        } else {
-                            cb(null, result.map(function(e) {
-                                return {
-                                    id: "directors/" + e._id,
-                                    title: e.name,
-                                    type: "container"
-                                };
-                            }));
-                        }
-                    });
+                    let result = await async.wrap(cb => db.getDirectors(cb));
+                    return result.map(e => ({
+                        id: "directors/" + e._id,
+                        title: e.name,
+                        type: "container"
+                    }));
                 }
             }
         },
@@ -96,25 +74,17 @@ module.exports = function(plugin) {
             id: "writers",
             title: "By writer",
             type: "container",
-            _getContents: function(containerId, cb) {
-                if(containerId) {
-                    db.findMovies({writerIds: containerId}, function(err, result){
-                        cb(err, result.map(mapMovie));
-                    });
+            async _getContents(containerId) {
+                if (containerId) {
+                    let result = await async.wrap(cb => db.findMovies({writerIds: containerId}, cb));
+                    return result.map(mapMovie);
                 } else {
-                    db.getWriters(function(err, result) {
-                        if(err) {
-                            cb(err);
-                        } else {
-                            cb(null, result.map(function(e) {
-                                return {
-                                    id: "writers/" + e._id,
-                                    title: e.name,
-                                    type: "container"
-                                };
-                            }));
-                        }
-                    });
+                    let result = await async.wrap(cb => db.getWriters(cb));
+                    return result.map(e => ({
+                        id: "writers/" + e._id,
+                        title: e.name,
+                        type: "container"
+                    }));
                 }
             }
         },
@@ -122,25 +92,17 @@ module.exports = function(plugin) {
             id: "keywords",
             title: "By keyword",
             type: "container",
-            _getContents: function(containerId, cb) {
-                if(containerId) {
-                    db.findMovies({keywordIds: containerId}, function(err, result) {
-                        cb(err, result.map(mapMovie));
-                    });
+            async _getContents(containerId) {
+                if (containerId) {
+                    let result = await async.wrap(cb => db.findMovies({keywordIds: containerId}, cb));
+                    return result.map(mapMovie);
                 } else {
-                    db.getKeywords(function(err, result) {
-                        if(err) {
-                            cb(err);
-                        } else {
-                            cb(null, result.map(function(e) {
-                                return {
-                                    id: "keywords/" + e._id,
-                                    title: e.name,
-                                    type: "container"
-                                };
-                            }));
-                        }
-                    });
+                    let result = await async.wrap(cb => db.getKeywords(cb));
+                    return result.map(e => ({
+                        id: "keywords/" + e._id,
+                        title: e.name,
+                        type: "container"
+                    }));
                 }
             }
         },
@@ -148,25 +110,17 @@ module.exports = function(plugin) {
             id: "genres",
             title: "By genre",
             type: "container",
-            _getContents: function(containerId, cb) {
-                if(containerId) {
-                    db.findMovies({genreIds: containerId}, function(err, result) {
-                        cb(err, result.map(mapMovie));
-                    });
+            async _getContents(containerId) {
+                if (containerId) {
+                    let result = await async.wrap(cb => db.findMovies({genreIds: containerId}, cb));
+                    return result.map(mapMovie);
                 } else {
-                    db.getGenres(function(err, result) {
-                        if(err) {
-                            cb(err);
-                        } else {
-                            cb(null, result.map(function(e) {
-                                return {
-                                    id: "genre/" + e._id,
-                                    title: e.name,
-                                    type: "container"
-                                };
-                            }));
-                        }
-                    });
+                    let result = await async.wrap(cb => db.getGenres(cb));
+                    return result.map(e => ({
+                        id: "genres/" + e._id,
+                        title: e.name,
+                        type: "container"
+                    }));
                 }
             }
         },
@@ -176,10 +130,9 @@ module.exports = function(plugin) {
             description: "Movies added in the past 14 days",
             visible: true,
             type: "container",
-            _getContents: function(containerId, cb) {
-                db.findMovies({dateScanned: {$gt: new Date(new Date() - 14*24*60*60*1000)}}, {order: {dateScanned: -1}}, function(err, result) {
-                    cb(err, result.map(mapMovie));
-                });
+            async _getContents(containerId, cb) {
+                let result = await async.wrap(cb => db.findMovies({dateScanned: {$gt: new Date(new Date() - 14 * 24 * 60 * 60 * 1000)}}, {order: {dateScanned: -1}}, cb));
+                return result.map(mapMovie);
             }
         },
         {
@@ -188,10 +141,9 @@ module.exports = function(plugin) {
             description: "Most recently released movies",
             visible: true,
             type: "container",
-            _getContents: function(containerId, cb) {
-                db.findMovies({}, {order: {releaseDate: -1}, limit: 50}, function(err, result) {
-                    cb(err, result.map(mapMovie));
-                });
+            async _getContents(containerId, cb) {
+                let result = await async.wrap(cb => db.findMovies({}, {order: {releaseDate: -1}, limit: 50}, cb));
+                return result.map(mapMovie);
             }
         }
     ];

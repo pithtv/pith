@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+  <title>Pith Media Server</title>
+
+  <link rel="apple-touch-icon" sizes="152x152" href="assets/static/pith.png">
+
+  <base href="/">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1976d2">
+</head>
+<body>
+  <svg style="display: none" xmlns="http://www.w3.org/2000/svg" version="1.1">
+    <polygon id="close" points="4,0 0,4 11,15 0,26 4,30 15,19
+                     26,30 30,26 19,15 30,4 26,0 15,11 4,0" style="stroke:black; stroke-width: 1px; fill: white" />
+    <g id="inprogress">
+      <circle cx="50" cy="50" r="50" fill="black"/>
+      <path d="M50,10 A1,1 0 0,1 50,90" fill="white"/>
+    </g>
+    <g id="none">
+      <circle cx="50" cy="50" r="50" fill="black" />
+      <circle cx="50" cy="50" r="40" fill="white" />
+    </g>
+    <g id="watched">
+      <circle cx="50" cy="50" r="50" fill="black" />
+    </g>
+  </svg>
+  <app-root></app-root>
+  <noscript>Please enable JavaScript to continue using this application.</noscript>
+</body>
+</html>

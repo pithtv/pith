@@ -1,0 +1,32 @@
+<div class="card my-3">
+  <div class="card-header border-bottom-0">Library folders
+  </div>
+  <ul class="list-group list-group-flush">
+    <li class="list-group-item" *ngFor="let folder of settings.library.folders" [class.has-error]="!folder.contains">
+      <div class="custom-control custom-checkbox custom-control-inline">
+        <label class="form-check-label"><input class="form-check-input" type="checkbox" [(ngModel)]="folder.scanAutomatically" title="Enable scanning"/> {{folder.containerId}}</label>
+      </div>
+        <i>contains</i>
+      <div class="custom-control custom-control-inline">
+        <select class="form-control" [(ngModel)]="folder.contains" required>
+          <option value="movies">Movies</option>
+          <option value="tvshows">TV Shows</option>
+          <option value="music">Music</option>
+        </select>
+      </div>
+        <a class="float-right" (click)="removeLibraryContainer(folder)" title="Remove folder"><span
+            class="oi oi-trash"></span></a>
+    </li>
+  </ul>
+  <div class="card-footer border-top-0">
+    <a (click)="addLibraryContainer()" tabindex="0"><i class="oi oi-plus"></i> Add folder</a>
+  </div>
+</div>
+
+<ng-template #confirmDelete let-ok="close" let-cancel="dismiss">
+  <div class="modal-body modal-body-lg">Are you sure you want to remove folder {{title}} from the library? This will not remove the library items; you'll need to perform a database clean to remove those.</div>
+  <div class="modal-footer modal-footer-btn">
+    <button type="button" (click)="ok()" class="btn btn-danger">Yes</button>
+    <button type="button" (click)="cancel()" class="btn btn-primary">Cancel</button>
+  </div>
+</ng-template>

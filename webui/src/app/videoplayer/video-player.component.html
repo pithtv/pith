@@ -1,0 +1,10 @@
+<div class="video-player" #container [hidden]="!stream">
+  <video #video [src]="url || ''" autoplay="true"></video>
+  <a (click)="unload()" class="video-control-close">&times;</a>
+  <div class="video-controls">
+    <a class="video-control-play oi oi-media-play" (click)="play()"></a>
+    <a class="video-control-pause oi oi-media-pause" (click)="pause()"></a>
+    <scrubber [value]="currentTime" [max]="stream?.duration" (valueChanged)="seekTo($event)"></scrubber>
+    <a class="video-control-fullscreen oi oi-fullscreen-enter" (click)="fullscreen()"></a>
+  </div>
+</div>

@@ -9,8 +9,8 @@ module.exports = {
         var tbnFile = $path.resolve(filepath, "fanart.jpg");
         fs.exists(tbnFile, function(exists) {
             if(exists) {
-                var itemPath = $path.relative(channel.rootDir, item.id).split($path.sep).map(encodeURIComponent).join("/");
-                item.fanart = channel.pith.rootPath + "/stream/" + itemPath;
+                var itemPath = $path.relative(channel.rootDir, tbnFile).split($path.sep).map(encodeURIComponent).join("/");
+                item.backdrop = channel.pith.rootPath + "/stream/" + itemPath;
             }
             cb();
         });

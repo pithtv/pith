@@ -1,0 +1,17 @@
+<img *ngIf="item.poster || item.still" [src]="((item.poster || item.still) | prescale:'680x1000')"
+     class="bigthumb"/>
+<div class="details">
+  <span class="contextinfo"><span class="itemshowname">{{item.showname}}</span><span class="itemseason">{{item.season}}</span><span class="itemepisode" *ngIf="item.episode">{{item.episode}}</span></span>
+  <span class="itemtitle">
+    <a (click)="togglePlayState(item)" class="action-markwatched" title="Mark watched" *ngIf="item.playable">
+      <svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewbox="0 0 100 100" width="24px" height="20px"><use [attr.xlink:href]="'#' + (item.playState && item.playState.status || 'none')" transform="scale(0.17)"></use></svg>
+    </a>
+    {{item.title}} <span *ngIf="item.year" class="itemyear">{{item.year}}</span>
+  </span>
+  <span class="itemtagline" *ngIf="item.tagline">{{item.tagline}}</span>
+  <span class="itemrating"><span class="stars" [attr.data-starrating]="item.rating" *ngIf="item.rating"></span>{{item.rating}}</span>
+  <span class="itemgenres" *ngIf="item.genres &amp;&amp; item.genres.length">{{item.genres.join(", ")}}</span>
+  <span class="itemplot" *ngIf="item.plot">{{item.plot}}</span>
+  <span class="itemoverview" *ngIf="item.overview">{{item.overview}}</span>
+  <span class="actions"><a (click)="load()" class="action-play" title="Play" *ngIf="item.playable"></a><a href="http://www.imdb.com/title/{{item.imdbId}}" *ngIf="item.imdbId" class="link-imdb" target="_blank"></a></span>
+</div>

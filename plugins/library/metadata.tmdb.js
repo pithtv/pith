@@ -1,10 +1,10 @@
 "use strict";
 
-var tmdb = require("moviedb")("a08cfd3b50689d40b46a078ecc7390bb");
-var dateParser = /(\d{4})-(\d{2})-(\d{2})/;
+const tmdb = require("moviedb")("a08cfd3b50689d40b46a078ecc7390bb");
+const dateParser = /(\d{4})-(\d{2})-(\d{2})/;
 
-var configuration;
-tmdb.configuration(function(err, conf) {
+let configuration;
+tmdb.configuration((err, conf) => {
     configuration = conf;
 });
 
@@ -16,26 +16,27 @@ function parseDate(d) {
     if(d==null) {
         return null;
     }
-    var p = d.match(dateParser);
+    const p = d.match(dateParser);
+    if(!p) {
+        return null;
+    }
     return new Date(parseInt(p[1]),parseInt(p[2])-1,parseInt(p[3]));
 }
 
 function get(property) {
-    return function(e) {
-        return e[property];
-    };
+    return e => e[property];
 }
 
-module.exports = function(item, mediatype, callback) {
-    var movie;
-    
+module.exports = (item, mediatype, callback) => {
+    let movie;
+
     function parser(err, result) {
         if(err) {
             console.log(err, item);
             callback(err);
         } else {
-            var movies = result.movie_results || result.results;
-            var movie = movies[0]; // for now just pick the first one
+            const movies = result.movie_results || result.results;
+            const movie = movies[0]; // for now just pick the first one
             
             if(!movie) {
                 callback("No movie found");
@@ -45,7 +46,7 @@ module.exports = function(item, mediatype, callback) {
             tmdb.movieInfo({
                 id: movie.id,
                 append_to_response: 'credits,keywords'
-            }, function(err, result) {
+            }, (err, result) => {
                 if(err) {
                     callback(err, item);
                 } else {
@@ -63,13 +64,9 @@ module.exports = function(item, mediatype, callback) {
                     item.keywords = result.keywords.keywords.map(get('name'));
                     item.actors = result.credits.cast.map(get('name'));
                     
-                    item.directors = result.credits.crew.filter(function(e) {
-                        return e.job == 'Director'; 
-                    }).map(get('name'));
+                    item.directors = result.credits.crew.filter(e => e.job == 'Director').map(get('name'));
                     
-                    item.writers = result.credits.crew.filter(function(e) {
-                        return e.job == "Screenplay";
-                    }).map(get('name'));
+                    item.writers = result.credits.crew.filter(e => e.job == "Screenplay").map(get('name'));
                     
                     callback(undefined, item);
                 }
@@ -78,7 +75,7 @@ module.exports = function(item, mediatype, callback) {
     }
 
     function tvParser(err, result) {
-        var metadata = {
+        const metadata = {
             backdrop: createUrl(result.backdrop_path),
             genres: result.genres.map(get('name')),
             homepage: result.homepage,
@@ -91,9 +88,9 @@ module.exports = function(item, mediatype, callback) {
             poster: createUrl(result.poster_path),
             tmdbRating: result.vote_average,
             tmdbVoteCount: result.vote_count
-        }
+        };
 
-        for(var x in metadata) item[x] = metadata[x];
+        for(let x in metadata) item[x] = metadata[x];
         callback(undefined, item);
     }
 
@@ -102,7 +99,7 @@ module.exports = function(item, mediatype, callback) {
             return item;
         }
 
-        var metadata = {
+        const metadata = {
             mediatype: 'episode',
             tmdbId: ep.id,
             episode: ep.episode_number,
@@ -116,7 +113,7 @@ module.exports = function(item, mediatype, callback) {
         };
 
         if(item) {
-            for(var x in item) metadata[x] = metadata[x] || item[x];
+            for(let x in item) metadata[x] = metadata[x] || item[x];
             return metadata;
         } else {
             return metadata;
@@ -128,7 +125,7 @@ module.exports = function(item, mediatype, callback) {
             callback(err);
                 return;
         }
-        var metadata = {
+        const metadata = {
             _children: result.episodes.map(episodeParser),
 
             title: result.name,
@@ -138,7 +135,7 @@ module.exports = function(item, mediatype, callback) {
             season: result.season_number
         };
 
-        for(var x in metadata) item[x] = metadata[x];
+        for(let x in metadata) item[x] = metadata[x];
         callback(undefined, item);
     }
 
@@ -150,7 +147,7 @@ module.exports = function(item, mediatype, callback) {
                     external_source: 'imdb_id'
                 }, parser);
             } else {
-                var q = {
+                const q = {
                     query: item.title
                 };
                 if (item.year) {
@@ -168,7 +165,7 @@ module.exports = function(item, mediatype, callback) {
                     external_source: 'tvdb_id'
                 }, tvParser);
             } else {
-                tmdb.searchTv({query: item.showname || item.title}, function(err, result) {
+                tmdb.searchTv({query: item.showname || item.title}, (err, result) => {
                     if(err || !result.results[0]) {
                         callback(err || Error("No result found for show", item));
                     } else {
@@ -186,7 +183,7 @@ module.exports = function(item, mediatype, callback) {
             break;
         case "episode":
             if (item.showTmdbId) {
-                tmdb.tvEpisodeInfo({id: item.showTmdbId, season_number: item.season, episode_number: item.episode}, function(err, ep) {
+                tmdb.tvEpisodeInfo({id: item.showTmdbId, season_number: item.season, episode_number: item.episode}, (err, ep) => {
                     callback(undefined, episodeParser(ep, item));
                 });
             } else {

@@ -1,138 +1,131 @@
 "use strict";
 
-var metadata = require("./metadata.tmdb.js");
-var db = require("./database");
-var async = require("async");
-var winston = require("winston");
-var global = require("../../lib/global")();
-var Channel = require("../../lib/channel");
+const metadata = require("./metadata.tmdb.js");
+const db = require("./database");
+const async = require("async");
+const winston = require("winston");
+const global = require("../../lib/global")();
+const Channel = require("../../lib/channel");
+const wrapToPromise = require("../../lib/async").wrap;
 
-var moviesDirectory = require("./directory.movies");
-var showsDirectory = require("./directory.shows");
+const moviesDirectory = require("./directory.movies");
+const showsDirectory = require("./directory.shows");
 
-function LibraryChannel(pithApp, directoryFactory) {
-    Channel.apply(this);
+class LibraryChannel extends Channel {
+    constructor(pithApp, directoryFactory) {
+        super();
 
-    this.pithApp = pithApp;
-    this.db = db(pithApp.db);
+        this.pithApp = pithApp;
+        this.db = db(pithApp.db);
 
-    this.directory = directoryFactory(this);
-}
+        this.directory = directoryFactory(this);
+    }
 
-LibraryChannel.prototype = {
-    listContents: function(containerId, cb) {
+    listContents(containerId) {
         if(!containerId) {
-            cb(null, this.directory.filter(function(d) {
+            return Promise.resolve(this.directory.filter(function(d) {
                 return d.visible !== false;
             }));
         } else {
-            var i = containerId.indexOf('/');
-            
-            var directoryId = i > -1 ? containerId.substring(0,i) : containerId;
-            
-            var directory = this.directory.filter(function(e) {
-                return e.id == directoryId; 
-            })[0];
-            
-            directory._getContents(i > -1 ? containerId.substring(i+1) : null, cb);
-        }
-    },
+            const i = containerId.indexOf('/');
 
-    listContentsWithPlayStates: function(path, cb) {
-        var self = this;
-        this.listContents(path, function (err, contents) {
-            if(err) cb(err);
-            else async.map(contents, function (item, cb) {
-                if(item.playState != null) {
-                    cb(false, item);
+            const directoryId = i > -1 ? containerId.substring(0, i) : containerId;
+
+            const directory = this.directory.filter(function (e) {
+                return e.id == directoryId;
+            })[0];
+
+            return directory._getContents(i > -1 ? containerId.substring(i + 1) : null);
+        }
+    }
+
+    listContentsWithPlayStates(path) {
+        return this.listContents(path).then(contents =>
+            Promise.all(contents.map(item => {
+                if(item.playState) {
+                    return item;
                 } else {
-                    self.getLastPlayStateFromItem(item, function (err, state) {
-                        item.playState = state;
-                        cb(err, item);
-                    });
+                    return this.getLastPlayStateFromItem(item).then(playState => {
+                        item.playState = playState;
+                        return item;
+                    })
                 }
-            }, cb);
-        });
-    },
-    
-    getItem: function(itemId, cb) {
-        if(!itemId) {
-            cb(null, { title: "Movies" });
-        } else {
-            var i = itemId.indexOf('/');
-            
-            var directoryId = i > -1 ? itemId.substring(0,i) : itemId;
-            
-            var directory = this.directory.filter(function(e) {
-                return e.id == directoryId; 
-            })[0];
-            
-            if(!directory) {
-                cb(Error("Not found"));
-                return;
-            }
-            
-            if(directory._getItem) {
-                directory._getItem(i > -1 ? itemId.substring(i+1).replace(/\/$/,'') : null, cb);
-            } else {
-                cb(null, { id: itemId });
-            }
-        }
-    },
-    
-    getStream: function(item, cb) {
-        var channel = this;
-        var targetChannel = channel.pithApp.getChannelInstance(item.channelId);
-        targetChannel.getItem(item.originalId, function(err, item) {
-            if(err) {
-                cb(err);
-            } else {
-                targetChannel.getStream(item, cb);
-            }
-        });
-    },
+            }))
+        );
+    }
 
-    getLastPlayStateFromItem: function(item, cb) {
-        if(item && item.originalId) {
-            var targetChannel = this.pithApp.getChannelInstance(item.channelId);
-            targetChannel.getLastPlayState(item.originalId, cb);
+    getItem(itemId) {
+        if(!itemId) {
+            return Promise.resolve({ title: "Movies" });
         } else {
-            cb(false);
-        }
-    },
-    
-    getLastPlayState: function(itemId, cb) {
-        var self = this;
-        this.getItem(itemId, function(err, item) {
-            if(err) cb(err);
-            else self.getLastPlayStateFromItem(item, cb);
-        });
-    },
-    
-    putPlayState: function(itemId, state, cb) {
-        var self = this;
-        this.getItem(itemId, function(err, item) {
-            if(err || item == undefined) {
-                if(cb) cb(err);
-                return;
+            const i = itemId.indexOf('/');
+
+            const directoryId = i > -1 ? itemId.substring(0, i) : itemId;
+
+            const directory = this.directory.filter(function (e) {
+                return e.id == directoryId;
+            })[0];
+
+            if(!directory) {
+                return Promise.reject(Error("Not found"));
             }
-            var targetChannel = self.pithApp.getChannelInstance(item.channelId);
-            targetChannel.putPlayState(item.originalId, state, cb);
+
+            if(directory._getItem) {
+                return directory._getItem(i > -1 ? itemId.substring(i+1).replace(/\/$/,'') : null);
+            } else {
+                return Promise.resolve({id: itemId});
+            }
+        }
+    }
+
+    getStream(item, options) {
+        const channel = this;
+        const targetChannel = channel.pithApp.getChannelInstance(item.channelId);
+        return targetChannel.getItem(item.originalId).then(item => targetChannel.getStream(item, options));
+    }
+
+    getLastPlayStateFromItem(item) {
+        if(item && item.originalId) {
+            const targetChannel = this.pithApp.getChannelInstance(item.channelId);
+            return targetChannel.getLastPlayState(item.originalId);
+        } else {
+            return Promise.resolve();
+        }
+    }
+
+    getLastPlayState(itemId) {
+        return this.getItem(itemId).then(item => this.getLastPlayStateFromItem(item));
+    }
+
+    putPlayState(itemId, state, cb) {
+        const self = this;
+        return this.getItem(itemId).then(item => {
+            const targetChannel = self.pithApp.getChannelInstance(item.channelId);
+            return targetChannel.putPlayState(item.originalId, state);
         });
     }
-};
+}
+
+function wrap(resolve, reject) {
+    return (err, result) => {
+        if(err) reject(err);
+        else resolve(result);
+    }
+}
+
+
 
 module.exports = {
     init: function(opts) {
-        var self = this, pith = opts.pith;
-        var moviesChannel = new LibraryChannel(opts.pith, moviesDirectory);
-        var showsChannel = new LibraryChannel(opts.pith, showsDirectory);
+        const self = this, pith = opts.pith;
+        const moviesChannel = new LibraryChannel(opts.pith, moviesDirectory);
+        const showsChannel = new LibraryChannel(opts.pith, showsDirectory);
 
         // set up scanners
-        var scannerOpts = {
+        const scannerOpts = {
             db: db(opts.pith.db)
         };
-        var scanners = {
+        const scanners = {
             movies: require("./scanner.movie")(scannerOpts),
             tvshows: require("./scanner.tvshow")(scannerOpts)
         };
@@ -141,20 +134,20 @@ module.exports = {
         }, 10000);
 
         this.scan = function(manual) {
-            var plug = this;
+            const plug = this;
 
             winston.info("Starting library scan");
-            var scanStartTime = new Date().getTime();
+            const scanStartTime = new Date().getTime();
 
             async.eachSeries(global.settings.library.folders.filter(function(c) {
                 return scanners[c.contains] !== undefined && (c.scanAutomatically || manual === true);
             }), function(dir, cb) {
-                var channelInstance = pith.getChannelInstance(dir.channelId);
+                const channelInstance = pith.getChannelInstance(dir.channelId);
                 if(channelInstance !== undefined) {
                     scanners[dir.contains].scan(channelInstance, dir, cb);
                 }
             }, function(err) {
-                var scanEndTime = new Date().getTime();
+                const scanEndTime = new Date().getTime();
                 winston.info("Library scan complete. Took %d ms", (scanEndTime - scanStartTime));
                 setTimeout(function () {
                     plug.scan();

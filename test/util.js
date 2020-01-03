@@ -41,5 +41,28 @@ module.exports = {
         );
 
         test.done();
+    },
+
+    "Test XML": function(test) {
+        test.equal('<xbmc:artwork type="fanart">http://1</xbmc:artwork><xbmc:artwork type="poster">http://2</xbmc:artwork><xbmc:userrating>0</xbmc:userrating><xbmc:dateadded>2009-03-19</xbmc:dateadded><somethingelse><test>1</test></somethingelse>', util.toXml({
+            "xbmc:artwork": [
+                {
+                    _attribs: {type: 'fanart'},
+                    _value: "http://1"
+                },
+                {
+                    _attribs: {type: 'poster'},
+                    _value: "http://2"
+                }
+            ],
+            "xbmc:userrating": 0,
+            "xbmc:dateadded": "2009-03-19",
+            "somethingelse": {
+                test: 1
+            },
+            "ignored": undefined
+        }));
+
+        test.done();
     }
 };
