@@ -1,5 +1,5 @@
 <div class="video-player" #container [hidden]="!stream">
-  <video #video [src]="url" autoplay="true"></video>
+  <video #video [src]="url || ''" autoplay="true"></video>
   <a (click)="unload()" class="video-control-close">&times;</a>
   <div class="video-controls">
     <a class="video-control-play oi oi-media-play" (click)="play()"></a>
