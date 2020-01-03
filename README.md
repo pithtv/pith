@@ -1,36 +1,22 @@
 pith
 ====
 
-The Pith media hub at the center of your entertainment network.
+pith is a lightweight media server that aims to seamlessly integrate your networked media devices. It can act as a
+standard UPnP media server, but you can also use the built-in web interface to playback media in your browser, or use
+the same web interface to stream media directly to supported devices and control playback on those devices.
 
-The aim of this project is to create a media server for videos and music that can be controlled through a web browser and will stream the media to a variety of renderers such as UPnP MediaRenderers (most TV's and blu-ray players), AirPlay devices, or just through the web browser.
-
-The concept is centered around searchable channels that provide a hierarchy. First channels to be implemented (in order):
-
-- Files channel: just straight filesystem browsing
-- Movies channel: certain directories are scanned for movies which will then be indexed and browsable by title, year, runtime, etc
-- TV Shows channel: same as movies but with more appropriate metadata
-- Music channel: a directory is scanned for music and metadata is retrieved from ID3 or similar tags
-- Spotify channel: use libspotify to add support for Premium members to stream Spotify music to their playback device of choice
-
-Immediate goals:
-
-- lightweight so it can easily run on NAS devices
-- web ui that feels like you're working on a native app
-- web ui usable on desktop, laptop, tablet, smartphone and smart tv
-- index locally stored media into comprehensive libraries with extensive meta-data support
-- allow streaming media as well (e.g. Spotify)
-- transcoding/remuxing support
-- UPnP MediaRenderer playback with codec support profiles
-- extensible through plugins (adding channels, views, ...)
-- extensive JSON/REST api (the web ui should use this exclusively so that all functionality supported by the web ui can eventually be incorporated into a native app).
-
-Long term goals:
-
-- AirPlay support
-- UPnP MediaServer support
-
-It's built on a MEAN stack (so MongoDB, Express, Angular and NodeJS), with some help from Bootstrap to make it all pretty.
+Features:
+- UPnP/DLNA support: it acts as both a media server as well as a control device for Media Renderers
+- Media Library: set up a media library by scanning your media files. Movies and TV shows are automatically recognized
+and catalogued. Metadata is fetched from TMDb and/or locally found kodi-style .nfo files.
+- Sonarr and CouchPotato integration: directly browse your Sonarr or CouchPotato libraries without having to set up
+scanning. Quick and efficient.
+- Least-effort live-transcoding (experimental): playback your media files in the browser without worrying about codecs. pith
+will live-transcode your files for your browser automatically, and tries to do as little as possible while doing so to
+keep the load on your server low, as well as hardware requirements.
+- Works great with Kodi; the UPnP media server works great for Kodi. It exposes the same metadata Kodi uses internally,
+so it's just like having the media locally on your Kodi box. Playback state is shared between all devices; so if you stop
+playing on one device, you can easily resume playback on another from the same point in time.
 
 Getting started
 ===============
@@ -43,7 +29,7 @@ Clone the project:
     git clone http://github.com/Evinyatar/pith.git pith
     cd pith
 
-Install node and bower dependencies
+Install node and build the web interface
 
     npm install
     npm run-script build
@@ -52,4 +38,5 @@ Start it up
 
     npm start
 
-Navigate to the URL that is mentioned in the logging, and click the menu to go into settings to set up your media path and library. Restart pith after saving those settings.
+Navigate to the URL that is mentioned in the logging, and click the menu to go into settings to set up your media path
+and library. Restart pith after saving those settings.
