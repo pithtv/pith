@@ -15,7 +15,7 @@ export class AppComponent {
   title = 'app';
   statusSubscription: Subscription;
 
-  @ViewChild('errorModal') errorModal;
+  @ViewChild('errorModal', { static: true }) errorModal;
   private errorMessage: string;
   public status: PlayerStatus;
   public navbarCollapsed = true;

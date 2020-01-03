@@ -10,7 +10,7 @@ import {ContainerChooserComponent} from "./container-chooser.component";
 export class LibraryCategorySettingsComponent {
   @Input() settings: PithSettings;
 
-  @ViewChild("confirmDelete") confirmDelete;
+  @ViewChild("confirmDelete", { static: true }) confirmDelete;
 
   constructor(private modal: NgbModal) {
 

@@ -9,7 +9,7 @@ export class ScrubberComponent {
   @Input("max") max: number;
   @Output("valueChanged") valueChanged:EventEmitter<number> = new EventEmitter();
 
-  @ViewChild("container") container;
+  @ViewChild("container", { static: true }) container;
 
   handleSeekClick(event) {
     let targetTime = this.max * event.layerX / this.container.nativeElement.offsetWidth;

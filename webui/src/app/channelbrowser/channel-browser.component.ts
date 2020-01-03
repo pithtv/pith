@@ -42,7 +42,7 @@ export class ChannelBrowserComponent implements AfterViewInit, OnInit {
 
   limit = 150;
 
-  @ViewChild('container') container;
+  @ViewChild('container', { static: true }) container;
   @ViewChildren('cell') cells;
 
   fieldDescriptions = {

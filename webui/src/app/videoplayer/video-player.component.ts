@@ -9,10 +9,10 @@ export class VideoPlayerComponent {
   stream: any;
   currentTime: number;
 
-  @ViewChild("video")
+  @ViewChild("video", { static: true })
   video: {nativeElement: HTMLVideoElement};
 
-  @ViewChild("container")
+  @ViewChild("container", { static: true })
   container: {nativeElement: HTMLElement};
 
   url: string;
