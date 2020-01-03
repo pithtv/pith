@@ -20,9 +20,9 @@ playing on one device, you can easily resume playback on another from the same p
 
 Getting started
 ===============
-Install node
+Install node and MongoDB
 
-    sudo apt-get install nodejs
+    sudo apt-get install mongodb-server nodejs
 
 Clone the project:
 
