@@ -35,9 +35,7 @@ class LibraryChannel extends Channel {
                 return e.id == directoryId;
             })[0];
 
-            return new Promise((resolve, reject) => {
-                directory._getContents(i > -1 ? containerId.substring(i+1) : null, wrap(resolve, reject));
-            });
+            return directory._getContents(i > -1 ? containerId.substring(i + 1) : null);
         }
     }
 
@@ -73,9 +71,7 @@ class LibraryChannel extends Channel {
             }
 
             if(directory._getItem) {
-                return wrapToPromise(cb => {
-                    directory._getItem(i > -1 ? itemId.substring(i+1).replace(/\/$/,'') : null, cb);
-                });
+                return directory._getItem(i > -1 ? itemId.substring(i+1).replace(/\/$/,'') : null);
             } else {
                 return Promise.resolve({id: itemId});
             }
