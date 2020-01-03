@@ -3,15 +3,19 @@
   </div>
   <ul class="list-group list-group-flush">
     <li class="list-group-item" *ngFor="let folder of settings.library.folders" [class.has-error]="!folder.contains">
-      <label class="form-check-label"><input class="form-check-input" type="checkbox" [(ngModel)]="folder.scanAutomatically" title="Enable scanning"/> {{folder.containerId}}</label>
-      <i>contains</i>
-      <select class="custom-select" [(ngModel)]="folder.contains" required>
-        <option value="movies">Movies</option>
-        <option value="tvshows">TV Shows</option>
-        <option value="music">Music</option>
-      </select>
-      <a class="float-right" (click)="removeLibraryContainer(folder)" title="Remove folder"><span
-          class="oi oi-trash"></span></a>
+      <div class="custom-control custom-checkbox custom-control-inline">
+        <label class="form-check-label"><input class="form-check-input" type="checkbox" [(ngModel)]="folder.scanAutomatically" title="Enable scanning"/> {{folder.containerId}}</label>
+      </div>
+        <i>contains</i>
+      <div class="custom-control custom-control-inline">
+        <select class="form-control" [(ngModel)]="folder.contains" required>
+          <option value="movies">Movies</option>
+          <option value="tvshows">TV Shows</option>
+          <option value="music">Music</option>
+        </select>
+      </div>
+        <a class="float-right" (click)="removeLibraryContainer(folder)" title="Remove folder"><span
+            class="oi oi-trash"></span></a>
     </li>
   </ul>
   <div class="card-footer border-top-0">
