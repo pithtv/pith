@@ -37,17 +37,17 @@ $white_50: rgba(255,255,255,0.5);
   padding-top: 2px;
 }
 
-%playstatus.watched {
+%playstatus_watched {
   @extend %playstatus;
   content: '\e033';
 }
 
-%playstatus.inprogress {
+%playstatus_inprogress {
   @extend %playstatus;
   content: '\e092';
 }
 
-%playstatus.hasnew {
+%playstatus_hasnew {
   @extend %playstatus;
   content: '\e0c2';
   color: $black;
@@ -82,4 +82,8 @@ $white_50: rgba(255,255,255,0.5);
 .navbar-toggler > .navbar-toggler-icon {
   @extend .oi;
   @extend .oi-chevron-top;
+}
+
+.closebtn {
+  cursor: pointer;
 }

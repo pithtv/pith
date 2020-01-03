@@ -295,15 +295,15 @@ $minLargeScreenWidth: 900px;
     }
 
     &.inprogress > a:after {
-      @extend %playstatus.inprogress;
+      @extend %playstatus_inprogress;
     }
 
     &.watched > a:after {
-      @extend %playstatus.watched;
+      @extend %playstatus_watched;
     }
 
     &.hasnew > a:after {
-      @extend %playstatus.hasnew;
+      @extend %playstatus_hasnew;
     }
 
     &.alignleft .th {
@@ -386,13 +386,13 @@ $minLargeScreenWidth: 900px;
   &.inprogress > .still:after {
     bottom: 5px;
     right: 5px;
-    @extend %playstatus.inprogress;
+    @extend %playstatus_inprogress;
   }
 
   &.watched > .still:after {
     bottom: 5px;
     right: 5px;
-    @extend %playstatus.watched;
+    @extend %playstatus_watched;
   }
 }
 
