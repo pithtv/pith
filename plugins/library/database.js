@@ -1,15 +1,16 @@
 "use strict";
 
-var async = require("async");
-var { wrap } = require("../../lib/async");
-var uuid = require("node-uuid").v1;
+const async = require("async");
+let {wrap} = require("../../lib/async");
+const uuid = require("node-uuid").v1;
+const logger = require('log4js').getLogger('pith.plugins.library.database');
 
 module.exports = function(db) {
-    var movies = db.collection('movies');
-    var people = db.collection('people');
-    var keywords = db.collection('keywords');
-    var genres = db.collection('genres');
-    var series = db.collection('series');
+    const movies = db.collection('movies');
+    const people = db.collection('people');
+    const keywords = db.collection('keywords');
+    const genres = db.collection('genres');
+    const series = db.collection('series');
 
     function insertOrUpdate(collection, entity, callback) {
         entity.modificationTime = new Date();
@@ -43,7 +44,7 @@ module.exports = function(db) {
             }
         });
     }
-    
+
     function getPerson(name, job, callback) {
         people.findOne({name: name}, function(err, result) {
             if(!result) {
@@ -53,7 +54,7 @@ module.exports = function(db) {
                     callback(err, result && result[0]);
                 });
             } else if(!result[job]) {
-                var update = {};
+                const update = {};
                 result[job] = true;
                 update[job] = true;
                 people.update({_id: result._id}, {$set: update}, function(err) {
@@ -67,7 +68,7 @@ module.exports = function(db) {
 
     function singleResult(callback) {
         return function(err, result) {
-            if(!result || result.length == 0) {
+            if(!result || result.length === 0) {
                 callback(false, null);
             } else if(result.length > 1) {
                 callback("Expecting single result");
@@ -76,47 +77,47 @@ module.exports = function(db) {
             }
         }
     }
-    
+
     function getKeyword(name, callback) {
         findOrCreate(keywords, {name: name}, callback);
     }
-    
+
     function getGenre(name, callback) {
         findOrCreate(genres, {name: name}, callback);
     }
-    
+
     function _id(callback) {
         return function(err, result) {
             callback(err, result && result._id.toHexString());
         };
     }
-    
+
     function getActorId(name, callback) {
         getPerson(name, "actor", _id(callback));
     }
-    
+
     function getDirectorId(name, callback) {
         getPerson(name, "director", _id(callback));
     }
-    
+
     function getWriterId(name, callback) {
         getPerson(name, "writer", _id(callback));
     }
-    
+
     function getKeywordId(name, callback) {
         getKeyword(name, _id(callback));
     }
-    
+
     function getGenreId(name, callback) {
         getGenre(name, _id(callback));
     }
-    
+
     function storeMovie(item, callback) {
-        var movie = {};
-        for(var x in item) movie[x] = item[x];
-        
+        const movie = {};
+        Object.assign(movie, item);
+
         movie.id = uuid();
-        
+
         async.mapSeries(movie.actors, getActorId, function(err, result) {
             movie.actorIds = result;
             async.mapSeries(movie.keywords, getKeywordId, function(err, result) {
@@ -142,7 +143,7 @@ module.exports = function(db) {
 
     function findSeasons(item, sorting) {
         return series.find({id: item.showId}, {seasons: 1}).sort(sorting).toArray().catch(function(err) {
-            console.log(err);
+            logger.error(err);
         }).then(function(e) {
             return e[0].seasons;
         });
@@ -183,7 +184,7 @@ module.exports = function(db) {
             id: item.showId,
             episodes: {$elemMatch: {season: item.season, episode: item.episode}}
         }, {$set: {'episodes.$': item}}, function (err, result) {
-            if (err || result.matchedCount) callback(err, result)
+            if (err || result.matchedCount) callback(err, result);
             else series.updateOne({
                 id: item.showId
             }, {$push: {'episodes': item}}, callback);
@@ -193,23 +194,23 @@ module.exports = function(db) {
     function findShow(query, callback) {
         series.find(query).toArray(singleResult(callback));
     }
-    
+
     function getKeywords(callback) {
         keywords.find({}).toArray(callback);
     }
-    
+
     function getGenres(callback) {
         genres.find({}).toArray(callback);
     }
-    
+
     function getActors(callback) {
         people.find({actor: true}).toArray(callback);
     }
-    
+
     function getDirectors(callback) {
         people.find({director: true}).toArray(callback);
     }
-    
+
     function getWriters(callback) {
         people.find({writer: true}).toArray(callback);
     }
@@ -217,11 +218,11 @@ module.exports = function(db) {
     function findShows(selector, sorting) {
         return wrap(cb => series.find(selector).sort(sorting).toArray(cb));
     }
-    
+
     function findMovieByOriginalId(channelId, itemId, callback) {
         movies.find({channelId: channelId, originalId: itemId}).toArray(singleResult(callback));
     }
-    
+
     function getMovie(itemId, callback) {
         movies.find({id: itemId}, singleResult(callback));
     }
@@ -231,7 +232,7 @@ module.exports = function(db) {
             callback = opts;
             opts = undefined;
         }
-        var cursor = this.find(query);
+        const cursor = this.find(query);
         if(opts && opts.order) {
             cursor.sort(opts.order);
         }
@@ -243,9 +244,9 @@ module.exports = function(db) {
 
     return {
         getPerson: getPerson,
-        
+
         storeMovie: storeMovie,
-        
+
         getKeywords: getKeywords,
         getGenres: getGenres,
         getActors: getActors,

@@ -21,6 +21,7 @@ const http = require('http');
 const parser = require('http-string-parser');
 const {HttpError} = require("./Error");
 const { queue, wrap } = require("../../lib/async");
+const logger = require('log4js').getLogger('pith.plugin.upnp-mediaserver.Device');
 
 class Device extends DeviceControlProtocol {
     constructor(...opts) {
@@ -88,12 +89,12 @@ class Device extends DeviceControlProtocol {
 
         let headers = this.makeHeaders(customHeaders);
         let message = [
-            reqType == 'ok' ? 'HTTP/1.1 200 OK' : `${reqType.toUpperCase()} * HTTP/1.1`
+            reqType === 'ok' ? 'HTTP/1.1 200 OK' : `${reqType.toUpperCase()} * HTTP/1.1`
         ];
 
         message = message.concat(Object.entries(headers).map(([key, value]) => `${key.toUpperCase()}: ${value}`));
         message.push('\r\n');
-        return new Buffer(message.join('\r\n'));
+        return Buffer.from(message.join('\r\n'));
     }
 
     makeHeaders(customHeaders) {
@@ -104,7 +105,7 @@ class Device extends DeviceControlProtocol {
             host: `${this.ssdp.address}:${this.ssdp.port}`,
             location: this.makeUrl('/device/description'),
             server: `${os.type()}/${os.release()} UPnP/${this.upnp.version.join('.')} ${this.name}/1.0`,
-            usn: 'uuid:' + this.uuid + ((this.uuid == customHeaders.nt || this.uuid == customHeaders.st) ? '' : '::' + (customHeaders.nt || customHeaders.st))
+            usn: 'uuid:' + this.uuid + ((this.uuid === customHeaders.nt || this.uuid === customHeaders.st) ? '' : '::' + (customHeaders.nt || customHeaders.st))
         };
 
         let headers = {};
@@ -150,7 +151,7 @@ class Device extends DeviceControlProtocol {
                         <url>/icons/icon-${size}x${size}.png</url>
                     </icon>`).join("")}
                 </iconList>
-                <serviceList>${Object.entries(this.services).map(([key, value]) => `
+                <serviceList>${Object.values(this.services).map(value => `
                     <service>${value.buildServiceElement()}</service>`).join("")}
                 </serviceList>
             </device>
@@ -184,7 +185,7 @@ class Device extends DeviceControlProtocol {
         // TODO simplify this.
         handler(req, (err, data, headers) => {
             if(err) {
-                console.log(`Responded with ${err.code}: ${err.message} for ${req.url}`);
+                logger.log(`Responded with ${err.code}: ${err.message} for ${req.url}`);
                 res.writeHead(err.code, {'Content-Type': 'text/plain'});
                 res.write(`${err.code} - ${err.message}`);
             } else {
@@ -235,7 +236,7 @@ class Device extends DeviceControlProtocol {
 
         let respondTo = [ 'ssdp:all', 'upnp:rootdevice', this.makeType(), this.uuid ];
         this.parseRequest(msg.toString(), rinfo, (err, req) => {
-            if(req.method == 'M-SEARCH' && respondTo.indexOf(req.st) >= 0) {
+            if(req.method === 'M-SEARCH' && respondTo.indexOf(req.st) >= 0) {
                 answerAfter(req.mx, req.address, req.port);
             }
         });

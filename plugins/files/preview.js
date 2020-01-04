@@ -7,7 +7,6 @@ function preview(getFile) {
 
     function next() {
         if(queue.length) {
-            console.log("Starting next preview extraction")
             queue.pop()();
             currentlyRunning = true;
         } else {

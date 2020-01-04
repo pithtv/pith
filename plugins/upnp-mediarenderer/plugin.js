@@ -4,10 +4,9 @@ const {EventEmitter} = require("events");
 const entities = require("entities");
 const Device = require("upnp-client-minimal");
 const {formatTime,formatMsDuration} = require('../../lib/upnp');
-
 const Global = require("../../lib/global")();
-
 const client = ssdp({unicastHost: Global.bindAddress});
+const logger = require('log4js').getLogger('pith.plugin.upnp-mediarenderer');
 
 const iconTypePreference = [
     'image/jpeg',
@@ -79,8 +78,8 @@ class MediaRenderer extends EventEmitter {
         const renderer = this;
 
         channel.getStream(item, {fingerprint: [Global.persistentUuid('instance'), channel.id, item.id].join(':')}).then(stream => {
-            const mediaUrl = `${stream.url}`;
-            console.log("Loading " + mediaUrl);
+            const mediaUrl = stream.url;
+            logger.debug(`Loading ${mediaUrl}`);
 
             function doLoad() {
                 const type = stream.mimetype.split('/')[0];
@@ -90,15 +89,8 @@ class MediaRenderer extends EventEmitter {
                     CurrentURI: mediaUrl,
                     CurrentURIMetaData:
                         entities.encodeXML(
-                            '<DIDL-Lite xmlns="urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/" xmlns:pith="http://github.com/evinyatar/pith/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dlna="urn:schemas-dlna-org:metadata-1-0/" xmlns:upnp="urn:schemas-upnp-org:metadata-1-0/upnp/">'+
-                                '<item id="' + entities.encodeXML(item.id) + '" parentID="0" restricted="1">'+
-                                    '<dc:title>' + entities.encodeXML(item.title) + '</dc:title>'+
-                                    '<upnp:class>object.item.' + type + 'Item</upnp:class>'+
-                                    '<res duration="' + formatMsDuration(stream.duration) + '" protocolInfo="http-get:*:' + stream.mimetype + ':DLNA.ORG_OP=01;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=01500000000000000000000000000000">' + mediaUrl + '</res>'+
-                                    '<pith:itemId>' + entities.encodeXML(item.id) + '</pith:itemId>'+
-                                    '<pith:channelId>' + entities.encodeXML(channel.id) + '</pith:channelId>'+
-                                '</item>'+
-                            '</DIDL-Lite>\n')
+                            `<DIDL-Lite xmlns="urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/" xmlns:pith="http://github.com/evinyatar/pith/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dlna="urn:schemas-dlna-org:metadata-1-0/" xmlns:upnp="urn:schemas-upnp-org:metadata-1-0/upnp/"><item id="${entities.encodeXML(item.id)}" parentID="0" restricted="1"><dc:title>${entities.encodeXML(item.title)}</dc:title><upnp:class>object.item.${type}Item</upnp:class><res duration="${formatMsDuration(stream.duration)}" protocolInfo="http-get:*:${stream.mimetype}:DLNA.ORG_OP=01;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=01500000000000000000000000000000">${mediaUrl}</res><pith:itemId>${entities.encodeXML(item.id)}</pith:itemId><pith:channelId>${entities.encodeXML(channel.id)}</pith:channelId></item></DIDL-Lite>
+`)
                 }, cb);
             }
 
@@ -119,7 +111,7 @@ class MediaRenderer extends EventEmitter {
             Speed: 1
         }, err => {
             if(err) {
-                console.error(err);
+                logger.error("Error starting playback on UPnP device", err);
                 if(cb) cb(err);
                 return;
             }
@@ -141,7 +133,7 @@ class MediaRenderer extends EventEmitter {
                     } else if(cb) {
                         cb("Seeking not available");
                     }
-                }
+                };
 
                 renderer.once('statechange', waitForSeek);
             } else {
@@ -238,9 +230,9 @@ class MediaRenderer extends EventEmitter {
         this._avTransport.on('LastChange', (changeEvent) => {
             xml2js(changeEvent, (err, body) => {
                 if(!body) {
-                    console.error("Body empty?");
+                    logger.error("Empty body in LastChange event");
                 } else if(err) {
-                    console.error(err);
+                    logger.error("Error in LastChange event", err);
                 } else {
                     const didl = body.Event.InstanceID[0];
 
@@ -252,15 +244,15 @@ class MediaRenderer extends EventEmitter {
                         });
                     }
                     if(didl.TransportState) {
-                        var state = didl.TransportState[0];
-                        let status;
+                        let state = didl.TransportState[0];
+                        let statusFlags;
                         switch(state.$.val) {
-                                case 'PAUSED_PLAYBACK': status = {paused: true}; break;
-                                case 'PLAYING': status = {playing: true}; break;
-                                case 'STOPPED': status = {stopped: true}; break;
-                                case 'TRANSITIONING': status = {transitioning: true}; break;
+                                case 'PAUSED_PLAYBACK': statusFlags = {paused: true}; break;
+                                case 'PLAYING': statusFlags = {playing: true}; break;
+                                case 'STOPPED': statusFlags = {stopped: true}; break;
+                                case 'TRANSITIONING': statusFlags = {transitioning: true}; break;
                         }
-                        this.status.state = status;
+                        this.status.state = statusFlags;
                     }
 
                     this.updatePositionInfo();
@@ -275,7 +267,7 @@ class MediaRenderer extends EventEmitter {
     }
 
     offline() {
-        console.log("Device went offline: " + this.friendlyName);
+        logger.info(`Device went offline: ${this.friendlyName}`);
         if(this.positionTimer) {
             clearInterval(this.positionTimer);
             this.positionTimer = null;
@@ -292,7 +284,7 @@ module.exports = {
                 players[data.USN] = {}; // placeholder so we don't make them twice in case the alive is triggered before createMediaRenderer finishes
                 plugin.handlePlayerAppearance(data, rinfo, opts, function(err, renderer) {
                     if(err) {
-                        console.log(err);
+                        logger.log("Error in handlePlayerAppearance", err);
                     } else {
                         players[data.USN] = renderer;
                         opts.pith.registerPlayer(renderer);

@@ -1,5 +1,5 @@
 const {MediaServer} = require("./MediaServer");
-const {wrap, wrapNoErr} = require('../../lib/async');
+const {wrapNoErr} = require('../../lib/async');
 const Global = require("../../lib/global")();
 const upnp = require('../../lib/upnp');
 const entities = require('entities');
@@ -54,8 +54,8 @@ class MediaServerDelegate {
         this.pith = pith;
     }
 
-    async fetchChildren(id, opts) {
-        if (id == 0) {
+    async fetchChildren(id) {
+        if (id === 0 || id === '0') {
             let channels = await wrapNoErr(cb => this.pith.listChannels(cb));
             let items = channels.map(channel => ({
                 id: `channel:${channel.id}`,
@@ -125,7 +125,7 @@ class MediaServerDelegate {
             "xbmc:votes": item.tmdbVoteCount,
             "xbmc:uniqueIdentifier": item.imdbId,
             "upnp:lastPlaybackTime": "",
-            "upnp:playbackCount": (item.playState && item.playState.status == 'watched' ? 1 : 0),
+            "upnp:playbackCount": (item.playState && item.playState.status === 'watched' ? 1 : 0),
             "upnp:lastPlaybackPosition": (item.playState && item.playState.time),
             "xbmc:artwork": [
                 item.backdrop ? {_attribs: {type: "fanart"}, _value: cache(item.backdrop)} : undefined,
@@ -177,7 +177,6 @@ class MediaServerDelegate {
     }
 
     async fetchObject(id) {
-        console.debug(`fetchObject for ${id}`);
         let [, channelId, , itemId] = id.match(/^channel:(\w+)(:(.*))?$/);
         if (itemId) {
             let channel = this.pith.getChannelInstance(channelId);

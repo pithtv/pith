@@ -1,21 +1,38 @@
+const log4js = require("log4js");
+log4js.configure({
+    appenders: {
+        console: {
+            type: 'console'
+        }
+    },
+    categories: {
+        default: {
+            appenders: ['console'],
+            level: 'trace'
+        }
+    }
+});
+
 require("./lib/global")(function(err, Global) {
-    var Pith = require("./pith.js");
-    var rest = require("./lib/pithrest.js");
-    var express = require("express");
-    var http = require("http");
-    var ws = require("ws");
-    var scaler = require("./lib/imagescaler");
-    var bodyparser = require("body-parser");
+    const Pith = require("./pith.js");
+    const rest = require("./lib/pithrest.js");
+    const express = require("express");
+    const http = require("http");
+    const ws = require("ws");
+    const scaler = require("./lib/imagescaler");
+    const bodyparser = require("body-parser");
+    const logger = log4js.getLogger("pith");
+
 
     process.on('uncaughtException', function(err) {
         // handle the error safely
-        console.log(err)
+        logger.error(err);
     });
 
     // workaround
     Object.defineProperty(http.IncomingMessage.prototype, "upgrade", {
         get() {
-            return "connection" in this.headers && "upgrade" in this.headers && this.headers.connection.startsWith("Upgrade") && this.headers.upgrade.toLowerCase() == 'websocket';
+            return "connection" in this.headers && "upgrade" in this.headers && this.headers.connection.startsWith("Upgrade") && this.headers.upgrade.toLowerCase() === 'websocket';
         },
         set(v) {
         }
@@ -27,19 +44,19 @@ require("./lib/global")(function(err, Global) {
                 throw err;
             }
 
-            var serverAddress = Global.bindAddress;
-            var port = Global.httpPort;
-            var pithPath = Global.settings.pithContext;
+            const serverAddress = Global.bindAddress;
+            const port = Global.httpPort;
+            const pithPath = Global.settings.pithContext;
 
-            console.log("Listening on http://" + serverAddress + ":" + port);
+            logger.info("Listening on http://" + serverAddress + ":" + port);
 
-            var pithApp = new Pith({
+            const pithApp = new Pith({
                 rootUrl: Global.rootUrl + "/pith/",
                 rootPath: pithPath,
                 db: db
             });
 
-            var app = express();
+            const app = express();
 
             app.use(bodyparser.json());
 
@@ -52,43 +69,46 @@ require("./lib/global")(function(err, Global) {
 
             // exclude all private members in JSON messages (those starting with underscore)
             function jsonReplacer(k,v) {
-                if(k.charAt(0) == '_') return undefined;
+                if(k.charAt(0) === '_') return undefined;
                 else return v;
             }
 
             app.set("json replacer", jsonReplacer);
 
-            var server = new http.Server(app);
+            const server = new http.Server(app);
 
             server.listen(port, serverAddress);
             server.listen(port);
 
-            var wss = new ws.Server({server: server});
+            const wss = new ws.Server({server: server});
 
             wss.on('connection', function(ws) {
-                var listeners = [];
+                const listeners = [];
                 ws.on('message', function(data) {
                     try {
-                        var message = JSON.parse(data);
+                        const message = JSON.parse(data);
                         switch(message.action) {
                         case 'on':
-                                var listener = function() {
-                                    try {
-                                        ws.send(JSON.stringify({event: message.event, arguments: Array.prototype.slice.apply(arguments)}, jsonReplacer));
-                                    } catch(e) {
-                                        console.error(e);
-                                    }
-                                };
-                                listeners.push({event: message.event, listener: listener});
+                            const listener = function () {
+                                try {
+                                    ws.send(JSON.stringify({
+                                        event: message.event,
+                                        arguments: Array.prototype.slice.apply(arguments)
+                                    }, jsonReplacer));
+                                } catch (e) {
+                                    logger.error(e);
+                                }
+                            };
+                            listeners.push({event: message.event, listener: listener});
                                 pithApp.on(message.event, listener);
                                 break;
                         }
                     } catch(e) {
-                        console.error("Error processing event message", data, e);
+                        logger.error("Error processing event message", data, e);
                     }
                 });
                 ws.on('close', function() {
-                    console.log("Client disconnected, cleaning up listeners");
+                    logger.debug("Client disconnected, cleaning up listeners");
                     listeners.forEach(function(e) {
                         pithApp.removeListener(e.event, e.listener);
                     });
@@ -97,7 +117,7 @@ require("./lib/global")(function(err, Global) {
 
             app.use((req, res, next) => {
                 res.redirect('/webui/');
-            })
+            });
         }
     );
 });

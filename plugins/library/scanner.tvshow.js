@@ -1,5 +1,5 @@
 var async = require("async");
-var winston = require("winston");
+var logger = require("log4js").getLogger("pith.plugin.library.scanner.tvshow");
 var filenameparser = require("../../lib/filenameparser");
 var metadata = require("./metadata.tmdb");
 
@@ -16,7 +16,7 @@ module.exports = function(opts) {
         },
 
         loadAndStoreSeason: function(show, season, cb) {
-            winston.info("Fetching metadata for season " + season + " of " + show.title);
+            logger.info("Fetching metadata for season " + season + " of " + show.title);
             var seasonMetaData = {
                 season: season,
                 showTmdbId: show.tmdbId,
@@ -30,14 +30,12 @@ module.exports = function(opts) {
                 }
                 var episodes = seasonMetaData._children;
                 seasonMetaData._children = undefined;
-                winston.info(show.title + " season " + season + " has " + episodes.length + " episodes");
+                logger.info(show.title + " season " + season + " has " + episodes.length + " episodes");
                 db.storeSeason(seasonMetaData, function(err) {
                     async.eachSeries(episodes, function(episodeMetaData, callback) {
                         db.findEpisode({showId: show.id, season: seasonMetaData.season, episode: episodeMetaData.episode}, function(err, episode) {
                             if(episode) {
-                                for(var x in episodeMetaData) {
-                                    episode[x] = episodeMetaData[x];
-                                }
+                                Object.assign(episode, episodeMetaData);
                                 db.storeEpisode(episode, callback);
                             } else {
                                 episodeMetaData.showId = show.id;
@@ -63,7 +61,7 @@ module.exports = function(opts) {
                         item.season = season.season;
                         metadata(item, 'episode', function(err, episodeMetaData) {
                             if(err) {
-                                winston.info("Episode found but no meta data exists for it.", item.title);
+                                logger.info("Episode found but no meta data exists for it.", item.title);
                                 var episode = {
                                     title: item.title,
                                     showId: show.id,
@@ -84,7 +82,7 @@ module.exports = function(opts) {
                             }
                         });
                     } else {
-                        winston.info("Episode found", item, episode);
+                        logger.info("Episode found", item, episode);
                         episode.originalId = item.originalId;
                         episode.channelId = item.channelId;
                         episode.dateScanned = new Date();
@@ -114,7 +112,7 @@ module.exports = function(opts) {
             db.findShow({originalTitle: episode.showname}, function(err, showMetaData) {
                 //if(err) { cb(err); return; }
                 if(err || showMetaData == null) {
-                    winston.info("Found a new show", episode.showname)
+                    logger.info("Found a new show", episode.showname);
                     self.loadShow(episode.showname, function(err, showMetaData) {
                         if(err) {
                             cb(err);
@@ -156,12 +154,12 @@ module.exports = function(opts) {
 
                                             self.updateInShow(md, function(err) {
                                                 if(err) {
-                                                    winston.warn("Error while scanning item " + item.id, err);
+                                                    logger.warn("Error while scanning item " + item.id, err);
                                                 }
                                                 cb();
                                             });
 
-                                            winston.info(md);
+                                            logger.info(md);
                                         } else {
                                             cb();
                                         }

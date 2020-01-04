@@ -1,6 +1,6 @@
 const metadata = require("./metadata.tmdb.js");
 const async = require("../../lib/async");
-const winston = require("winston");
+const logger = require("log4js").getLogger("pith.plugin.library.scanner.movie");
 const filenameparser = require("../../lib/filenameparser");
 
 module.exports = opts => {
@@ -12,18 +12,18 @@ module.exports = opts => {
                     let contents = await channelInstance.listContents(container && container.id);
                     if (contents && contents.length) {
                         for(let item of contents) {
-                            if (item.type == 'container') {
+                            if (item.type === 'container') {
                                 await listContents(item);
                             } else if (item.playable && item.mimetype.match(/^video\//)) {
                                 let result = await async.wrap(cb => db.findMovieByOriginalId(dir.channelId, item.id, cb));
                                 if (!result) {
-                                    winston.info("Found new item " + item.id);
+                                    logger.info("Found new item " + item.id);
 
                                     item.modificationTime = container.modificationTime;
                                     item.creationTime = container.creationTime;
 
                                     const store = async result => {
-                                        winston.info(result.title, result.year);
+                                        logger.info(result.title, result.year);
                                         result.originalId = item.id;
                                         result.channelId = dir.channelId;
                                         result.id = item.id;
@@ -46,7 +46,7 @@ module.exports = opts => {
                                             item = await async.wrap(cb => metadata(item, 'movie', cb));
                                             await store(item);
                                         } catch(e) {
-                                            winston.warn(`Fetching metadata failed`, e);
+                                            logger.warn(`Fetching metadata failed`, e);
                                         }
                                     }
                                 }

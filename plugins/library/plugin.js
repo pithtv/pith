@@ -1,12 +1,8 @@
-"use strict";
-
-const metadata = require("./metadata.tmdb.js");
 const db = require("./database");
 const async = require("async");
-const winston = require("winston");
+const logger = require("log4js").getLogger("pith.plugin.library");
 const global = require("../../lib/global")();
 const Channel = require("../../lib/channel");
-const wrapToPromise = require("../../lib/async").wrap;
 
 const moviesDirectory = require("./directory.movies");
 const showsDirectory = require("./directory.shows");
@@ -32,7 +28,7 @@ class LibraryChannel extends Channel {
             const directoryId = i > -1 ? containerId.substring(0, i) : containerId;
 
             const directory = this.directory.filter(function (e) {
-                return e.id == directoryId;
+                return e.id === directoryId;
             })[0];
 
             return directory._getContents(i > -1 ? containerId.substring(i + 1) : null);
@@ -63,7 +59,7 @@ class LibraryChannel extends Channel {
             const directoryId = i > -1 ? itemId.substring(0, i) : itemId;
 
             const directory = this.directory.filter(function (e) {
-                return e.id == directoryId;
+                return e.id === directoryId;
             })[0];
 
             if(!directory) {
@@ -97,7 +93,7 @@ class LibraryChannel extends Channel {
         return this.getItem(itemId).then(item => this.getLastPlayStateFromItem(item));
     }
 
-    putPlayState(itemId, state, cb) {
+    putPlayState(itemId, state) {
         const self = this;
         return this.getItem(itemId).then(item => {
             const targetChannel = self.pithApp.getChannelInstance(item.channelId);
@@ -105,15 +101,6 @@ class LibraryChannel extends Channel {
         });
     }
 }
-
-function wrap(resolve, reject) {
-    return (err, result) => {
-        if(err) reject(err);
-        else resolve(result);
-    }
-}
-
-
 
 module.exports = {
     init: function(opts) {
@@ -136,7 +123,7 @@ module.exports = {
         this.scan = function(manual) {
             const plug = this;
 
-            winston.info("Starting library scan");
+            logger.info("Starting library scan");
             const scanStartTime = new Date().getTime();
 
             async.eachSeries(global.settings.library.folders.filter(function(c) {
@@ -148,7 +135,7 @@ module.exports = {
                 }
             }, function(err) {
                 const scanEndTime = new Date().getTime();
-                winston.info("Library scan complete. Took %d ms", (scanEndTime - scanStartTime));
+                logger.info("Library scan complete. Took %d ms", (scanEndTime - scanStartTime));
                 setTimeout(function () {
                     plug.scan();
                 }, global.settings.library.scanInterval);
@@ -173,6 +160,5 @@ module.exports = {
                 return showsChannel;
             }
         });
-
     }
 };

@@ -22,6 +22,7 @@ const url = require('url');
 const http = require('http');
 const async = require('../../../lib/async');
 const { toXml } = require('../../../lib/util');
+const logger = require('log4js').getLogger('pith.plugin.upnp-mediaserver.Service');
 
 class Service extends DeviceControlProtocol {
     constructor(...opts) {
@@ -63,7 +64,7 @@ class Service extends DeviceControlProtocol {
 
     renew(sid, reqTimeout) {
         if(!this.subs[sid]) {
-            console.log(`Got subscription renewal request for ${sid} but could not find device`);
+            logger.log(`Got subscription renewal request for ${sid} but could not find device`);
             return null;
         }
 
@@ -152,7 +153,7 @@ class Service extends DeviceControlProtocol {
                 agent: false
             };
             let req = http.request(options);
-            req.on('error', err => console.log(`${eventUrl} - ${err.message}`));
+            req.on('error', err => logger.error(`${eventUrl} - ${err.message}`));
             req.write(data);
             req.end();
         }
@@ -175,7 +176,7 @@ class Service extends DeviceControlProtocol {
                 break;
             case 'control':
                 let [,serviceAction] = /:\d#(\w+)"$/.exec(req.headers.soapaction);
-                if(req.method != 'POST' || !serviceAction) {
+                if(req.method !== 'POST' || !serviceAction) {
                     cb(new HttpError(405));
                     return;
                 }
@@ -190,7 +191,7 @@ class Service extends DeviceControlProtocol {
             case 'event':
                 let {sid, timeout, callback} = req.headers;
                 let resp, err;
-                if(req.method == 'SUBSCRIBE') {
+                if(req.method === 'SUBSCRIBE') {
                     if(callback) {
                         if(/<http/.test(callback)) {
                             resp = this.subscribe(callback.slice(1,-1), timeout);
@@ -207,7 +208,7 @@ class Service extends DeviceControlProtocol {
                         err = new HttpError(412);
                     }
                     cb(err, null, resp);
-                } else if(req.method == 'UNSUBSCRIBE') {
+                } else if(req.method === 'UNSUBSCRIBE') {
                     if(sid) {
                         this.unsubscribe(sid);
                         cb();
@@ -240,7 +241,7 @@ class Subscription {
         }
 
         let time = /Second-(infinite|\d+)/.exec(timeout)[1];
-        if(time == 'infinite' || parseInt(time) > this.minTimeout) {
+        if(time === 'infinite' || parseInt(time) > this.minTimeout) {
             time = this.minTimeout;
         } else {
             time = parseInt(time);

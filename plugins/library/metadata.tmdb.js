@@ -2,6 +2,7 @@
 
 const tmdb = require("moviedb")("a08cfd3b50689d40b46a078ecc7390bb");
 const dateParser = /(\d{4})-(\d{2})-(\d{2})/;
+const logger = require('log4js').getLogger('pith.plugin.library.metadata.tmdb');
 
 let configuration;
 tmdb.configuration((err, conf) => {
@@ -32,17 +33,17 @@ module.exports = (item, mediatype, callback) => {
 
     function parser(err, result) {
         if(err) {
-            console.log(err, item);
+            logger.error(err, item);
             callback(err);
         } else {
             const movies = result.movie_results || result.results;
             const movie = movies[0]; // for now just pick the first one
-            
+
             if(!movie) {
                 callback("No movie found");
                 return;
             }
-            
+
             tmdb.movieInfo({
                 id: movie.id,
                 append_to_response: 'credits,keywords'
@@ -63,11 +64,11 @@ module.exports = (item, mediatype, callback) => {
                     item.tmdbVoteCount = result.vote_count;
                     item.keywords = result.keywords.keywords.map(get('name'));
                     item.actors = result.credits.cast.map(get('name'));
-                    
-                    item.directors = result.credits.crew.filter(e => e.job == 'Director').map(get('name'));
-                    
-                    item.writers = result.credits.crew.filter(e => e.job == "Screenplay").map(get('name'));
-                    
+
+                    item.directors = result.credits.crew.filter(e => e.job === 'Director').map(get('name'));
+
+                    item.writers = result.credits.crew.filter(e => e.job === "Screenplay").map(get('name'));
+
                     callback(undefined, item);
                 }
             });

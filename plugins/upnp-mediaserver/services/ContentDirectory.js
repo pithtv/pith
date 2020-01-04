@@ -17,6 +17,7 @@ const {Service} = require("./Service");
 const {SoapError} = require("../Error");
 const {toXml} = require('../../../lib/util');
 const entities = require('entities');
+const logger = require('log4js').getLogger('pith.plugin.upnp-mediaserver.ContentDirectory');
 
 class ContentDirectory extends Service {
     constructor(device) {
@@ -50,7 +51,7 @@ class ContentDirectory extends Service {
     }
 
     async actionHandler(action, options) {
-        console.debug("ContentDirectory received " + action);
+        logger.debug("ContentDirectory received " + action);
 
         if (this.optionalActions.includes(action)) {
             return await this.optionalAction();
@@ -71,7 +72,7 @@ class ContentDirectory extends Service {
                             return (new SoapError(402));
                     }
                 } catch(err) {
-                    console.error(err);
+                    logger.error(err);
                     return this.buildSoapError(err);
                 }
             default:
@@ -103,7 +104,7 @@ class ContentDirectory extends Service {
         let result = await this.device.delegate.fetchObject(id);
 
         let didl = this.buildDidl([result.item]);
-        console.debug(didl);
+        logger.debug(didl);
         return this.buildSoapResponse('Browse', {
             Result: didl,
             NumberReturned: 1,

@@ -7,6 +7,7 @@ const Channel = require("../../lib/channel");
 const fs = require('fs');
 const path = require('path');
 const mimetypes = require('../../lib/mimetypes');
+const logger = require("log4js").getLogger("pith.plugin.couchpotato");
 
 function parseItemId(itemId) {
     if(itemId) {
@@ -49,24 +50,24 @@ class CouchPotatoChannel extends Channel {
     }
 
     retrieveContents() {
-        console.log("Fetching couchpotato index");
+        logger.debug("Fetching couchpotato index");
         return this._get('movie.list').then(result => {
-            console.log("Processing couchpotato index");
+            logger.debug("Processing couchpotato index");
             if(result.empty) {
                 return [];
             } else {
                 return result.movies.filter(movie => movie.releases.length > 0).map(movie => (this.mapMovie(movie)));
             }
         }).then(result => {
-            console.log("Couchpotato index fetched and processed");
+            logger.debug("Couchpotato index fetched and processed");
             this.listing = Promise.resolve(result);
         });
     }
 
     createEventListener() {
-        console.log("Listening for new couchpotato event");
+        logger.debug("Listening for new couchpotato event");
         this._get('nonblock/notification.listener').then(result => {
-            console.log("Couchpotato event listener returned", JSON.stringify(result.result));
+            logger.debug("Couchpotato event listener returned", JSON.stringify(result.result));
             let events = result.result;
             if(events.find(e => e.type == 'renamer.after')) {
                 // "renamer.after" indicates movie download was completed, so refresh internal listing
@@ -74,7 +75,7 @@ class CouchPotatoChannel extends Channel {
             }
             this.createEventListener();
         }).catch(e => {
-            console.log("Couchpotato event listener threw", JSON.stringify(e));
+            logger.error("Couchpotato event listener threw", JSON.stringify(e));
             this.createEventListener();
         });
     }
@@ -94,7 +95,7 @@ class CouchPotatoChannel extends Channel {
         try {
             stat = movieFile && fs.statSync(path.dirname(movieFile));
         } catch(e) {
-            console.log(e);
+            logger.error(e);
         }
 
         let filePath = release && release.files.movie[0];
