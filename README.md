@@ -20,9 +20,9 @@ playing on one device, you can easily resume playback on another from the same p
 
 Getting started
 ===============
-Install node and MongoDB
+Install prerequisites
 
-    sudo apt-get install mongodb-server nodejs
+    sudo apt-get install mongodb-server nodejs ffmpeg
 
 Clone the project:
 
