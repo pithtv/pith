@@ -56,7 +56,7 @@ class FilesChannel extends Channel {
                 if (err) {
                     cb(err);
                 } else {
-                    const filteredFiles = files.filter(e => (e[0] != "." || settings.files.showHiddenFiles) && settings.files.excludeExtensions.indexOf($path.extname(e)) == -1);
+                    const filteredFiles = files.filter(e => (e[0] !== "." || settings.files.showHiddenFiles) && settings.files.excludeExtensions.indexOf($path.extname(e)) === -1);
                     Promise.all(filteredFiles.map(file => {
                         const filepath = $path.resolve(path, file);
                         const itemId = $path.relative(rootDir, filepath);
@@ -76,7 +76,7 @@ class FilesChannel extends Channel {
     }
 
     getItem(itemId, detailed) {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             if (detailed === undefined) {
                 detailed = true;
             }

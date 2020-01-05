@@ -1,0 +1,4 @@
+language: javascript
+node_js:
+  - 10
+

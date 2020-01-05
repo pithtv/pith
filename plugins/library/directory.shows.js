@@ -111,7 +111,7 @@ module.exports = function(plugin) {
         description: "Episodes added in the past 7 days",
         visible: true,
         type: "container",
-        async _getContents(containerId) {
+        async _getContents() {
             let result = await db.findEpisodes({dateScanned: {$gt: new Date(new Date() - 7*24*60*60*1000)}}, {dateScanned: -1});
             return await async.mapSeries(result, mapEpisode);
         }
@@ -123,7 +123,7 @@ module.exports = function(plugin) {
         description: "Episodes aired in the past 7 days",
         visible: true,
         type: "container",
-        async _getContents(containerId) {
+        async _getContents() {
             let result = await db.findEpisodes({airDate: {$gt: new Date(new Date() - 7*24*60*60*1000), $lt:new Date()}}, {airDate: -1});
             return await async.mapSeries(result, mapEpisode);
         }

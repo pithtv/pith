@@ -7,7 +7,7 @@ function mapMovie(e) {
 }
 
 module.exports = function (plugin) {
-    var db = plugin.db;
+    const db = plugin.db;
     return [
         {
             id: "movies",
@@ -130,7 +130,7 @@ module.exports = function (plugin) {
             description: "Movies added in the past 14 days",
             visible: true,
             type: "container",
-            async _getContents(containerId, cb) {
+            async _getContents() {
                 let result = await async.wrap(cb => db.findMovies({dateScanned: {$gt: new Date(new Date() - 14 * 24 * 60 * 60 * 1000)}}, {order: {dateScanned: -1}}, cb));
                 return result.map(mapMovie);
             }
@@ -141,7 +141,7 @@ module.exports = function (plugin) {
             description: "Most recently released movies",
             visible: true,
             type: "container",
-            async _getContents(containerId, cb) {
+            async _getContents() {
                 let result = await async.wrap(cb => db.findMovies({}, {order: {releaseDate: -1}, limit: 50}, cb));
                 return result.map(mapMovie);
             }

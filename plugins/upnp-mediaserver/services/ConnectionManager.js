@@ -34,7 +34,7 @@ class ConnectionManager extends Service {
         });
     }
 
-    async actionHandler(action, options, cb) {
+    async actionHandler(action) {
         if (this.optionalActions.includes(action)) {
             return await this.optionalAction();
         }
@@ -48,7 +48,6 @@ class ConnectionManager extends Service {
                     return this.makeProtocolInfo();
                 case 'GetCurrentConnectionInfo':
                     return this.makeConnectionInfo();
-                    break;
                 default:
                     return this.buildSoapError(new SoapError(401));
             }
@@ -57,14 +56,14 @@ class ConnectionManager extends Service {
         }
     }
 
-    makeProtocolInfo(cb) {
+    makeProtocolInfo() {
         return this.buildSoapResponse('GetProtocolInfo', {
             Source: this.stateVars.SourceProtocolInfo,
             Sink: ''
         });
     }
 
-    makeConnectionInfo(cb) {
+    makeConnectionInfo() {
         return this.buildSoapResponse('GetCurrentConnectionInfo', {
             RcsID: -1,
             AVTransportID: -1,

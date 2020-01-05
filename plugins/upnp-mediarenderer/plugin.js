@@ -41,7 +41,6 @@ class MediaRenderer extends EventEmitter {
     constructor(device, opts) {
         super();
 
-        this._device = device;
         this._opts = opts;
 
         this.id = device.UDN;

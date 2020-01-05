@@ -52,8 +52,6 @@ module.exports = opts => {
                                 }
                             }
                         }
-                    } else {
-                        done();
                     }
                 }
             }

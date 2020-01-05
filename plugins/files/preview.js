@@ -1,5 +1,5 @@
-var AVConv = require("../../lib/libav").AVConv;
-var url = require("url");
+const AVConv = require("../../lib/libav").AVConv;
+const url = require("url");
 
 function preview(getFile) {
     let queue = [];

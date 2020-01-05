@@ -1,30 +1,28 @@
-var fs = require("fs");
-var parseNfo = require("./parsenfo");
-var $path = require("path");
-var parsefilename = require("../../lib/filenameparser");
+const fs = require("fs");
+const parseNfo = require("./parsenfo");
+const $path = require("path");
+const parsefilename = require("../../lib/filenameparser");
 
 module.exports = {
     appliesTo: function(channel, filepath, item) {
-        return item.type == 'file';
-    }, 
+        return item.type === 'file';
+    },
     get: function getMetaData(channel, filepath, item, cb) {
         if(item.mimetype && item.mimetype.match(/^video\//)) {
-            var nfoFile = $path.join($path.dirname(filepath), "movie.nfo");
-            fs.exists(nfoFile, function(exists) {
-                if(exists) {
+            const nfoFile = $path.join($path.dirname(filepath), "movie.nfo");
+            fs.stat(nfoFile, function(err) {
+                if(!err) {
                     parseNfo(nfoFile, function(err, data) {
-                        for(var x in data) {
-                            item[x] = data[x];
-                        }
+                        Object.assign(item, data);
                         cb();
                     });
                 } else {
-                    var plainNfoFile = filepath.replace(/\.[^.\/]*$/, ".nfo");
-                    fs.exists(plainNfoFile, function(exists) {
-                        if(exists) {
+                    const plainNfoFile = filepath.replace(/\.[^.\/]*$/, ".nfo");
+                    fs.stat(plainNfoFile, function(err) {
+                        if(!err) {
                             fs.readFile(plainNfoFile, function(err, data) {
                                 if(!err && data) {
-                                    var m = data.toString().match(/tt[0-9]{7,}/g);
+                                    const m = data.toString().match(/tt[0-9]{7,}/g);
                                     if(m && m[0]) {
                                         item.imdbId = m[0];
                                     }
@@ -33,17 +31,15 @@ module.exports = {
                             });
                         } else {
                             // try to deduce info from the filename and directory
-                            var meta = parsefilename(filepath);
+                            const meta = parsefilename(filepath);
                             if(meta) {
-                                for(var x in meta) {
-                                    item[x] = meta[x];
-                                }
+                                Object.assign(item, meta);
                             }
                             cb();
                         }
                     });
                 }
-            });  
+            });
         } else {
             cb();
         }

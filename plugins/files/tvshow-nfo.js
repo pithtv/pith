@@ -1,18 +1,15 @@
-var async = require("async");
-var fs = require("fs");
-var parseNfo = require("./parsenfo");
-var $path = require("path");
-var parsefilename = require("../../lib/filenameparser");
+const async = require("async");
+const fs = require("fs");
+const parseNfo = require("./parsenfo");
+const $path = require("path");
 
 function getMetaData(channel, filepath, item, cb) {
-    var nfo = $path.join(filepath, "tvshow.nfo");
-    fs.exists(nfo, function(exists) {
-        if(exists) {
+    const nfo = $path.join(filepath, "tvshow.nfo");
+    fs.stat(nfo, function(err) {
+        if(!err) {
             parseNfo(nfo, function(err, result) {
                 if(result) {
-                    for(var x in result) {
-                        item[x] = result[x];
-                    }
+                    Object.asign(item, result);
                 }
                 cb(item);
             });
@@ -20,11 +17,11 @@ function getMetaData(channel, filepath, item, cb) {
             cb(item);
         }
     });
-};
+}
 
 module.exports = {
     appliesTo: function(channel, filepath, item) {
-        return item.type == 'container';
+        return item.type === 'container';
     },
     get: getMetaData
-}
+};

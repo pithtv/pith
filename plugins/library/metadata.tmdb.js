@@ -114,7 +114,9 @@ module.exports = (item, mediatype, callback) => {
         };
 
         if(item) {
-            for(let x in item) metadata[x] = metadata[x] || item[x];
+            for(let x of Object.keys(item)) {
+                metadata[x] = metadata[x] || item[x];
+            }
             return metadata;
         } else {
             return metadata;
@@ -168,7 +170,7 @@ module.exports = (item, mediatype, callback) => {
             } else {
                 tmdb.searchTv({query: item.showname || item.title}, (err, result) => {
                     if(err || !result.results[0]) {
-                        callback(err || Error("No result found for show", item));
+                        callback(err || Error(`No result found for show ${item}`));
                     } else {
                         tmdb.tvInfo({id: result.results[0].id}, tvParser);
                     }

@@ -177,7 +177,7 @@ class MediaServerDelegate {
     }
 
     async fetchObject(id) {
-        let [, channelId, , itemId] = id.match(/^channel:(\w+)(:(.*))?$/);
+        let [, channelId, , itemId] = id.match(/^channel:(\w+)(:(.*))?$/) || [];
         if (itemId) {
             let channel = this.pith.getChannelInstance(channelId);
             let contents = await channel.getItem(itemId);

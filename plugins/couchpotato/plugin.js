@@ -1,6 +1,7 @@
 "use strict";
 
 const settings = require("../../lib/global")().settings;
+const async = require("../../lib/async");
 const fetch = require('node-fetch');
 const parseUrl = require('url').parse;
 const Channel = require("../../lib/channel");
@@ -12,7 +13,7 @@ const logger = require("log4js").getLogger("pith.plugin.couchpotato");
 function parseItemId(itemId) {
     if(itemId) {
         let i = itemId.indexOf('/');
-        if(i == -1) throw "Incorrect id";
+        if(i === -1) throw "Incorrect id";
         return {
             id: itemId.substring(i+1),
             mediatype: itemId.substring(0, i)
@@ -37,7 +38,7 @@ class CouchPotatoChannel extends Channel {
     }
 
     _get(url) {
-        var u = this.url.resolve(`api/${this.apikey}/${url}`);
+        const u = this.url.resolve(`api/${this.apikey}/${url}`);
 
         return fetch(u).then(res => res.json()).then(j => {
             if(!j.success) throw "Call failed";
@@ -56,7 +57,7 @@ class CouchPotatoChannel extends Channel {
             if(result.empty) {
                 return [];
             } else {
-                return result.movies.filter(movie => movie.releases.length > 0).map(movie => (this.mapMovie(movie)));
+                return Promise.all(result.movies.filter(movie => movie.releases.length > 0).map(movie => (this.mapMovie(movie))));
             }
         }).then(result => {
             logger.debug("Couchpotato index fetched and processed");
@@ -69,7 +70,7 @@ class CouchPotatoChannel extends Channel {
         this._get('nonblock/notification.listener').then(result => {
             logger.debug("Couchpotato event listener returned", JSON.stringify(result.result));
             let events = result.result;
-            if(events.find(e => e.type == 'renamer.after')) {
+            if(events.find(e => e.type === 'renamer.after')) {
                 // "renamer.after" indicates movie download was completed, so refresh internal listing
                 this.retrieveContents();
             }
@@ -88,14 +89,14 @@ class CouchPotatoChannel extends Channel {
         }
     }
 
-    mapMovie(movie) {
-        let release = movie.releases.find(r => r.status == 'done');
+    async mapMovie(movie) {
+        let release = movie.releases.find(r => r.status === 'done');
         let movieFile = release && release.files.movie && release.files.movie[0];
         let stat;
         try {
-            stat = movieFile && fs.statSync(path.dirname(movieFile));
+            stat = movieFile && await async.wrap(cb => fs.stat(path.dirname(movieFile), cb));
         } catch(e) {
-            logger.error(e);
+            logger.warn(`File ${movieFile} not accessible, can not determine download date`);
         }
 
         let filePath = release && release.files.movie[0];
@@ -129,9 +130,8 @@ class CouchPotatoChannel extends Channel {
 
     getItem(itemId, detailed) {
         let parsed = parseItemId(itemId);
-        switch(parsed.mediatype) {
-            case 'media':
-                return this.queryMedia(parsed.id);
+        if (parsed.mediatype === 'media') {
+            return this.queryMedia(parsed.id);
         }
         return Promise.resolve({
             sortableFields: ['title', 'year', 'rating', 'runtime', 'creationTime'],
@@ -153,7 +153,7 @@ class CouchPotatoChannel extends Channel {
 
     getLastPlayState(itemId) {
         let parsed = parseItemId(itemId);
-        if(parsed.type == 'media') {
+        if(parsed.type === 'media') {
             return this.getItem(itemId).then(item => this.getLastPlayStateFromItem(item));
         } else {
             return Promise.resolve();
@@ -161,7 +161,7 @@ class CouchPotatoChannel extends Channel {
     }
 
     getLastPlayStateFromItem(item) {
-        if(item.type == 'file' && item.playable) {
+        if(item.type === 'file' && item.playable) {
             if(item.unavailable) {
                 return Promise.resolve();
             } else {
@@ -191,6 +191,6 @@ module.exports = {
                     return channel;
                 }
             })
-        };
+        }
     }
 };

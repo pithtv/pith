@@ -1,5 +1,5 @@
-var fs = require("fs");
-var xml2js = require("xml2js").parseString;
+const fs = require("fs");
+const xml2js = require("xml2js").parseString;
 
 module.exports = function parseNfo(path, cb) {
         fs.readFile(path, function(err, data) {
@@ -7,12 +7,12 @@ module.exports = function parseNfo(path, cb) {
                 cb(err);
             } else {
                 xml2js(data, function(err, metadata) {
-                    var movie = metadata.movie;
-                    var result = {};
-                    for(var x in movie) {
-                        var valueArr = movie[x];
-                        var value = (valueArr && valueArr.length == 1) ? valueArr[0] : undefined;
-                        
+                    const movie = metadata.movie;
+                    const result = {};
+                    for(let x in movie) {
+                        const valueArr = movie[x];
+                        const value = (valueArr && valueArr.length === 1) ? valueArr[0] : undefined;
+
                         switch(x) {
                             case "title":
                             case "year":
@@ -27,7 +27,7 @@ module.exports = function parseNfo(path, cb) {
                                 break;
                         }
                     }
-                    
+
                     cb(undefined, result);
                 });
             }

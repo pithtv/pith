@@ -1,12 +1,12 @@
-var async = require("async");
-var logger = require("log4js").getLogger("pith.plugin.library.scanner.tvshow");
-var filenameparser = require("../../lib/filenameparser");
-var metadata = require("./metadata.tmdb");
+const async = require("async");
+const logger = require("log4js").getLogger("pith.plugin.library.scanner.tvshow");
+const filenameparser = require("../../lib/filenameparser");
+const metadata = require("./metadata.tmdb");
 
 module.exports = function(opts) {
     "use strict";
 
-    var db = opts.db;
+    const db = opts.db;
 
     return {
         loadShow: function(showName, cb) {
@@ -17,7 +17,7 @@ module.exports = function(opts) {
 
         loadAndStoreSeason: function(show, season, cb) {
             logger.info("Fetching metadata for season " + season + " of " + show.title);
-            var seasonMetaData = {
+            const seasonMetaData = {
                 season: season,
                 showTmdbId: show.tmdbId,
                 showId: show.id,
@@ -28,7 +28,7 @@ module.exports = function(opts) {
                     cb(err);
                     return;
                 }
-                var episodes = seasonMetaData._children;
+                const episodes = seasonMetaData._children;
                 seasonMetaData._children = undefined;
                 logger.info(show.title + " season " + season + " has " + episodes.length + " episodes");
                 db.storeSeason(seasonMetaData, function(err) {
@@ -62,7 +62,7 @@ module.exports = function(opts) {
                         metadata(item, 'episode', function(err, episodeMetaData) {
                             if(err) {
                                 logger.info("Episode found but no meta data exists for it.", item.title);
-                                var episode = {
+                                const episode = {
                                     title: item.title,
                                     showId: show.id,
                                     showname: show.title,
@@ -93,7 +93,7 @@ module.exports = function(opts) {
         },
 
         updateInSeason: function(showMetaData, item, cb) {
-            var self = this;
+            const self = this;
             db.findSeason({showId: showMetaData.id, season: item.season}, function(err, seasonMetaData) {
                 if(err) { cb(err); return; }
                 if(seasonMetaData == null) {
@@ -108,7 +108,7 @@ module.exports = function(opts) {
         },
 
         updateInShow: function(episode, cb) {
-            var self = this;
+            const self = this;
             db.findShow({originalTitle: episode.showname}, function(err, showMetaData) {
                 //if(err) { cb(err); return; }
                 if(err || showMetaData == null) {
@@ -130,7 +130,7 @@ module.exports = function(opts) {
         },
 
         scan: function(channelInstance, dir, cb) {
-            var self = this;
+            const self = this;
 
             function scan(container, done) {
                 if(container) {
@@ -146,7 +146,7 @@ module.exports = function(opts) {
                             } else if(item.playable && item.mimetype.match(/^video\//)) {
                                 db.findEpisode({originalId: item.id, channelId: channelInstance.id}, function(err, episode) {
                                     if(episode == null) {
-                                        var md = filenameparser(item.title, 'show');
+                                        const md = filenameparser(item.title, 'show');
 
                                         if(md) {
                                             md.originalId = item.id;
@@ -178,18 +178,6 @@ module.exports = function(opts) {
             channelInstance.getItem(dir.containerId).then(function(container) {
                 scan(container, cb);
             }).catch(cb);
-        },
-
-        updateAll: function(cb) {
-            db.findShows({status: {$ne: 'Ended'}}, function(err, shows) {
-            if(err) { cb(err); return; }
-                for(var x=0,l=shows.length; x<l; x++) {
-                    var show = shows[x];
-                    metadata.getChanges(show, function(err, changeset) {
-
-                    });
-                }
-            });
         }
     };
 };
