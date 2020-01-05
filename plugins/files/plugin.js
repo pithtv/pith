@@ -94,8 +94,7 @@ class FilesChannel extends Channel {
                     item.preferredView = "still";
                 } else {
                     item.type = 'file';
-                    const extension = $path.extname(itemId);
-                    item.mimetype = mimetypes[extension];
+                    item.mimetype = mimetypes.fromFilePath(itemId);
                     item.playable = item.mimetype && true;
 
                     item.fileSize = stats && stats.size;

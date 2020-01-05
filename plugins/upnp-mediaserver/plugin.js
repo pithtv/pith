@@ -5,6 +5,7 @@ const upnp = require('../../lib/upnp');
 const entities = require('entities');
 const { sprintf } = require('sprintf-js');
 const settings = require("../../lib/global")().settings;
+const logger = require('log4js').getLogger('pith.plugin.upnp-mediaserver');
 
 function upnpClassFromItem(item) {
     if (item.type === 'container') {
@@ -34,6 +35,7 @@ function upnpClassFromItem(item) {
             case 'audio':
                 return 'object.item.musicItem';
             default:
+                logger.warn(`Unable to determine type for item ${item.title} - ${item.filePath}.`);
                 return 'object.item';
         }
     } else {
