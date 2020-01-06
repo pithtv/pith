@@ -57,7 +57,7 @@ class CouchPotatoChannel extends Channel {
             if(result.empty) {
                 return [];
             } else {
-                return Promise.all(result.movies.filter(movie => movie.releases.length > 0).map(movie => (this.mapMovie(movie))));
+                return async.mapSeries(result.movies.filter(movie => movie.releases.length > 0), movie => (this.mapMovie(movie)));
             }
         }).then(result => {
             logger.debug("Couchpotato index fetched and processed");
