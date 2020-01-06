@@ -20,7 +20,7 @@ const fs = require('fs');
 const http = require('http');
 const parser = require('http-string-parser');
 const {HttpError} = require("./Error");
-const { queue, wrap } = require("../../lib/async");
+const {queue, wrap} = require("../../lib/async");
 const logger = require('log4js').getLogger('pith.plugin.upnp-mediaserver.Device');
 
 class Device extends DeviceControlProtocol {
@@ -41,7 +41,7 @@ class Device extends DeviceControlProtocol {
             let socket = dgram.createSocket('udp4');
             try {
                 socket.bind();
-                for(let msg of messages) {
+                for (let msg of messages) {
                     await wrap(cb => socket.send(msg, 0, msg.length, port, address, cb));
                 }
             } finally {
@@ -74,7 +74,7 @@ class Device extends DeviceControlProtocol {
 
     addServices() {
         this.services = {};
-        for(let serviceType of this.serviceTypes) {
+        for (let serviceType of this.serviceTypes) {
             this.services[serviceType] = new this.serviceReferences[serviceType](this);
         }
     }
@@ -109,7 +109,7 @@ class Device extends DeviceControlProtocol {
         };
 
         let headers = {};
-        for(let header of Object.keys(customHeaders)) {
+        for (let header of Object.keys(customHeaders)) {
             headers[header.toUpperCase()] = customHeaders[header] || defaultHeaders[header.toLowerCase()];
         }
         return headers;
@@ -119,16 +119,20 @@ class Device extends DeviceControlProtocol {
         return ['upnp:rootdevice', "uuid:" + this.uuid, this.makeType()].concat(Object.values(this.services).map(service => service.makeType()));
     }
 
-    parseRequest(msg, rinfo, cb) { // TODO promise?
-        let { method, headers } = parser.parseRequest(msg);
+    parseRequest(msg, rinfo) {
+        let {method, headers} = parser.parseRequest(msg);
         let mx = null, st = null;
-        for(let header of Object.keys(headers)) {
-            switch(header.toLowerCase()) {
-                case 'mx': mx = headers[header]; break;
-                case 'st': st = headers[header]; break;
+        for (let header of Object.keys(headers)) {
+            switch (header.toLowerCase()) {
+                case 'mx':
+                    mx = headers[header];
+                    break;
+                case 'st':
+                    st = headers[header];
+                    break;
             }
         }
-        cb(null, {method, mx, st, address: rinfo.address, port: rinfo.port });
+        return {method, mx, st, address: rinfo.address, port: rinfo.port};
     }
 
     buildDescription() {
@@ -158,51 +162,48 @@ class Device extends DeviceControlProtocol {
         </root>`;
     }
 
-    httpListener(req, res) {
-        let handler = (req, cb) => {
-            let [,category, serviceType, action, id] = req.url.split('/');
-            switch(category) {
-                case 'device':
-                    cb(null, this.buildDescription());
-                    break;
-                case 'service':
-                    this.services[serviceType].requestHandler({action, req, id}, cb);
-                    break;
-                case 'icons':
-                    fs.readFile(`icons/${serviceType}`, (err, data) => {
-                        if(err) {
-                            cb(new HttpError(404));
-                        } else {
-                            cb(null, data, { 'Content-Type': 'image/png'});
-                        }
-                    });
-                    break;
-                default:
-                    cb(new HttpError(404));
-            }
-        };
-
-        // TODO simplify this.
-        handler(req, (err, data, headers) => {
-            if(err) {
-                logger.log(`Responded with ${err.code}: ${err.message} for ${req.url}`);
-                res.writeHead(err.code, {'Content-Type': 'text/plain'});
-                res.write(`${err.code} - ${err.message}`);
-            } else {
-                let h = Object.assign({}, {
-                    server: null
-                }, data && {
-                    'Content-Type': 'text/xml; charset="utf-8"',
-                    'Content-Length': data.length
-                }, headers);
-                res.writeHead(200, this.makeHeaders(h));
-                if(data) {
-                    res.end(data);
-                    return;
+    async handler(req) {
+        let [, category, serviceType, action, id] = req.url.split('/');
+        switch (category) {
+            case 'device':
+                return {
+                    data: this.buildDescription()
+                };
+            case 'service':
+                return await this.services[serviceType].requestHandler({action, req, id});
+            case 'icons':
+                try {
+                    let data = await async.wrap(cb => fs.readFile(`icons/${serviceType}`, cb));
+                    return {data, headers: {'Content-Type': 'image/png'}};
+                } catch (err) {
+                    throw new HttpError(404);
                 }
+            default:
+                throw new HttpError(404);
+        }
+    }
+
+    async httpListener(req, res) {
+        try {
+            const {data, headers} = await this.handler(req);
+            let h = Object.assign({}, {
+                server: null
+            }, data && {
+                'Content-Type': 'text/xml; charset="utf-8"',
+                'Content-Length': data.length
+            }, headers);
+            res.writeHead(200, this.makeHeaders(h));
+            if (data) {
+                res.end(data);
+                return;
             }
+        } catch (err) {
+            logger.log(`Responding with ${err.code}: ${err.message} for ${req.url}`);
+            res.writeHead(err.code, {'Content-Type': 'text/plain'});
+            res.write(`${err.code} - ${err.message}`);
+        } finally {
             res.end();
-        });
+        }
     }
 
     async ssdpBroadcast(type) {
@@ -210,8 +211,8 @@ class Device extends DeviceControlProtocol {
             nt, nts: `ssdp:${type}`, host: null
         }));
 
-        for(let msg of messages) {
-            await( wrap(cb =>
+        for (let msg of messages) {
+            await (wrap(cb =>
                 this.broadcastSocket.send(msg, 0, msg.length, this.ssdp.port, this.ssdp.address, cb)));
         }
     }
@@ -234,12 +235,11 @@ class Device extends DeviceControlProtocol {
             setTimeout(answer, wait, address, port);
         };
 
-        let respondTo = [ 'ssdp:all', 'upnp:rootdevice', this.makeType(), this.uuid ];
-        this.parseRequest(msg.toString(), rinfo, (err, req) => {
-            if(req.method === 'M-SEARCH' && respondTo.indexOf(req.st) >= 0) {
-                answerAfter(req.mx, req.address, req.port);
-            }
-        });
+        let respondTo = ['ssdp:all', 'upnp:rootdevice', this.makeType(), this.uuid];
+        const req = this.parseRequest(msg.toString(), rinfo)
+        if (req.method === 'M-SEARCH' && respondTo.indexOf(req.st) >= 0) {
+            answerAfter(req.mx, req.address, req.port);
+        }
     }
 
     ssdpAnnounce() {
@@ -257,4 +257,4 @@ class Device extends DeviceControlProtocol {
 
 }
 
-module.exports = { Device };
+module.exports = {Device};

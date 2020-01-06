@@ -169,58 +169,58 @@ class Service extends DeviceControlProtocol {
         });
     }
 
-    requestHandler({action, req}, cb) {
+    async requestHandler({action, req}) {
         switch(action) {
             case 'description':
-                fs.readFile(this.serviceDescription, 'utf-8', cb);
-                break;
+                return {data: await async.wrap(cb => fs.readFile(this.serviceDescription, 'utf-8', cb))};
             case 'control':
                 let [,serviceAction] = /:\d#(\w+)"$/.exec(req.headers.soapaction);
                 if(req.method !== 'POST' || !serviceAction) {
-                    cb(new HttpError(405));
+                    throw new HttpError(405);
                     return;
                 }
-                let data = '';
-                req.on('data', chunk => data += chunk);
-                req.on('end', () => {
-                    this.action(serviceAction, data).then(soapResponse =>
-                        cb(null, soapResponse, {ext: null})
-                    ).catch(cb);
+                return new Promise((resolve, reject) => {
+                    let data = '';
+                    req.on('data', chunk => data += chunk);
+                    req.on('end', () => {
+                        this.action(serviceAction, data).then(soapResponse =>
+                            resolve({data: soapResponse, headers: {ext: null}})
+                        ).catch(reject);
+                    });
                 });
-                break;
             case 'event':
                 let {sid, timeout, callback} = req.headers;
-                let resp, err;
+                let resp;
                 if(req.method === 'SUBSCRIBE') {
                     if(callback) {
                         if(/<http/.test(callback)) {
                             resp = this.subscribe(callback.slice(1,-1), timeout);
                         } else {
-                            err = new HttpError(412);
+                            throw new HttpError(412);
                         }
                     } else if(sid) {
                         resp = this.renew(sid, timeout);
                     } else {
-                        err = new HttpError(400);
+                        throw new HttpError(400);
                     }
 
                     if(!resp) {
-                        err = new HttpError(412);
+                        throw new HttpError(412);
                     }
-                    cb(err, null, resp);
+                    return {data: null, headers: resp};
                 } else if(req.method === 'UNSUBSCRIBE') {
                     if(sid) {
                         this.unsubscribe(sid);
-                        cb();
+                        return;
                     } else {
-                        cb(new HttpError(412));
+                        throw new HttpError(412);
                     }
                 } else {
-                    cb(new HttpError(405));
+                    throw new HttpError(405);
                 }
                 break;
             default:
-                cb(new HttpError(404));
+                throw new HttpError(404);
         }
     }
 }
