@@ -291,7 +291,7 @@ module.exports = {
             if (data.USN in players) {
                 players[data.USN].offline();
                 opts.pith.unregisterPlayer(players[data.USN]);
-                players[data.USN] = undefined;
+                delete players[data.USN];
             }
         }
 
