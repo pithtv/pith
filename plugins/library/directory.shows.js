@@ -54,7 +54,7 @@ module.exports = function(plugin) {
         return Object.assign({}, m, {
             id: 'shows/' + m.showId + '/' + m.season + '/' + m.episode,
             episodeId: m.id,
-            type: 'item',
+            type: 'file',
             mediatype: 'season',
             playState: playState,
             playable: m.originalId != null,
@@ -96,7 +96,7 @@ module.exports = function(plugin) {
                     let result = await db.findSeason({showId: p[0], season: p[1]});
                     return mapSeason(result);
                 } else if(p.length === 3) {
-                    let result = await db.findEpisode({showId: p[0], season: parseInt(p[1]), episode: parseInt(p[2])});
+                    let result = await async.wrap(cb => db.findEpisode({showId: p[0], season: parseInt(p[1]), episode: parseInt(p[2])}, cb));
                     if (result) {
                         return await mapEpisode(result);
                     }
