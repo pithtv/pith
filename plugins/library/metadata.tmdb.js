@@ -168,9 +168,10 @@ module.exports = (item, mediatype, callback) => {
                     external_source: 'tvdb_id'
                 }, tvParser);
             } else {
-                tmdb.searchTv({query: item.showname || item.title}, (err, result) => {
+                const query = {query: item.showname || item.title};
+                tmdb.searchTv(query, (err, result) => {
                     if(err || !result.results[0]) {
-                        callback(err || Error(`No result found for show ${item}`));
+                        callback(err || Error(`No result found for show ${item} using query ${query.query}`));
                     } else {
                         tmdb.tvInfo({id: result.results[0].id}, tvParser);
                     }

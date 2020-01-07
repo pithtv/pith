@@ -103,6 +103,11 @@ class ContentDirectory extends Service {
         let id = (options.ObjectID[0] || 0);
         let result = await this.device.delegate.fetchObject(id);
 
+        if(!result) {
+            logger.error("fetchObject returned no result", options);
+            return;
+        }
+
         let didl = this.buildDidl([result.item]);
         logger.debug(didl);
         return this.buildSoapResponse('Browse', {

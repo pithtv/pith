@@ -1,0 +1,10 @@
+<div class="modal-header">
+  <h4 class="modal-title" id="modal-title">Resume playback</h4>
+</div>
+<div class="modal-body">
+  <p><strong>Playback of &#8220;{{item.title}}&#8221; was last stopped at {{item.playState.time | time}}. Would you like to resume from there?</strong></p>
+</div>
+<div class="modal-footer">
+  <button type="button" class="btn btn-outline-secondary" (click)="resume()">Resume</button>
+  <button type="button" class="btn btn-outline-primary" (click)="playFromStart()">Play from start</button>
+</div>

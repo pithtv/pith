@@ -22,10 +22,11 @@ import {SettingsModule} from './settings/settings.module';
 import {ScrubberComponent} from './util/scrubber.component';
 import {WebPlayer} from './videoplayer/web-player';
 import {VideoPlayerComponent} from './videoplayer/video-player.component';
-import {CommonModule} from "@angular/common";
-import {InfiniteScrollModule} from "ngx-infinite-scroll";
+import {CommonModule} from '@angular/common';
+import {InfiniteScrollModule} from 'ngx-infinite-scroll';
 import { ServiceWorkerModule } from '@angular/service-worker';
 import { environment } from '../environments/environment';
+import {PlaybackModalComponent} from './core/playback-modal';
 
 @NgModule({
   declarations: [
@@ -34,6 +35,7 @@ import { environment } from '../environments/environment';
     ChannelBrowserComponent,
     ChannelDetailsComponent,
     ChannelTvDetailsComponent,
+    PlaybackModalComponent,
     PrescalePipe,
     TimePipe,
     ScrubberComponent,
@@ -60,7 +62,10 @@ import { environment } from '../environments/environment';
     PlayerService,
     WebPlayer
   ],
-  bootstrap: [AppComponent]
+  bootstrap: [AppComponent],
+  entryComponents: [
+    PlaybackModalComponent
+  ]
 })
 export class AppModule {
 }

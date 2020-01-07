@@ -7,7 +7,7 @@ const {formatTime, formatMsDuration} = require('../../lib/upnp');
 const Global = require("../../lib/global")();
 const client = ssdp({unicastHost: Global.bindAddress});
 const logger = require('log4js').getLogger('pith.plugin.upnp-mediarenderer');
-const {wrap} = require("../../lib/async");
+const async = {wrap} = require("../../lib/async");
 
 const iconTypePreference = [
     'image/jpeg',
@@ -96,6 +96,28 @@ class MediaRenderer extends EventEmitter {
         });
     }
 
+    waitForAction(action, timeout) {
+        if(this.status.actions[action]) {
+            return Promise.resolve(true);
+        } else {
+            return new Promise((resolve, reject) => {
+                const waitForSeek = async (status) => {
+                    if (status.actions[action]) {
+                        this.removeListener('statechange', waitForSeek);
+                        resolve(true);
+                    }
+                };
+                setTimeout(() => {
+                    logger.error(`Timed out waiting for ${action}`);
+                    this.removeListener('statechange', waitForSeek);
+                    resolve(false);
+                }, timeout);
+                this.on('statechange', waitForSeek);
+                logger.debug(`Waiting for ${action} to become available on player`);
+            });
+        }
+    }
+
     async play(time) {
         const renderer = this;
         try {
@@ -105,25 +127,11 @@ class MediaRenderer extends EventEmitter {
             }, cb));
 
             if (time) {
-                const timeout = new Date().getTime() + 3000;
-                return new Promise((resolve, reject) => {
-                    const waitForSeek = async (status) => {
-                        if (status.actions.seek) {
-                            try {
-                                await this.seek({time: time});
-                                this.removeListener('statechange', waitForSeek);
-                            } catch (err) {
-                                logger.error(`Seeking failed`, err);
-                                this.removeListener('statechange', waitForSeek);
-                            }
-                        } else if (new Date().getTime() > timeout) {
-                            this.removeListener('statechange', waitForSeek);
-                            logger.error('Seeking not available');
-                        }
-                    };
-
-                    renderer.on('statechange', waitForSeek);
-                });
+                await async.retry(async () => {
+                    if(await this.waitForAction('seek', 3000)) {
+                        await this.seek({time: time});
+                    }
+                }, 1000, 3000);
             }
         } catch (err) {
             logger.error("Error starting playback on UPnP device", err);

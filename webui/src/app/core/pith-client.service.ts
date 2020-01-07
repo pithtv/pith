@@ -1,5 +1,4 @@
-
-import {empty as observableEmpty, Observable, Subject, BehaviorSubject} from 'rxjs';
+import {empty as observableEmpty, Observable, Subject, BehaviorSubject, EMPTY} from 'rxjs';
 
 import {tap, map, catchError} from 'rxjs/operators';
 import {HttpClient, HttpParams} from '@angular/common/http';
@@ -16,7 +15,7 @@ abstract class RestModule {
 
   protected get(...args: any[]) {
     let query: object;
-    if (typeof args[args.length - 1] == 'object') {
+    if (typeof args[args.length - 1] === 'object') {
       query = args[args.length - 1];
       args = args.slice(0, -1);
     }
@@ -78,8 +77,8 @@ export class RemotePlayer extends RestModule {
     return ['player', this.id];
   }
 
-  load(channel: Channel, item: ChannelItem) {
-    this.get('load', channel.id, item.id).subscribe();
+  load(channel: Channel, item: ChannelItem, seekTime?: number) {
+    this.get('load', channel.id, item.id, seekTime !== null ? {time: seekTime} : {}).subscribe();
   }
 
   play() {
@@ -167,7 +166,7 @@ export class Channel extends RestModule {
   }
 
   togglePlayState(item) {
-    if (item.playState && item.playState.status == 'watched') {
+    if (item.playState && item.playState.status === 'watched') {
       item.playState = {status: 'none'};
     } else {
       item.playState = {status: 'watched'};
@@ -250,7 +249,7 @@ export class PithClientService {
   get(url, query?: object) {
     const options = {};
     if (query) {
-      const p = Object.keys(query).reduce((p, k) => p.append(k, query[k]), new HttpParams());
+      const p = Object.keys(query).reduce((pp, k) => pp.append(k, query[k]), new HttpParams());
       options['params'] = p;
     }
     this.reportProgress({
@@ -273,20 +272,20 @@ export class PithClientService {
         loading: false,
         error: true
       });
-      return observableEmpty();
+      return EMPTY;
     }), );
   }
 
   queryChannels() {
-    return (this.get('channels') as Observable<object[]>).pipe(map(p => p.map(p => new Channel(this, p))));
+    return (this.get('channels') as Observable<object[]>).pipe(map(p => p.map(pp => new Channel(this, pp))));
   }
 
   queryPlayers() {
-    return (this.get('players') as Observable<object[]>).pipe(map(p => p.map(p => new RemotePlayer(this, p))));
+    return (this.get('players') as Observable<object[]>).pipe(map(p => p.map(pp => new RemotePlayer(this, pp))));
   }
 
   getChannel(id: string): Observable<Channel> {
-    return this.queryChannels().pipe(map((channels => channels.find(channel => channel.id == id))));
+    return this.queryChannels().pipe(map((channels => channels.find(channel => channel.id === id))));
   }
 
   get errors() {
