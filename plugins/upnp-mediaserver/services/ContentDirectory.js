@@ -104,8 +104,8 @@ class ContentDirectory extends Service {
         let result = await this.device.delegate.fetchObject(id);
 
         if(!result) {
-            logger.error("fetchObject returned no result", options);
-            return;
+            logger.warn(`browseMetaData requested for ObjectId '${id}', but no object found`);
+            return this.buildSoapError(new SoapError(404));
         }
 
         let didl = this.buildDidl([result.item]);
