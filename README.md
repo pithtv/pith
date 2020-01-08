@@ -1,5 +1,4 @@
-pith
-====
+# pith
 
 pith is a lightweight media server that aims to seamlessly integrate your networked media devices. It can act as a
 standard UPnP media server, but you can also use the built-in web interface to playback media in your browser, or use
@@ -18,25 +17,39 @@ keep the load on your server low, as well as hardware requirements.
 so it's just like having the media locally on your Kodi box. Playback state is shared between all devices; so if you stop
 playing on one device, you can easily resume playback on another from the same point in time.
 
-Getting started
-===============
+## Getting started
+
 Install prerequisites
 
-    sudo apt-get install mongodb-server nodejs ffmpeg
+    $ sudo apt-get install mongodb-server nodejs ffmpeg
 
-Clone the project:
+If you just want to run the latest release, you can do so using just:
 
-    git clone http://github.com/Evinyatar/pith.git pith
-    cd pith
+    $ npx @pithmediaserver/pith
+    
+This will automatically download the latest version and start it. If you don't care for the automatic version checking,
+you can also install it as a global module:
 
-Install node and build the web interface
-
-    npm install
-    npm run-script build
-
-Start it up
-
-    npm start
+    $ npm install -g @pithmediaserver/pith
+    $ pith
 
 Navigate to the URL that is mentioned in the logging, and click the menu to go into settings to set up your media path
 and library. Restart pith after saving those settings.
+    
+### Running from GitHub
+
+If you'd like to run the latest (unpublished) code, then continue reading.
+
+Clone the project:
+
+    $ git clone https://github.com/Evinyatar/pith.git pith
+    $ cd pith
+
+Install node and build the web interface
+
+    $ npm install
+    $ npm run-script build
+
+Start it up
+
+    $ npm start

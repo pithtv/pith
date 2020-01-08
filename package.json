@@ -1,10 +1,14 @@
 {
-  "name": "pith-server",
-  "version": "0.0.1",
+  "name": "@pithmediaserver/pith",
+  "version": "0.0.6",
   "scripts": {
     "build": "npm --prefix webui install && npm --prefix webui run-script build-prod",
+    "prepare": "npm run-script build",
     "start": "node $NODE_DEBUG_OPTION app",
     "test": "nodeunit"
+  },
+  "bin": {
+    "pith": "./bin/pith.js"
   },
   "dependencies": {
     "MD5": "^1.3.0",
@@ -30,5 +34,18 @@
     "ws": "^6.1.2",
     "xml2js": "^0.4.19"
   },
+  "files": [
+    "webui/dist/**",
+    "lib",
+    "icons",
+    "migration",
+    "plugins",
+    "test",
+    "app.js",
+    "README.md",
+    "LICENSE",
+    "pith.js",
+    "AUTHORS"
+  ],
   "devDependencies": {}
 }

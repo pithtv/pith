@@ -1,8 +1,0 @@
-{
-    "jscodehints.detectedExclusions": [
-        "/home/christoph/pith/node_modules/moviedb/node_modules/superagent/node_modules/formidable/lib/index.js",
-        "/home/christoph/pith/node_modules/moviedb/node_modules/superagent/node_modules/formidable/lib/file.js",
-        "/home/christoph/pith/node_modules/moviedb/node_modules/superagent/node_modules/formidable/test/fixture/js/special-chars-in-filename.js",
-        "punycode.js"
-    ]
-}
