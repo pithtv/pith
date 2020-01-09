@@ -5,7 +5,7 @@
     "build": "npm --prefix webui install && npm --prefix webui run-script build-prod",
     "prepare": "npm run-script build",
     "start": "node $NODE_DEBUG_OPTION app",
-    "test": "nodeunit"
+    "test": "ava"
   },
   "bin": {
     "pith": "./bin/pith.js"
@@ -19,14 +19,11 @@
     "express": "^4.16.4",
     "fluent-ffmpeg": "^2.0.0-rc3",
     "http-string-parser": "0.0.6",
-    "lodash": "^4.17.15",
     "log4js": "^6.1.0",
     "mongodb": "^2.2.36",
     "moviedb": "^0.2.10",
     "node-fetch": "^1.6.3",
     "node-uuid": "^1.4.8",
-    "nodeunit": "^0.11.3",
-    "request": "^2.88.0",
     "retrieve-keyframes": "^2.13.1",
     "sharp": "^0.23.4",
     "sprintf-js": "^1.0.2",
@@ -47,5 +44,7 @@
     "pith.js",
     "AUTHORS"
   ],
-  "devDependencies": {}
+  "devDependencies": {
+    "ava": "^2.4.0"
+  }
 }

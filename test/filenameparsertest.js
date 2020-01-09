@@ -1,4 +1,4 @@
-const testCase = require("nodeunit").testCase;
+const test = require('ava');
 const filenameparser = require('../lib/filenameparser.js');
 
 const movietests = {
@@ -23,19 +23,15 @@ const tvtests = {
         {title: "1999 The Leftovers", season: 10, episode: 3, showname: "Archer", mediatype: 'episode'}
 };
 
-let cases = {};
 for(let x in tvtests) {
-    cases[x] = (function(x) { return function(test) {
+    test(x, function(test) {
         const r = filenameparser(x, 'show');
         test.deepEqual(r, tvtests[x]);
-        test.done();
-    }})(x);
+    });
 }
 for(let x in movietests) {
-    cases[x] = (function(x) { return function(test) {
+    test(x, function(test) {
         const r = filenameparser(x, 'movie');
         test.deepEqual(r, movietests[x]);
-        test.done();
-    }})(x);
+    });
 }
-module.exports = testCase(cases);
