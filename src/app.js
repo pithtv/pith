@@ -65,7 +65,7 @@ require("./lib/global")(function(err, Global) {
 
             app.use(pithPath, pithApp.handle);
             app.use(Global.settings.apiContext, rest(pithApp));
-            app.use("/webui", express.static(path.resolve(__dirname, "webui", "dist")));
+            app.use("/webui", express.static(path.resolve(__dirname, "..", "webui", "dist")));
             app.use("/scale", scaler.handle);
 
             // exclude all private members in JSON messages (those starting with underscore)

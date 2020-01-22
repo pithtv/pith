@@ -1,5 +1,5 @@
 const test = require('ava');
-const util = require('../lib/util');
+const util = require('../src/lib/util');
 
 test("Test assign", function (test) {
     var target = {

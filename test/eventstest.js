@@ -1,5 +1,5 @@
 const test = require('ava');
-const EventEmitter = require("../lib/events");
+const EventEmitter = require("../src/lib/events");
 
 function setupHandlers(e, test, lastTestFinishes) {
     e.on("something", function (arg) {

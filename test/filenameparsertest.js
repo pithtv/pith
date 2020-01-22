@@ -1,5 +1,5 @@
 const test = require('ava');
-const filenameparser = require('../lib/filenameparser.js');
+const filenameparser = require('../src/lib/filenameparser.js');
 
 const movietests = {
     "/media/2010.1984.720p.bluray.x264-sinners.mkv":

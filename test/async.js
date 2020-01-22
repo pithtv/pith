@@ -1,5 +1,5 @@
 const test = require('ava');
-const async = require("../lib/async");
+const async = require("../src/lib/async");
 
 test("Map should map", async (test) => {
     const arr = ["a", "b", "c"];
