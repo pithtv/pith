@@ -13,14 +13,14 @@ module.exports = function(pith) {
     const router = express.Router();
 
     router.use("/channels", function(req, res) {
-        pith.listChannels(function(list) {
+        pith.listChannels().then(function(list) {
             res.json(list);
         });
     }).use("/channel/:channelId", function(req,res) {
         const channelInstance = pith.getChannelInstance(req.params.channelId);
         channelInstance.route.apply(channelInstance.route, arguments);
     }).get("/players", function(req,res) {
-        pith.listPlayers(function(list) {
+        pith.listPlayers().then(function(list) {
             res.json(list);
         });
     }).get(/player\/([^\/]*)\/load\/([^\/]*)\/(.*)$/, function(req, res) {

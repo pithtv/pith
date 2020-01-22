@@ -1,10 +1,11 @@
-"use strict";
+import {Router} from "express";
+import {IChannel, IChannelInitialiser} from "./channel";
+import {EventEmitter} from "./lib/events";
+import lib from "./lib/global";
+import {IPlayer} from "./player";
+const global = lib() as any;
 
-const express = require("express");
-const EventEmitter = require("./lib/events");
-const global = require("./lib/global")();
-
-const route = express.Router();
+const route = Router();
 
 let sequence = 0;
 
@@ -12,7 +13,15 @@ function newId() {
     return "id" + (sequence++);
 }
 
-class Pith extends EventEmitter {
+export class Pith extends EventEmitter implements Pith {
+    private route: Router;
+    private handle: Router;
+    private channels: IChannelInitialiser[];
+    private channelMap: {[key: string]: IChannelInitialiser};
+    private channelInstances: {};
+    private players: IPlayer[];
+    private playerMap: {[key: string]: IPlayer};
+
     constructor(opts) {
         super();
 
@@ -26,10 +35,10 @@ class Pith extends EventEmitter {
         this.playerMap = {};
 
         Object.assign(this, opts);
-        this.load()
+        this.load();
     }
 
-    getChannelInstance(channelId) {
+    public getChannelInstance(channelId): IChannel {
         let channelInstance = this.channelInstances[channelId];
         if (channelInstance === undefined) {
             const channel = this.channelMap[channelId];
@@ -41,37 +50,42 @@ class Pith extends EventEmitter {
         return channelInstance;
     }
 
-    registerChannel(channel) {
+    public registerChannel(channel: IChannelInitialiser) {
         this.channels.push(channel);
         this.channelMap[channel.id] = channel;
-        this.channels.sort(function (a, b) {
+        this.channels.sort((a, b) => {
             if (a.sequence === b.sequence) {
                 return 0;
-            } else if (a.sequence < b.sequence) return -1;
-            else return 1;
+            } else if (a.sequence < b.sequence) {
+                return -1;
+            } else {
+                return 1;
+            }
         });
-        this.emit("channelRegistered", {channel: channel});
+        this.emit("channelRegistered", {channel});
     }
 
-    registerPlayer(player) {
-        if (!player.id) player.id = newId();
+    public registerPlayer(player: IPlayer) {
+        if (!player.id) {
+            player.id = newId();
+        }
         this.players.push(player);
         this.playerMap[player.id] = player;
-        this.emit("playerregistered", {player: player});
+        this.emit("playerregistered", {player});
 
         player.on("statechange", (status) => {
             status.serverTimestamp = new Date().getTime();
-            this.emit("playerstatechange", {player: player, status: status});
+            this.emit("playerstatechange", {player, status});
         });
     }
 
-    unregisterPlayer(player) {
-        this.players = this.players.filter(e => e.id !== player.id);
+    public unregisterPlayer(player: IPlayer) {
+        this.players = this.players.filter((e) => e.id !== player.id);
         this.playerMap[player.id] = undefined;
-        this.emit("playerdisappeared", {player: player});
+        this.emit("playerdisappeared", {player});
     }
 
-    updatePlayerStates() {
+    public updatePlayerStates() {
         const newTs = new Date().getTime();
         this.players.forEach((e) => {
             if (e.status.state && e.status.state.playing) {
@@ -82,61 +96,61 @@ class Pith extends EventEmitter {
         });
     }
 
-    listPlayers(cb) {
+    public listPlayers() {
         this.updatePlayerStates();
-        cb(this.players);
+        return Promise.resolve(this.players);
     }
 
-    listChannels(cb) {
-        cb(this.channels);
+    public listChannels(cb) {
+        return Promise.resolve(this.channels);
     }
 
-    getLastPlayState(channelId, itemId, cb) {
+    public getLastPlayState(channelId, itemId, cb) {
         const channelInstance = this.getChannelInstance(channelId);
-        channelInstance.getLastPlayState(itemId).then(result => cb(false, result)).catch(cb);
+        channelInstance.getLastPlayState(itemId).then((result) => cb(false, result)).catch(cb);
     }
 
-    putPlayState(channelId, itemId, state, cb) {
+    public putPlayState(channelId, itemId, state, cb) {
         const channelInstance = this.getChannelInstance(channelId);
         if (channelInstance) {
             if (state.status !== undefined || state.duration > 600) {
                 if (!state.status) {
                     if (state.time > Math.max(state.duration - 300, state.duration * 11 / 12)) {
-                        state.status = 'watched';
+                        state.status = "watched";
                     } else {
-                        state.status = 'inprogress';
+                        state.status = "inprogress";
                     }
                 }
-                let promise = channelInstance.putPlayState(itemId, state);
+                const promise = channelInstance.putPlayState(itemId, state);
                 if (cb) {
-                    promise.then(result => cb(false, result)).catch(cb);
+                    promise.then((result) => cb(false, result)).catch(cb);
                 }
             }
         }
     }
 
-    loadMedia(channelId, itemId, playerId, cb, opts) {
-        let player = this.playerMap[playerId];
+    public loadMedia(channelId, itemId, playerId, cb, opts) {
+        const player = this.playerMap[playerId];
         if (!player) {
             cb(new Error(`Unknown player ${playerId}`));
             return;
         }
-        let channel = this.getChannelInstance(channelId);
+        const channel = this.getChannelInstance(channelId);
         channel.getItem(itemId).then(
-            item => player.load(channel, item)
+            (item) => player.load(channel, item),
         ).then(
-            () => player.play(opts && opts.time)
+            () => player.play(opts && opts.time),
         ).then(
-            () => cb(false)
-        ).catch(err => cb(err));
+            () => cb(false),
+        ).catch((err) => cb(err));
     }
 
-    controlPlayback(playerId, command, query) {
+    public controlPlayback(playerId, command, query) {
         const player = this.playerMap[playerId];
         return player[command](query);
     }
 
-    load() {
+    public load() {
         require("./plugins/files/plugin").init({pith: this});
         require("./plugins/library/plugin").init({pith: this});
         require("./plugins/upnp-mediarenderer/plugin").init({pith: this});
@@ -145,7 +159,7 @@ class Pith extends EventEmitter {
         require("./plugins/upnp-mediaserver/plugin").init({pith: this});
     }
 
-    settings(settings) {
+    public settings(settings) {
         if (arguments.length === 0) {
             return global.settings;
         } else {
@@ -153,5 +167,3 @@ class Pith extends EventEmitter {
         }
     }
 }
-
-module.exports = Pith;

@@ -1,7 +1,7 @@
 const logger = require('log4js').getLogger('pith.ssdp-client');
 
 const dgram = require('dgram');
-const EventEmitter = require("events").EventEmitter;
+const EventEmitter = require("./events").EventEmitter;
 
 const newline = /\r\n/g;
 const httpHeader = /^([\w-]+):\s+(.*$)/;

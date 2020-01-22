@@ -30,7 +30,7 @@ class ContentDirectory extends Service {
             },
             device,
             type: 'ContentDirectory',
-            serviceDescription: __dirname + '/ContentDirectory.xml',
+            serviceDescription: __dirname + '/../../../../resources/ContentDirectory.xml',
             optionalActions: [
                 'Search',
                 'CreateObject',

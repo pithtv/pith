@@ -58,7 +58,7 @@ class MediaServerDelegate {
 
     async fetchChildren(id) {
         if (id === 0 || id === '0') {
-            let channels = await wrapNoErr(cb => this.pith.listChannels(cb));
+            let channels = await this.pith.listChannels();
             let items = channels.map(channel => ({
                 id: `channel:${channel.id}`,
                 parentId: 0,

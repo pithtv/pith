@@ -9,14 +9,14 @@
 
 const fs = require("fs");
 const url = require("url");
-const events = require("events");
+const {EventEmitter} = require("./events");
 const ff = require("fluent-ffmpeg");
 const profiles = require("./profiles");
 const settings = {server: "Pith"};
 const path = require("path");
 const keyframes = require('./keyframes');
 
-const handler = new events.EventEmitter();
+const handler = new EventEmitter();
 
 const logger = require("log4js").getLogger("pith.streamer");
 

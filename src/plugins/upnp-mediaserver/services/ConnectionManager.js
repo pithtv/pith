@@ -26,7 +26,7 @@ class ConnectionManager extends Service {
             },
             device: device,
             type: 'ConnectionManager',
-            serviceDescription: __dirname + '/ConnectionManager.xml',
+            serviceDescription: __dirname + '/../../../../resources/ConnectionManager.xml',
             optionalActions: ['PrepareForConnection', 'ConnectionComplete'],
             stateActions: {
                 GetCurrentConnectionIDs: 'ConnectionIDs'

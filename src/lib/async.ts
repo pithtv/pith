@@ -1,33 +1,38 @@
-const async = require('async');
-const logger = require('log4js').getLogger("async");
+import async from "async";
+import {getLogger} from "log4js";
+
+const logger = getLogger("async");
 
 module.exports = {
     map(array, mapper) {
         return new Promise((resolve, reject) => {
             async.map(array, (item, callback) => {
                 if (mapper.length === 1) {
-                    Promise.resolve(mapper(item)).then(res => callback(null, res)).catch(callback);
+                    Promise.resolve(mapper(item)).then((res) => callback(null, res)).catch(callback);
                 } else {
                     mapper(item, callback);
                 }
             }, (err, result) => {
-                if (err) reject(err);
-                else resolve(result);
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(result);
+                }
             });
-        })
+        });
     },
 
     async mapSeries(array, mapper) {
         const out = new Array(array.length);
         let idx = 0;
-        for (let item of array) {
+        for (const item of array) {
             out[idx++] = await mapper(item, idx);
         }
         return out;
     },
 
     queue(worker) {
-        let queue = [];
+        const queue = [];
         let running = false;
 
         async function startQueue() {
@@ -47,24 +52,27 @@ module.exports = {
                 if (!running) {
                     await startQueue();
                 }
-            }
-        }
+            },
+        };
     },
 
     wrap(func) {
         return new Promise((resolve, reject) => {
-            func(function (err, res) {
-                if (err) reject(err);
-                else resolve(res);
-            })
+            func((err, res) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(res);
+                }
+            });
         });
     },
 
     wrapNoErr(func) {
         return new Promise((resolve) => {
-            func(function (res) {
+            func((res) => {
                 resolve(res);
-            })
+            });
         });
     },
 
@@ -73,7 +81,7 @@ module.exports = {
             const s = new Date().getTime() + timeout;
             const f = () => {
                 Promise.resolve(func()).then(resolve)
-                    .catch(err => {
+                    .catch((err) => {
 
                         if (new Date().getTime() > s) {
                             reject(err);
@@ -85,5 +93,5 @@ module.exports = {
             };
             f();
         });
-    }
+    },
 };
