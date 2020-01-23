@@ -9,8 +9,6 @@ const normalize = function (f) {
 };
 
 module.exports = function(fn, kind) {
-    "use strict";
-
     const parts = fn.split(/\/+/g);
     let part, f, title, year, season, episode, showname;
     while(parts.length > 0) {

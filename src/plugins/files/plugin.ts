@@ -1,26 +1,34 @@
-const fs = require("fs");
-const mimetypes = require("../../lib/mimetypes");
-const vidstreamer = require("../../lib/vidstreamer");
-const async = require("async");
-const $path = require("path");
-const settings = require("../../lib/global")().settings;
-const playstate = require("./playstate");
-const ff = require("fluent-ffmpeg");
-const Channel = require("../../lib/channel");
-const wrapToPromise = require("../../lib/async").wrap;
-const profiles = require("../../lib/profiles");
-const keyframes = require("../../lib/keyframes");
-const preview = require("./preview");
+import fs from 'fs';
+import mimetypes from '../../lib/mimetypes';
 
-const metaDataProviders = [
-    require("./movie-nfo"),
-//    require("./tvshow-nfo"),
-    require("./thumbnails"),
-    require("./fanart")
-];
+import vidstreamer from '../../lib/vidstreamer';
+import async from 'async';
+import $path from 'path';
+import lib from '../../lib/global';
+import {playstate} from './playstate';
+import ff from 'fluent-ffmpeg';
+import {Channel} from '../../lib/channel';
+import {wrap as wrapToPromise} from '../../lib/async';
+import profiles from '../../lib/profiles';
+import {keyframes} from '../../lib/keyframes';
+import {preview} from './preview';
+import movie_nfo from './movie-nfo';
+import tvshow_nfo from './tvshow-nfo';
+import thumbnails from './thumbnails';
+import fanart from './fanart';
+import {Pith} from '../../pith';
+import {IChannelItem} from '../../channel';
+import {IStream} from '../../stream';
+
+const settings = lib().settings;
+
+const metaDataProviders = [new movie_nfo(), new tvshow_nfo(), new thumbnails(), new fanart()];
 
 class FilesChannel extends Channel {
-    constructor(pith, statestore) {
+    private rootDir: string;
+    private pith: Pith;
+    private statestore: any;
+    constructor(pith: Pith, statestore) {
         super();
 
         this.rootDir = settings.files.rootDir;
@@ -68,30 +76,25 @@ class FilesChannel extends Channel {
                     });
                 }
             });
-        });
+        }) as Promise<IChannelItem[]>;
     }
 
     getFile(path) {
         return $path.resolve(this.rootDir, path);
     }
 
-    getItem(itemId, detailed) {
+    getItem(itemId, detailed = true) {
         return new Promise((resolve) => {
-            if (detailed === undefined) {
-                detailed = true;
-            }
-
             const filepath = $path.resolve(this.rootDir, itemId);
             const channel = this;
             fs.stat(filepath, function (err, stats) {
-                const item = {
+                const item : Partial<IChannelItem> = {
                     title: $path.basename(itemId),
                     id: itemId
                 };
 
                 if (stats && stats.isDirectory()) {
                     item.type = 'container';
-                    item.preferredView = "still";
                 } else {
                     item.type = 'file';
                     item.mimetype = mimetypes.fromFilePath(itemId);
@@ -100,7 +103,6 @@ class FilesChannel extends Channel {
                     item.fileSize = stats && stats.size;
                     item.modificationTime = stats && stats.mtime;
                     item.creationTime = stats && stats.ctime;
-                    item.fsPath = filepath;
                 }
 
                 const applicableProviders = metaDataProviders.filter(function (f) {
@@ -113,13 +115,13 @@ class FilesChannel extends Channel {
                             f.get(channel, filepath, item, cb);
                         };
                     }), function () {
-                        resolve(item);
+                        resolve(item as IChannelItem);
                     });
                 } else {
-                    resolve(item);
+                    resolve(item as IChannelItem);
                 }
             });
-        });
+        }) as Promise<IChannelItem>;
     }
 
     getStream(item, options) {
@@ -148,7 +150,9 @@ class FilesChannel extends Channel {
                                 pixelFormat: stream.pix_fmt
                             }))
                         },
-                        duration: duration
+                        duration: duration,
+                        streams: [],
+                        keyframes: []
                     };
 
                     if (options && options.target) {
@@ -180,7 +184,7 @@ class FilesChannel extends Channel {
                     }
                 }
             });
-        });
+        }) as Promise<IStream>;
     }
 
     getLastPlayState(itemId) {

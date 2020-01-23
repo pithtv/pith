@@ -5,16 +5,16 @@ const path = require("path");
 const uuid = require('node-uuid');
 const logger = require('log4js').getLogger('pith.global');
 
-let global = false;
+let global;
 let callbacks = [];
 
 module.exports = function(callback) {
     if(arguments.length === 0) {
-        if(global === false) {
+        if(global === undefined) {
             throw Error("Synchronous call to Global before init complete");
         }
         return global;
-    } else if(global !== false) {
+    } else if(global !== undefined) {
         callback(false, global);
     } else {
         if (callbacks.length) {

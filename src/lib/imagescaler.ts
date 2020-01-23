@@ -1,17 +1,18 @@
-const Global = require("./global")();
-const md5 = require("MD5");
-const fs = require("fs");
-const sharp = require("sharp");
-const fetch = require('node-fetch');
-const mimetypes = require('./mimetypes');
+import global from './global';
+import md5 from 'MD5';
+import fs from 'fs';
+import sharp from 'sharp';
+import fetch from 'node-fetch';
+import mimetypes from './mimetypes';
 
+const Global = global();
 const dbDir = Global.dataDir + "/thumbnails";
 
 if(!fs.existsSync(dbDir)) {
     fs.mkdirSync(dbDir);
 }
 
-function getThumbnail(url, size, extension, callback) {
+export function getThumbnail(url, size, extension, callback) {
     const dir = dbDir + "/" + size;
     const file = dir + "/" + md5(url) + "." + extension;
     const sizes = size.split(/x/).map(x => parseInt(x));
@@ -57,7 +58,7 @@ function getThumbnail(url, size, extension, callback) {
     });
 }
 
-function handle(req, res) {
+export function handle(req, res) {
     const q = req.originalUrl.lastIndexOf('?'),
         size = req.originalUrl.substring(q).match(/[?&]size=([^&]*)/),
         format = req.originalUrl.substring(q).match(/[?&]format=([^&]*)/);
@@ -95,8 +96,3 @@ function handle(req, res) {
         }
     });
 }
-
-module.exports = {
-    getThumbnail: getThumbnail,
-    handle: handle
-};

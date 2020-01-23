@@ -1,4 +1,4 @@
-const mimetypes = {
+export default {
     ".swf": "application/x-shockwave-flash",
     ".flv": "video/x-flv",
     ".f4v": "video/mp4",
@@ -52,9 +52,7 @@ const mimetypes = {
     ".ogg": "video/ogg",
     ".mkv": "video/x-matroska",
     ".wmv": "video/x-ms-wmv",
-    fromFilePath(filePath) {
+    fromFilePath(filePath) : string {
         return this[filePath.substring(filePath.lastIndexOf('.')).toLowerCase()];
     }
 };
-
-module.exports = mimetypes;

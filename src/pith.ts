@@ -15,12 +15,13 @@ function newId() {
 
 export class Pith extends EventEmitter implements Pith {
     private route: Router;
-    private handle: Router;
+    public readonly handle: Router;
     private channels: IChannelInitialiser[];
     private channelMap: {[key: string]: IChannelInitialiser};
     private channelInstances: {};
     private players: IPlayer[];
     private playerMap: {[key: string]: IPlayer};
+    public readonly rootUrl: string;
 
     constructor(opts) {
         super();

@@ -2,7 +2,7 @@ const db = require("./database");
 const async = require("async");
 const logger = require("log4js").getLogger("pith.plugin.library");
 const global = require("../../lib/global")();
-const Channel = require("../../lib/channel");
+const {Channel} = require("../../lib/channel");
 
 const moviesDirectory = require("./directory.movies");
 const showsDirectory = require("./directory.shows");

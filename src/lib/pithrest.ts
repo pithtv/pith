@@ -1,4 +1,4 @@
-const express = require("express");
+import express from 'express';
 
 function json(err, result) {
     if(err) {
@@ -9,7 +9,7 @@ function json(err, result) {
     }
 }
 
-module.exports = function(pith) {
+export function handle(pith) {
     const router = express.Router();
 
     router.use("/channels", function(req, res) {
@@ -39,4 +39,4 @@ module.exports = function(pith) {
     });
 
     return router;
-};
+}

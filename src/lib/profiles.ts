@@ -1,7 +1,7 @@
 /**
  * Defines transcoding profiles.
  */
-const mimeTypes = require("./mimetypes");
+const {default:mimeTypes} = require("./mimetypes");
 
 function video(metadata) {
     return metadata.streams.find(stream => stream.width);
@@ -11,7 +11,7 @@ function audio(metadata) {
     return metadata.streams.find(stream => !stream.width);
 }
 
-const profiles = {
+export default {
     "hls": {
         // flags: "-f mp4 -vcodec copy -acodec copy -strict experimental -preset ultrafast -movflags frag_keyframe+empty_moov+faststart",
         mimetype: mimeTypes[".m3u8"],
@@ -42,5 +42,3 @@ const profiles = {
         seekable: false
     }
 };
-
-module.exports = profiles;

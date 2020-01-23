@@ -1,8 +1,8 @@
 import {IChannel, IChannelItem, IPlayState} from "../channel";
 import {IStream} from "../stream";
-import RestComponent from "./restcomponent";
+import {RestComponent} from "./restcomponent";
 
-abstract class Channel extends RestComponent implements IChannel {
+export abstract class Channel extends RestComponent implements IChannel {
     public id: string;
 
     constructor() {
@@ -53,11 +53,9 @@ abstract class Channel extends RestComponent implements IChannel {
 
     public abstract putPlayState(itemId: string, state: IPlayState): Promise<void>;
 
-    public abstract getItem(itemId: string): Promise<IChannelItem>;
+    public abstract getItem(itemId: string, detailed?: boolean): Promise<IChannelItem>;
 
     public abstract getLastPlayStateFromItem(item: IChannelItem): Promise<IPlayState>;
 
     public abstract getStream(item: IChannelItem, opts?: any): Promise<IStream>;
 }
-
-module.exports = Channel;

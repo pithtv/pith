@@ -1,7 +1,15 @@
 import {Pith} from "./pith";
 
 export interface IChannelItem {
+    creationTime?: Date;
+    modificationTime?: Date;
+    type: 'container' | 'file';
     readonly id: string;
+    title: string;
+    genre?: string;
+    mimetype?: string;
+    playable: boolean;
+    fileSize?: number;
 }
 
 export interface IPlayState {

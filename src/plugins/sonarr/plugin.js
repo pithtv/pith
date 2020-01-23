@@ -3,11 +3,11 @@
 const settings = require("../../lib/global")().settings;
 const fetch = require('node-fetch');
 const parseUrl = require('url').parse;
-const Channel = require("../../lib/channel");
+const {Channel} = require("../../lib/channel");
 const TvShowUtils = require("../../lib/tvshowutils");
 const global = require("../../lib/global")();
 const parseDate = require("../../lib/util").parseDate;
-const mimetypes = require("../../lib/mimetypes");
+const {default:mimetypes} = require("../../lib/mimetypes");
 
 function parseItemId(itemId) {
     if(!itemId) {

@@ -1,8 +1,6 @@
-const retrieveKeyframes = require("retrieve-keyframes");
+import retrieveKeyframes from 'retrieve-keyframes';
 
-"use strict";
-
-module.exports = function keyframes(path, metadata) {
+export function keyframes(path, metadata) : Promise<number[]> {
     return new Promise((resolve, reject) => {
         let formats = metadata.format.format_name.split(/,/);
 
@@ -18,4 +16,4 @@ module.exports = function keyframes(path, metadata) {
             reject("Format not supported");
         }
     });
-};
+}

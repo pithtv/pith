@@ -1,15 +1,14 @@
-const logger = require('log4js').getLogger('pith.ssdp-client');
+import {getLogger} from 'log4js';
+import dgram from 'dgram';
+import {EventEmitter} from './events';
 
-const dgram = require('dgram');
-const EventEmitter = require("./events").EventEmitter;
-
+const logger = getLogger('pith.ssdp-client');
 const newline = /\r\n/g;
 const httpHeader = /^([\w-]+):\s+(.*$)/;
 const notifyCommand = /^NOTIFY .* HTTP\/1.[01]$/;
 const searchReply = /^HTTP\/1.[01]\s+200\s+OK$/;
 
-function SSDPClient(opts) {
-
+export function SSDPClient(opts) {
     const emitters = {};
 
     if(!opts) {
@@ -79,7 +78,7 @@ function SSDPClient(opts) {
             }
         } else if('EXPIRES' in data) {
             let date = new Date(data.EXPIRES);
-            timeout = date - new Date();
+            timeout = date.getTime() - new Date().getTime();
         }
 
         if(usn in timeouts) {
@@ -115,7 +114,7 @@ function SSDPClient(opts) {
             client.on("message", function(msg, rinfo) {
                 const body = msg.toString().split(newline);
                 if(body[0].match(searchReply)) {
-                    const data = {};
+                    const data : {ST?: string} = {};
                     body.forEach(function(l) {
                         const p = l.match(httpHeader);
                         if(p) {
@@ -141,5 +140,3 @@ function SSDPClient(opts) {
         subscribe: subscribe
     };
 }
-
-module.exports = SSDPClient;

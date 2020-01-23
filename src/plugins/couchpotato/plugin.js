@@ -4,10 +4,10 @@ const settings = require("../../lib/global")().settings;
 const async = require("../../lib/async");
 const fetch = require('node-fetch');
 const parseUrl = require('url').parse;
-const Channel = require("../../lib/channel");
+const {Channel} = require("../../lib/channel");
 const fs = require('fs');
 const path = require('path');
-const mimetypes = require('../../lib/mimetypes');
+const {default:mimetypes} = require('../../lib/mimetypes');
 const logger = require("log4js").getLogger("pith.plugin.couchpotato");
 
 function parseItemId(itemId) {

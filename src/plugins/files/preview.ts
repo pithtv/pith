@@ -1,7 +1,7 @@
-const AVConv = require("../../lib/libav").AVConv;
-const url = require("url");
+import {AVConv} from '../../lib/libav';
+import url from 'url';
 
-function preview(getFile) {
+export function preview(getFile) {
     let queue = [];
     let currentlyRunning = false;
 
@@ -35,5 +35,3 @@ function preview(getFile) {
         if(!currentlyRunning) next();
     }
 }
-
-module.exports = preview;

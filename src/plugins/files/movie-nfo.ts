@@ -1,13 +1,15 @@
+import {MetaDataProvider} from './MetaDataProvider';
+
 const fs = require("fs");
 const parseNfo = require("./parsenfo");
 const $path = require("path");
 const parsefilename = require("../../lib/filenameparser");
 
-module.exports = {
-    appliesTo: function(channel, filepath, item) {
+class MovieNfo implements MetaDataProvider {
+    appliesTo(channel, filepath, item) {
         return item.type === 'file';
-    },
-    get: function getMetaData(channel, filepath, item, cb) {
+    }
+    get(channel, filepath, item, cb) {
         if(item.mimetype && item.mimetype.match(/^video\//)) {
             const nfoFile = $path.join($path.dirname(filepath), "movie.nfo");
             fs.stat(nfoFile, function(err) {
@@ -44,4 +46,6 @@ module.exports = {
             cb();
         }
     }
-};
+}
+
+export default MovieNfo;

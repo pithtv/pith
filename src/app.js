@@ -14,8 +14,8 @@ log4js.configure({
 });
 
 require("./lib/global")(function(err, Global) {
-    const Pith = require("./pith.js");
-    const rest = require("./lib/pithrest.js");
+    const {Pith} = require("./pith.js");
+    const rest = require("./lib/pithrest.js").handle;
     const express = require("express");
     const http = require("http");
     const ws = require("ws");

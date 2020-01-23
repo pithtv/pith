@@ -1,11 +1,13 @@
-const fs = require("fs");
-const $path = require("path");
+import {MetaDataProvider} from './MetaDataProvider';
 
-module.exports = {
-    appliesTo: function(channel, filepath, item) {
+import $path from 'path';
+import fs from 'fs';
+
+export default class FanartProvider implements MetaDataProvider {
+    appliesTo(channel, filepath, item) {
         return item.type === 'container';
-    },
-    get: function findThumbnails(channel, filepath, item, cb) {
+    }
+    get(channel, filepath, item, cb) {
         const tbnFile = $path.resolve(filepath, "fanart.jpg");
         fs.stat(tbnFile, function(err) {
             if(!err) {

@@ -1,9 +1,12 @@
-const crypto = require("crypto"),
-    async = require("async");
+import {IPlayState} from '../../channel';
+import {CallbackWithErrorAndArg} from '../../junk';
 
-"use strict";
+export interface StateStore {
+    get(id): IPlayState;
+    put(playState: IPlayState);
+}
 
-module.exports = function(db, callback) {
+export function playstate(db, callback: CallbackWithErrorAndArg<StateStore>) {
     const collection = db.collection('playstates');
 
     const cache = {};
@@ -70,4 +73,4 @@ module.exports = function(db, callback) {
             }
         });
     });
-};
+}
