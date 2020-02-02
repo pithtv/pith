@@ -1,5 +1,6 @@
 import async from 'async';
 import {getLogger} from 'log4js';
+import {CallbackWithErrorAndArg} from '../junk';
 
 const logger = getLogger('async');
 
@@ -55,7 +56,7 @@ export function queue(worker) {
     };
 }
 
-export function wrap(func) {
+export function wrap<R>(func: (cb: CallbackWithErrorAndArg<R>) => void) : Promise<R> {
     return new Promise((resolve, reject) => {
         func((err, res) => {
             if (err) {
