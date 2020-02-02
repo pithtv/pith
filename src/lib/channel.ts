@@ -5,7 +5,7 @@ import {RestComponent} from "./restcomponent";
 export abstract class Channel extends RestComponent implements IChannel {
     public id: string;
 
-    constructor() {
+    protected constructor() {
         super();
         this.route.get(/detail\/(.*)$/, (req, res, next) => {
             const path = req.params[0];

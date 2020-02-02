@@ -1,4 +1,5 @@
 import {Pith} from "./pith";
+import {IStream} from './stream';
 
 export interface IChannelItem {
     creationTime?: Date;
@@ -18,7 +19,8 @@ export interface IPlayState {
 
 export interface IChannelInitialiser {
     readonly id: string;
-    readonly sequence: number;
+    readonly sequence?: number;
+    readonly title: string;
     init(opts: {pith: Pith}): IChannel;
 }
 
@@ -31,4 +33,10 @@ export interface IChannel {
     putPlayState(itemId: string, state: IPlayState): Promise<void>;
 
     getItem(itemId: string): Promise<IChannelItem>;
+
+    getStream(item: IChannelItem, opts?: any): Promise<IStream>;
+
+    getLastPlayState(itemId: string): Promise<IPlayState>;
+
+    getLastPlayStateFromItem(item: IChannelItem): Promise<IPlayState>;
 }

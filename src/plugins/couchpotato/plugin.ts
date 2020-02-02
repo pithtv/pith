@@ -1,21 +1,28 @@
-"use strict";
+import lib from '../../lib/global';
+import * as async from '../../lib/async';
+import fetch from 'node-fetch';
+import {parse as parseUrl} from 'url';
+import {Channel} from '../../lib/channel';
+import fs from 'fs';
+import path from 'path';
+import mimetypes from '../../lib/mimetypes';
+import {getLogger} from 'log4js';
+import {Pith} from '../../pith';
+import {IChannelItem} from '../../channel';
+import {FilesChannel} from '../files/plugin';
 
-const settings = require("../../lib/global")().settings;
-const async = require("../../lib/async");
-const fetch = require('node-fetch');
-const parseUrl = require('url').parse;
-const {Channel} = require("../../lib/channel");
-const fs = require('fs');
-const path = require('path');
-const {default:mimetypes} = require('../../lib/mimetypes');
-const logger = require("log4js").getLogger("pith.plugin.couchpotato");
+const settings = lib().settings;
+
+const logger = getLogger('pith.plugin.couchpotato');
 
 function parseItemId(itemId) {
-    if(itemId) {
+    if (itemId) {
         let i = itemId.indexOf('/');
-        if(i === -1) throw "Incorrect id";
+        if (i === -1) {
+            throw 'Incorrect id';
+        }
         return {
-            id: itemId.substring(i+1),
+            id: itemId.substring(i + 1),
             mediatype: itemId.substring(0, i)
         };
     } else {
@@ -27,9 +34,14 @@ function parseItemId(itemId) {
 }
 
 class CouchPotatoChannel extends Channel {
+    private url;
+    private pith: Pith;
+    private apikey: string;
+    private listing: Promise<IChannelItem[]>;
+
     constructor(pith, url, apikey) {
-        super(pith);
-        this.url = parseUrl(url.endsWith("/") ? url : url + "/");
+        super();
+        this.url = parseUrl(url.endsWith('/') ? url : url + '/');
         this.pith = pith;
         this.apikey = apikey;
 
@@ -41,7 +53,9 @@ class CouchPotatoChannel extends Channel {
         const u = this.url.resolve(`api/${this.apikey}/${url}`);
 
         return fetch(u).then(res => res.json()).then(j => {
-            if(!j.success) throw "Call failed";
+            if (!j.success) {
+                throw 'Call failed';
+            }
             return j;
         });
     }
@@ -51,39 +65,39 @@ class CouchPotatoChannel extends Channel {
     }
 
     retrieveContents() {
-        logger.debug("Fetching couchpotato index");
+        logger.debug('Fetching couchpotato index');
         return this._get('movie.list').then(result => {
-            logger.debug("Processing couchpotato index");
-            if(result.empty) {
+            logger.debug('Processing couchpotato index');
+            if (result.empty) {
                 return [];
             } else {
                 return async.mapSeries(result.movies.filter(movie => movie.releases.length > 0), movie => (this.mapMovie(movie)));
             }
         }).then(result => {
-            logger.debug("Couchpotato index fetched and processed");
+            logger.debug('Couchpotato index fetched and processed');
             this.listing = Promise.resolve(result);
         });
     }
 
     createEventListener() {
-        logger.debug("Listening for new couchpotato event");
+        logger.debug('Listening for new couchpotato event');
         this._get('nonblock/notification.listener').then(result => {
-            logger.debug("Couchpotato event listener returned", JSON.stringify(result.result));
+            logger.debug('Couchpotato event listener returned', JSON.stringify(result.result));
             let events = result.result;
-            if(events.find(e => e.type === 'renamer.after')) {
+            if (events.find(e => e.type === 'renamer.after')) {
                 // "renamer.after" indicates movie download was completed, so refresh internal listing
                 this.retrieveContents();
             }
             this.createEventListener();
         }).catch(e => {
-            logger.error("Couchpotato event listener threw", JSON.stringify(e));
+            logger.error('Couchpotato event listener threw', JSON.stringify(e));
             this.createEventListener();
         });
     }
 
     extractPosterFromCache(movie) {
         let path = movie.files.image_poster[0];
-        if(path) {
+        if (path) {
             let uuid = path.substr(path.lastIndexOf('/'));
             return this.url.resolve(`api/${this.apikey}/file.cache/${uuid}`);
         }
@@ -95,7 +109,7 @@ class CouchPotatoChannel extends Channel {
         let stat;
         try {
             stat = movieFile && await async.wrap(cb => fs.stat(path.dirname(movieFile), cb));
-        } catch(e) {
+        } catch (e) {
             logger.warn(`File ${movieFile} not accessible, can not determine download date`);
         }
 
@@ -119,7 +133,7 @@ class CouchPotatoChannel extends Channel {
             actors: movie.info.actors,
             writers: movie.info.writers,
             filePath: filePath,
-            hasNew: movie.tags && movie.tags.indexOf("recent") > -1,
+            hasNew: movie.tags && movie.tags.indexOf('recent') > -1,
             creationTime: stat && stat.mtime
         };
     }
@@ -128,7 +142,7 @@ class CouchPotatoChannel extends Channel {
         return this._get(`media.get?id=${id}`).then(result => (this.mapMovie(result.media)));
     }
 
-    getItem(itemId, detailed) {
+    getItem(itemId, detailed = false) {
         let parsed = parseItemId(itemId);
         if (parsed.mediatype === 'media') {
             return this.queryMedia(parsed.id);
@@ -140,20 +154,20 @@ class CouchPotatoChannel extends Channel {
     }
 
     getFile(item) {
-        let filesChannel = this.pith.getChannelInstance('files');
+        let filesChannel = this.pith.getChannelInstance('files') as FilesChannel;
         return filesChannel.resolveFile(item.filePath);
     }
 
     getStream(item, options) {
-        let filesChannel = this.pith.getChannelInstance('files');
+        let filesChannel = this.pith.getChannelInstance('files') as FilesChannel;
         return this.getFile(item).then(file => {
-            return filesChannel.getStream(file, options)
+            return filesChannel.getStream(file, options);
         });
     }
 
     getLastPlayState(itemId) {
         let parsed = parseItemId(itemId);
-        if(parsed.type === 'media') {
+        if (parsed.mediatype === 'media') {
             return this.getItem(itemId).then(item => this.getLastPlayStateFromItem(item));
         } else {
             return Promise.resolve();
@@ -161,15 +175,15 @@ class CouchPotatoChannel extends Channel {
     }
 
     getLastPlayStateFromItem(item) {
-        if(item.type === 'file' && item.playable) {
-            if(item.unavailable) {
+        if (item.type === 'file' && item.playable) {
+            if (item.unavailable) {
                 return Promise.resolve();
             } else {
                 let filesChannel = this.pith.getChannelInstance('files');
                 return this.getFile(item).then(file => filesChannel.getLastPlayStateFromItem(file));
             }
         } else {
-            return Promise.resolve();
+            return Promise.resolve(null);
         }
     }
 
@@ -179,18 +193,15 @@ class CouchPotatoChannel extends Channel {
     }
 }
 
-module.exports = {
-    init(opts) {
-        if(settings.couchpotato && settings.couchpotato.enabled && settings.couchpotato.url) {
-            let channel = new CouchPotatoChannel(opts.pith, settings.couchpotato.url, settings.couchpotato.apikey);
-            opts.pith.registerChannel({
-                id: 'couchpotato',
-                title: 'CouchPotato',
-                type: 'channel',
-                init(opts) {
-                    return channel;
-                }
-            })
-        }
+export function init(opts) {
+    if (settings.couchpotato && settings.couchpotato.enabled && settings.couchpotato.url) {
+        let channel = new CouchPotatoChannel(opts.pith, settings.couchpotato.url, settings.couchpotato.apikey);
+        opts.pith.registerChannel({
+            id: 'couchpotato',
+            title: 'CouchPotato',
+            init(opts) {
+                return channel;
+            }
+        })
     }
-};
+}

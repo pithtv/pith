@@ -22,12 +22,13 @@ import {IStream} from '../../stream';
 
 const settings = lib().settings;
 
-const metaDataProviders = [new movie_nfo(), new tvshow_nfo(), new thumbnails(), new fanart()];
+export const metaDataProviders = [new movie_nfo(), new tvshow_nfo(), new thumbnails(), new fanart()];
 
-class FilesChannel extends Channel {
+export class FilesChannel extends Channel {
     private rootDir: string;
     private pith: Pith;
     private statestore: any;
+
     constructor(pith: Pith, statestore) {
         super();
 
@@ -39,7 +40,7 @@ class FilesChannel extends Channel {
         this.statestore = statestore;
 
         vidstreamer.settings({
-            getFile: function(path, cb) {
+            getFile: function (path, cb) {
                 cb(channel.getFile(path));
             }
         });
@@ -52,7 +53,7 @@ class FilesChannel extends Channel {
         return wrapToPromise(cb => {
             const rootDir = this.rootDir;
             let path;
-            if(containerId) {
+            if (containerId) {
                 path = $path.resolve(rootDir, containerId);
             } else {
                 path = rootDir;
@@ -64,13 +65,13 @@ class FilesChannel extends Channel {
                 if (err) {
                     cb(err);
                 } else {
-                    const filteredFiles = files.filter(e => (e[0] !== "." || settings.files.showHiddenFiles) && settings.files.excludeExtensions.indexOf($path.extname(e)) === -1);
+                    const filteredFiles = files.filter(e => (e[0] !== '.' || settings.files.showHiddenFiles) && settings.files.excludeExtensions.indexOf($path.extname(e)) === -1);
                     Promise.all(filteredFiles.map(file => {
                         const filepath = $path.resolve(path, file);
                         const itemId = $path.relative(rootDir, filepath);
                         return filesChannel.getItem(itemId, false);
                     })).then(items => {
-                        cb(false, items.filter(e => e !== undefined))
+                        cb(false, items.filter(e => e !== undefined));
                     }).catch(err => {
                         cb(err);
                     });
@@ -88,7 +89,7 @@ class FilesChannel extends Channel {
             const filepath = $path.resolve(this.rootDir, itemId);
             const channel = this;
             fs.stat(filepath, function (err, stats) {
-                const item : Partial<IChannelItem> = {
+                const item: Partial<IChannelItem> = {
                     title: $path.basename(itemId),
                     id: itemId
                 };
@@ -128,7 +129,7 @@ class FilesChannel extends Channel {
         return new Promise((resolve, reject) => {
             const channel = this;
             const itemId = item.id;
-            const itemPath = itemId.split($path.sep).map(encodeURIComponent).join("/");
+            const itemPath = itemId.split($path.sep).map(encodeURIComponent).join('/');
             ff.ffprobe(this.getFile(item.id), (err, metadata) => {
                 if (err) {
                     reject(err);
@@ -156,7 +157,7 @@ class FilesChannel extends Channel {
                     };
 
                     if (options && options.target) {
-                        desc.streams = options.target.split(",").map((profileName) => {
+                        desc.streams = options.target.split(',').map((profileName) => {
                             let profile = profiles[profileName];
                             let url = `${baseUrl}?transcode=${profileName}`;
                             if (profile.requiresPlaylist) {
@@ -214,25 +215,20 @@ class FilesChannel extends Channel {
             }
             return this.getItem(relative);
         } else {
-            return Promise.reject("File not contained within media root");
+            return Promise.reject('File not contained within media root');
         }
     }
 }
 
-module.exports = {
-    init: function (opts) {
-        playstate(opts.pith.db, function (err, statestore) {
-            opts.pith.registerChannel({
-                id: 'files',
-                title: 'Files',
-                type: 'channel',
-                init: function (opts) {
-                    return new FilesChannel(opts.pith, statestore);
-                },
-                sequence: 0
-            });
+export function init(opts) {
+    playstate(opts.pith.db, function (err, statestore) {
+        opts.pith.registerChannel({
+            id: 'files',
+            title: 'Files',
+            init: function (opts) {
+                return new FilesChannel(opts.pith, statestore);
+            },
+            sequence: 0
         });
-    },
-
-    metaDataProviders: metaDataProviders
+    });
 };
