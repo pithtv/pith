@@ -1,9 +1,11 @@
-const metadata = require("./metadata.tmdb.js");
-const async = require("../../lib/async");
-const logger = require("log4js").getLogger("pith.plugin.library.scanner.movie");
-const filenameparser = require("../../lib/filenameparser");
+import metadata from './metadata.tmdb.js';
+import * as async from '../../lib/async';
+import {getLogger} from 'log4js';
+import filenameparser from '../../lib/filenameparser';
+import {MovieLibrary} from './types';
+const logger = getLogger("pith.plugin.library.scanner.movie");
 
-module.exports = opts => {
+export default opts => {
     const db = opts.db;
     return {
         scan: (channelInstance, dir, cb) => {
@@ -15,7 +17,7 @@ module.exports = opts => {
                             if (item.type === 'container') {
                                 await listContents(item);
                             } else if (item.playable && item.mimetype.match(/^video\//)) {
-                                let result = await async.wrap(cb => db.findMovieByOriginalId(dir.channelId, item.id, cb));
+                                let result = await async.wrap<MovieLibrary.Movie>(cb => db.findMovieByOriginalId(dir.channelId, item.id, cb));
                                 if (!result) {
                                     logger.info("Found new item " + item.id);
 

@@ -1,8 +1,8 @@
-"use strict";
-
-const tmdb = require("moviedb")("a08cfd3b50689d40b46a078ecc7390bb");
+import moviedb from 'moviedb';
+import {getLogger} from 'log4js';
+const tmdb = moviedb("a08cfd3b50689d40b46a078ecc7390bb");
 const dateParser = /(\d{4})-(\d{2})-(\d{2})/;
-const logger = require('log4js').getLogger('pith.plugin.library.metadata.tmdb');
+const logger = getLogger('pith.plugin.library.metadata.tmdb');
 
 let configuration;
 tmdb.configuration((err, conf) => {
@@ -28,7 +28,7 @@ function get(property) {
     return e => e[property];
 }
 
-module.exports = (item, mediatype, callback) => {
+export default (item, mediatype, callback) => {
     let movie;
 
     function parser(err, result) {
@@ -151,7 +151,8 @@ module.exports = (item, mediatype, callback) => {
                 }, parser);
             } else {
                 const q = {
-                    query: item.title
+                    query: item.title,
+                    year: undefined
                 };
                 if (item.year) {
                     q.year = item.year;

@@ -1,9 +1,9 @@
 import {MetaDataProvider} from './MetaDataProvider';
 
-const fs = require("fs");
-const parseNfo = require("./parsenfo");
-const $path = require("path");
-const parsefilename = require("../../lib/filenameparser");
+import parsefilename from '../../lib/filenameparser';
+import $path from 'path';
+import {parseNfo} from './parsenfo';
+import fs from 'fs';
 
 class MovieNfo implements MetaDataProvider {
     appliesTo(channel, filepath, item) {

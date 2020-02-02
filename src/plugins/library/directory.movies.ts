@@ -1,4 +1,5 @@
-const async = require("../../lib/async");
+import * as async from '../../lib/async';
+import {MovieLibrary} from './types';
 
 function mapMovie(e) {
     e.movieId = e.id;
@@ -6,7 +7,7 @@ function mapMovie(e) {
     return e;
 }
 
-module.exports = function (plugin) {
+export default function (plugin) {
     const db = plugin.db;
     return [
         {
@@ -15,7 +16,7 @@ module.exports = function (plugin) {
             type: "container",
             async _getContents(containerId) {
                 if (containerId == null) {
-                    let result = await async.wrap(cb => db.findMovies({}, cb));
+                    let result = await async.wrap<MovieLibrary.Movie[]>(cb=> db.findMovies({}, cb));
                     return result.map(mapMovie);
                 } else {
                     return [];
@@ -25,7 +26,7 @@ module.exports = function (plugin) {
                 if (itemId === null) {
                     return {id: 'movies', title: 'All Movies'};
                 } else {
-                    let result = await async.wrap(cb => db.findMovies({id: itemId}, cb));
+                    let result = await async.wrap<MovieLibrary.Movie[]>(cb => db.findMovies({id: itemId}, cb));
                     if (result[0]) {
                         return mapMovie(result[0]);
                     } else {
@@ -40,10 +41,10 @@ module.exports = function (plugin) {
             type: "container",
             async _getContents(containerId) {
                 if (containerId) {
-                    let result = await async.wrap(cb => db.findMovies({actorIds: containerId}, cb));
+                    let result = await async.wrap<MovieLibrary.Movie[]>(cb => db.findMovies({actorIds: containerId}, cb));
                     return result.map(mapMovie);
                 } else {
-                    let result = await async.wrap(cb => db.getActors(cb));
+                    let result = await async.wrap<MovieLibrary.Actor[]>(cb => db.getActors(cb));
                     return result.map(e => ({
                         id: "actors/" + e._id,
                         title: e.name,
@@ -58,10 +59,10 @@ module.exports = function (plugin) {
             type: "container",
             async _getContents(containerId) {
                 if (containerId) {
-                    let result = await async.wrap(cb => db.findMovies({directorIds: containerId}, cb));
+                    let result = await async.wrap<MovieLibrary.Movie[]>(cb => db.findMovies({directorIds: containerId}, cb));
                     return result.map(mapMovie);
                 } else {
-                    let result = await async.wrap(cb => db.getDirectors(cb));
+                    let result = await async.wrap<MovieLibrary.Director[]>(cb => db.getDirectors(cb));
                     return result.map(e => ({
                         id: "directors/" + e._id,
                         title: e.name,
@@ -76,10 +77,10 @@ module.exports = function (plugin) {
             type: "container",
             async _getContents(containerId) {
                 if (containerId) {
-                    let result = await async.wrap(cb => db.findMovies({writerIds: containerId}, cb));
+                    let result = await async.wrap<MovieLibrary.Movie[]>(cb => db.findMovies({writerIds: containerId}, cb));
                     return result.map(mapMovie);
                 } else {
-                    let result = await async.wrap(cb => db.getWriters(cb));
+                    let result = await async.wrap<MovieLibrary.Writer[]>(cb => db.getWriters(cb));
                     return result.map(e => ({
                         id: "writers/" + e._id,
                         title: e.name,
@@ -94,10 +95,10 @@ module.exports = function (plugin) {
             type: "container",
             async _getContents(containerId) {
                 if (containerId) {
-                    let result = await async.wrap(cb => db.findMovies({keywordIds: containerId}, cb));
+                    let result = await async.wrap<MovieLibrary.Movie[]>(cb => db.findMovies({keywordIds: containerId}, cb));
                     return result.map(mapMovie);
                 } else {
-                    let result = await async.wrap(cb => db.getKeywords(cb));
+                    let result = await async.wrap<MovieLibrary.Keyword[]>(cb => db.getKeywords(cb));
                     return result.map(e => ({
                         id: "keywords/" + e._id,
                         title: e.name,
@@ -112,10 +113,10 @@ module.exports = function (plugin) {
             type: "container",
             async _getContents(containerId) {
                 if (containerId) {
-                    let result = await async.wrap(cb => db.findMovies({genreIds: containerId}, cb));
+                    let result = await async.wrap<MovieLibrary.Movie[]>(cb => db.findMovies({genreIds: containerId}, cb));
                     return result.map(mapMovie);
                 } else {
-                    let result = await async.wrap(cb => db.getGenres(cb));
+                    let result = await async.wrap<MovieLibrary.Genre[]>(cb => db.getGenres(cb));
                     return result.map(e => ({
                         id: "genres/" + e._id,
                         title: e.name,
@@ -131,7 +132,7 @@ module.exports = function (plugin) {
             visible: true,
             type: "container",
             async _getContents() {
-                let result = await async.wrap(cb => db.findMovies({dateScanned: {$gt: new Date(new Date() - 14 * 24 * 60 * 60 * 1000)}}, {order: {dateScanned: -1}}, cb));
+                let result = await async.wrap<MovieLibrary.Movie[]>(cb => db.findMovies({dateScanned: {$gt: new Date(new Date().getTime() - 14 * 24 * 60 * 60 * 1000)}}, {order: {dateScanned: -1}}, cb));
                 return result.map(mapMovie);
             }
         },
@@ -142,7 +143,7 @@ module.exports = function (plugin) {
             visible: true,
             type: "container",
             async _getContents() {
-                let result = await async.wrap(cb => db.findMovies({}, {order: {releaseDate: -1}, limit: 50}, cb));
+                let result = await async.wrap<MovieLibrary.Movie[]>(cb => db.findMovies({}, {order: {releaseDate: -1}, limit: 50}, cb));
                 return result.map(mapMovie);
             }
         }

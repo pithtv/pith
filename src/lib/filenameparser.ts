@@ -8,7 +8,7 @@ const normalize = function (f) {
     return f && f.replace(nonCharacter, ' ').replace(trailingNonCharacter, '').replace(leadingNonCharacter, '');
 };
 
-module.exports = function(fn, kind) {
+export default function(fn, kind?) {
     const parts = fn.split(/\/+/g);
     let part, f, title, year, season, episode, showname;
     while(parts.length > 0) {

@@ -1,11 +1,11 @@
-const async = require("async");
-const logger = require("log4js").getLogger("pith.plugin.library.scanner.tvshow");
-const filenameparser = require("../../lib/filenameparser");
+import async from 'async';
+import {getLogger} from 'log4js';
+import filenameparser from '../../lib/filenameparser';
+
+const logger = getLogger("pith.plugin.library.scanner.tvshow");
 const metadata = require("./metadata.tmdb");
 
-module.exports = function(opts) {
-    "use strict";
-
+export default function(opts) {
     const db = opts.db;
 
     return {
@@ -152,11 +152,12 @@ module.exports = function(opts) {
                                         const md = filenameparser(item.title, 'show');
 
                                         if(md) {
-                                            md.originalId = item.id;
-                                            md.channelId = channelInstance.id;
-                                            md.mimetype = item.mimetype;
-
-                                            self.updateInShow(md, function(err) {
+                                            self.updateInShow({
+                                                ...md,
+                                                originalId: item.id,
+                                                channelId: channelInstance.id,
+                                                mimetype: item.mimetype
+                                            }, function(err) {
                                                 if(err) {
                                                     logger.warn("Error while scanning item " + item.id, err);
                                                 }

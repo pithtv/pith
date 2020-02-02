@@ -1,18 +1,28 @@
-const db = require("./database");
-const async = require("async");
-const logger = require("log4js").getLogger("pith.plugin.library");
-const global = require("../../lib/global")();
-const {Channel} = require("../../lib/channel");
+import lib from '../../lib/global';
 
-const moviesDirectory = require("./directory.movies");
-const showsDirectory = require("./directory.shows");
+import {Channel} from '../../lib/channel';
+import {getLogger} from 'log4js';
+import async from 'async';
+import {Repository} from './database';
+import {Pith} from '../../pith';
+import moviesDirectory from './directory.movies';
+import showsDirectory from './directory.shows';
+import moviesScanner from './scanner.movie';
+import showsScanner from './scanner.tvshow';
+
+const logger = getLogger("pith.plugin.library");
+const global = lib();
 
 class LibraryChannel extends Channel {
+    private pithApp: Pith;
+    private db: Repository;
+    private directory: any;
+
     constructor(pithApp, directoryFactory) {
         super();
 
         this.pithApp = pithApp;
-        this.db = db(pithApp.db);
+        this.db = new Repository(pithApp.db);
 
         this.directory = directoryFactory(this);
     }
@@ -85,7 +95,7 @@ class LibraryChannel extends Channel {
             const targetChannel = this.pithApp.getChannelInstance(item.channelId);
             return targetChannel.getLastPlayState(item.originalId);
         } else {
-            return Promise.resolve();
+            return Promise.resolve(undefined);
         }
     }
 
@@ -110,11 +120,11 @@ module.exports = {
 
         // set up scanners
         const scannerOpts = {
-            db: db(opts.pith.db)
+            db: new Repository(opts.pith.db)
         };
         const scanners = {
-            movies: require("./scanner.movie")(scannerOpts),
-            tvshows: require("./scanner.tvshow")(scannerOpts)
+            movies: moviesScanner(scannerOpts),
+            tvshows: showsScanner(scannerOpts)
         };
         setTimeout(function() {
             self.scan();
@@ -145,7 +155,6 @@ module.exports = {
         opts.pith.registerChannel({
             id: 'movies',
             title: 'Movies',
-            type: 'channel',
             init: function(opts) {
                 return moviesChannel;
             },
@@ -155,7 +164,6 @@ module.exports = {
         opts.pith.registerChannel({
             id: 'shows',
             title: 'Shows',
-            type: 'channel',
             init: function(opts) {
                 return showsChannel;
             }
