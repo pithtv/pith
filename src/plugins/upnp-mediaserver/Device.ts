@@ -1,3 +1,16 @@
+import { Socket } from "dgram";
+import {queue, Queue, wrap} from '../../lib/async';
+import {DeviceControlProtocol} from './DeviceControlProtocol';
+
+import {getLogger} from 'log4js';
+import {HttpError} from './Error';
+import parser from 'http-string-parser';
+import http from 'http';
+import fs from 'fs';
+import os from 'os';
+import dgram from 'dgram';
+import { AddressInfo } from "net";
+import {Icon} from '../../player';
 /**
  * Based on node-upnp-device:
  * Copyright (c) 2011 Jacob Rask, <http://jacobrask.net>
@@ -13,18 +26,43 @@
  * all copies or substantial portions of the Software.
  */
 
-const {DeviceControlProtocol} = require("./DeviceControlProtocol");
-const dgram = require('dgram');
-const os = require('os');
-const fs = require('fs');
-const http = require('http');
-const parser = require('http-string-parser');
-const {HttpError} = require("./Error");
-const {queue, wrap} = require("../../lib/async");
-const logger = require('log4js').getLogger('pith.plugin.upnp-mediaserver.Device');
+const logger = getLogger('pith.plugin.upnp-mediaserver.Device');
 
-class Device extends DeviceControlProtocol {
-    constructor(...opts) {
+export interface SSDPOptions {
+    timeout: number;
+    ttl: number;
+    address: string;
+    port: number;
+
+}
+
+export interface DeviceDelegate {
+    fetchChildren(id: string, opts: { max: number; start: number; sort: any }): Promise<any>;
+    fetchObject(id: any): Promise<any>;
+}
+
+export class Device extends DeviceControlProtocol {
+    private broadcastSocket: Socket;
+    private ssdpMessages: Queue<{ readonly port?: any; readonly messages?: any; readonly address?: any }>;
+    private services: {[key: string]: DeviceControlProtocol};
+    private upnp: {
+        version: any;
+    };
+    private ssdp: SSDPOptions;
+    public readonly serviceTypes: string[];
+    public readonly serviceReferences: {[key: string]: new (Device) => DeviceControlProtocol};
+    public readonly type: string;
+    public readonly version: number;
+
+    private uuid: string;
+    private name: string;
+    private friendlyName?: string;
+    private manufacturer?: any;
+    private presentationURL: string;
+    private iconSizes: Icon[];
+    delegate: DeviceDelegate;
+
+    constructor(...opts: Partial<Device>[]) {
         super({
             ssdp: {
                 address: '239.255.255.250',
@@ -57,8 +95,8 @@ class Device extends DeviceControlProtocol {
             this.address = this.address || '0.0.0.0';
 
             let httpServer = http.createServer(this.httpListener.bind(this));
-            await wrap(cb => httpServer.listen(0, this.address, cb));
-            this.httpPort = httpServer.address().port;
+            await wrap((cb: () => void) => httpServer.listen(0, this.address, cb));
+            this.httpPort = (httpServer.address() as AddressInfo).port;
 
             this.broadcastSocket.bind(this.ssdp.port, () => {
                 this.broadcastSocket.addMembership(this.ssdp.address);
@@ -173,7 +211,7 @@ class Device extends DeviceControlProtocol {
                 return await this.services[serviceType].requestHandler({action, req, id});
             case 'icons':
                 try {
-                    let data = await async.wrap(cb => fs.readFile(`icons/${serviceType}`, cb));
+                    let data = await wrap(cb => fs.readFile(`icons/${serviceType}`, cb));
                     return {data, headers: {'Content-Type': 'image/png'}};
                 } catch (err) {
                     throw new HttpError(404);
@@ -256,5 +294,3 @@ class Device extends DeviceControlProtocol {
     }
 
 }
-
-module.exports = {Device};

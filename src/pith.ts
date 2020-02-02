@@ -102,7 +102,7 @@ export class Pith extends EventEmitter implements Pith {
         return Promise.resolve(this.players);
     }
 
-    public listChannels(cb) {
+    public listChannels() {
         return Promise.resolve(this.channels);
     }
 

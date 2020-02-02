@@ -13,11 +13,11 @@
  * all copies or substantial portions of the Software.
  */
 
-const {Device} = require("./Device");
-const {ConnectionManager} = require('./services/ConnectionManager');
-const {ContentDirectory} = require('./services/ContentDirectory');
+import {Device} from './Device';
+import {ConnectionManager} from './services/ConnectionManager';
+import {ContentDirectory} from './services/ContentDirectory';
 
-class MediaServer extends Device {
+export class MediaServer extends Device {
     constructor(...opts) {
         super({
             serviceTypes: ['ConnectionManager', 'ContentDirectory'],
@@ -30,5 +30,3 @@ class MediaServer extends Device {
         }, ...opts);
     }
 }
-
-module.exports = {MediaServer};

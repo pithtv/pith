@@ -1,6 +1,6 @@
 import async from 'async';
 import {getLogger} from 'log4js';
-import {CallbackWithErrorAndArg} from '../junk';
+import {Callback, CallbackWithErrorAndArg} from '../junk';
 
 const logger = getLogger('async');
 
@@ -31,7 +31,11 @@ export async function mapSeries<I,O>(array: I[], mapper: (value: I, idx: number)
     return out;
 }
 
-export function queue(worker) {
+export interface Queue<T> {
+    push(obj: T): Promise<void>;
+}
+
+export function queue<T>(worker: (obj: T) => Promise<void>) : Queue<T> {
     const queue = [];
     let running = false;
 
@@ -56,7 +60,9 @@ export function queue(worker) {
     };
 }
 
-export function wrap<R>(func: (cb: CallbackWithErrorAndArg<R>) => void) : Promise<R> {
+export function wrap(func: (cb: () => void) => void): Promise<void>;
+export function wrap<R>(func: (cb: CallbackWithErrorAndArg<R>) => void) : Promise<R>;
+export function wrap(func) {
     return new Promise((resolve, reject) => {
         func((err, res) => {
             if (err) {

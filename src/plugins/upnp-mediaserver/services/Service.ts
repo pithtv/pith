@@ -13,18 +13,27 @@
  * all copies or substantial portions of the Software.
  */
 
-const {DeviceControlProtocol} = require("../DeviceControlProtocol");
-const { processors, Parser } = require('xml2js');
-const gen_uuid = require('node-uuid');
-const {HttpError, SoapError} = require("../Error");
-const fs = require('fs');
-const url = require('url');
-const http = require('http');
-const async = require('../../../lib/async');
-const { toXml } = require('../../../lib/util');
-const logger = require('log4js').getLogger('pith.plugin.upnp-mediaserver.Service');
+import {DeviceControlProtocol} from '../DeviceControlProtocol';
+import {Parser, processors} from 'xml2js';
+import gen_uuid from 'node-uuid';
+import {HttpError, SoapError} from '../Error';
+import fs from 'fs';
+import url from 'url';
+import http from 'http';
+import * as async from '../../../lib/async';
+import {toXml} from '../../../lib/util';
 
-class Service extends DeviceControlProtocol {
+import {getLogger} from 'log4js';
+
+const logger = getLogger('pith.plugin.upnp-mediaserver.Service');
+
+export abstract class Service extends DeviceControlProtocol {
+    stateVars: any;
+    private subs: {[key: string]: Subscription};
+    private serviceDescription: string;
+    protected optionalActions: any[];
+    protected stateActions: any[];
+
     constructor(...opts) {
         super(...opts);
 
@@ -74,7 +83,7 @@ class Service extends DeviceControlProtocol {
         };
     }
 
-    unsubscribe(sid) {
+    unsubscribe(sid, time?: number) {
         delete this.subs[sid];
     }
 
@@ -97,7 +106,7 @@ class Service extends DeviceControlProtocol {
         Object.values(this.subs).forEach(subscription => subscription.notify());
     }
 
-    buildSoapResponse(action, args, ns) {
+    buildSoapResponse(action: string, args, ns?: string) {
         return `<?xml version="1.0" encoding="UTF-8"?>\n`+
         `<s:Envelope s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">`+
             `<s:Body>`+
@@ -177,7 +186,6 @@ class Service extends DeviceControlProtocol {
                 let [,serviceAction] = /:\d#(\w+)"$/.exec(req.headers.soapaction);
                 if(req.method !== 'POST' || !serviceAction) {
                     throw new HttpError(405);
-                    return;
                 }
                 return new Promise((resolve, reject) => {
                     let data = '';
@@ -218,14 +226,22 @@ class Service extends DeviceControlProtocol {
                 } else {
                     throw new HttpError(405);
                 }
-                break;
             default:
                 throw new HttpError(404);
         }
     }
+
+    abstract async actionHandler(action: any, parsedDatumElementElementElementElement: any);
 }
 
 class Subscription {
+    private uuid: string;
+    private service: Service;
+    private eventKey: number;
+    private minTimeout: number;
+    private urls: string[];
+    private destructionTimer: number;
+
     constructor(uuid, urls, service) {
         this.uuid = uuid;
         this.service = service;
@@ -240,15 +256,19 @@ class Subscription {
             clearTimeout(this.destructionTimer)
         }
 
-        let time = /Second-(infinite|\d+)/.exec(timeout)[1];
-        if(time === 'infinite' || parseInt(time) > this.minTimeout) {
-            time = this.minTimeout;
-        } else {
-            time = parseInt(time);
-        }
+        let time = this.parseTimeout(timeout);
 
         this.destructionTimer = setTimeout(() => this.service.unsubscribe(this.uuid, time * 1000));
         return time;
+    }
+
+    private parseTimeout(timeout) : number {
+        let time = /Second-(infinite|\d+)/.exec(timeout)[1];
+        if (time === 'infinite' || parseInt(time) > this.minTimeout) {
+            return this.minTimeout;
+        } else {
+            return parseInt(time);
+        }
     }
 
     notify() {
@@ -263,5 +283,3 @@ class Subscription {
         this.eventKey++;
     }
 }
-
-module.exports = { Service };

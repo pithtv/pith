@@ -1,5 +1,5 @@
-const {Service} = require("./Service");
-const {SoapError} = require("../Error");
+import {Service} from './Service';
+import {SoapError} from '../Error';
 
 /**
  * Based on node-upnp-device:
@@ -16,7 +16,8 @@ const {SoapError} = require("../Error");
  * all copies or substantial portions of the Software.
  */
 
-class ConnectionManager extends Service {
+export class ConnectionManager extends Service {
+    private protocols: string[];
     constructor(device) {
         super({
             _stateVars: {
@@ -75,5 +76,3 @@ class ConnectionManager extends Service {
         });
     }
 }
-
-module.exports = {ConnectionManager};

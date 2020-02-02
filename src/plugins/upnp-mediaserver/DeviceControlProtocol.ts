@@ -13,10 +13,30 @@
  * all copies or substantial portions of the Software.
  */
 
-const {EventEmitter} = require("events");
-const url = require('url');
+import {EventEmitter} from 'events';
+import url from 'url';
+import {Device} from './Device';
 
-class DeviceControlProtocol extends EventEmitter {
+interface Schema {
+    domain: string;
+    version: number[];
+}
+
+interface StateVars {
+
+}
+
+export abstract class DeviceControlProtocol extends EventEmitter {
+
+    private schema: Schema;
+    protected address: string;
+    protected httpPort: number;
+    protected device?: Device;
+    public readonly type: string;
+    public readonly version: number;
+    protected ns: string;
+    public _stateVars: StateVars;
+
     constructor(...opts) {
         super();
         Object.assign(this, {
@@ -31,7 +51,7 @@ class DeviceControlProtocol extends EventEmitter {
             ...opts);
     }
 
-    makeNS(category, suffix = '') {
+    makeNS(category?, suffix = '') {
         return `urn:${this.schema.domain}:${category || (this.device ? 'service' : 'device')}-${this.schema.version.join('-')}${suffix}`;
     }
 
@@ -47,6 +67,8 @@ class DeviceControlProtocol extends EventEmitter {
             pathname: pathname
         });
     }
-}
 
-module.exports = {DeviceControlProtocol};
+    buildServiceElement?();
+
+    async requestHandler?(param: { action: string; id: string; req: any });
+}

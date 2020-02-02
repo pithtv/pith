@@ -1,11 +1,14 @@
-const {MediaServer} = require("./MediaServer");
-const {wrapNoErr} = require('../../lib/async');
-const Global = require("../../lib/global")();
-const upnp = require('../../lib/upnp');
-const entities = require('entities');
-const { sprintf } = require('sprintf-js');
-const settings = require("../../lib/global")().settings;
-const logger = require('log4js').getLogger('pith.plugin.upnp-mediaserver');
+import {MediaServer} from './MediaServer';
+import lib from '../../lib/global';
+import * as upnp from '../../lib/upnp';
+import entities from 'entities';
+import {sprintf} from 'sprintf-js';
+import {getLogger} from 'log4js';
+import {Pith} from '../../pith';
+const Global = lib();
+
+const settings = lib().settings;
+const logger = getLogger('pith.plugin.upnp-mediaserver');
 
 function upnpClassFromItem(item) {
     if (item.type === 'container') {
@@ -52,6 +55,7 @@ function cache(sourceUrl) {
 }
 
 class MediaServerDelegate {
+    private pith: Pith;
     constructor(pith) {
         this.pith = pith;
     }
@@ -179,7 +183,7 @@ class MediaServerDelegate {
     }
 
     async fetchObject(id) {
-        let [, channelId, , itemId] = id.match(/^channel:(\w+)(:(.*))?$/) || [];
+        let [, channelId, , itemId] = id.match(/^channel:(\w+)(:(.*))?$/) || [,,,,];
         if (itemId) {
             let channel = this.pith.getChannelInstance(channelId);
             let contents = await channel.getItem(itemId);

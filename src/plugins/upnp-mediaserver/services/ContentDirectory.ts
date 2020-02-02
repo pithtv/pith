@@ -13,13 +13,15 @@
  * all copies or substantial portions of the Software.
  */
 
-const {Service} = require("./Service");
-const {SoapError} = require("../Error");
-const {toXml} = require('../../../lib/util');
-const entities = require('entities');
-const logger = require('log4js').getLogger('pith.plugin.upnp-mediaserver.ContentDirectory');
+import {Service} from './Service';
+import {getLogger} from 'log4js';
+import entities from 'entities';
+import {toXml} from '../../../lib/util';
+import {SoapError} from '../Error';
 
-class ContentDirectory extends Service {
+const logger = getLogger('pith.plugin.upnp-mediaserver.ContentDirectory');
+
+export class ContentDirectory extends Service {
     constructor(device) {
         super({
             _stateVars: {
@@ -146,5 +148,3 @@ class ContentDirectory extends Service {
         </DIDL-Lite>`;
     }
 }
-
-module.exports = {ContentDirectory};

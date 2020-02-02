@@ -50,7 +50,7 @@ export class FilesChannel extends Channel {
     }
 
     listContents(containerId) {
-        return wrapToPromise(cb => {
+        return wrapToPromise<IChannelItem[]>(cb => {
             const rootDir = this.rootDir;
             let path;
             if (containerId) {
@@ -77,7 +77,7 @@ export class FilesChannel extends Channel {
                     });
                 }
             });
-        }) as Promise<IChannelItem[]>;
+        });
     }
 
     getFile(path) {
