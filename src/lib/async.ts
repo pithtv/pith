@@ -21,7 +21,7 @@ export function map(array, mapper) {
     });
 }
 
-export async function mapSeries(array, mapper) {
+export async function mapSeries<I,O>(array: I[], mapper: (value: I, idx: number) => Promise<O>) : Promise<O[]> {
     const out = new Array(array.length);
     let idx = 0;
     for (const item of array) {

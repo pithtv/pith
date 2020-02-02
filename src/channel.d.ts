@@ -7,10 +7,37 @@ export interface IChannelItem {
     type: 'container' | 'file';
     readonly id: string;
     title: string;
+    overview?: string;
     genre?: string;
     mimetype?: string;
-    playable: boolean;
+    playable?: boolean;
     fileSize?: number;
+    dateScanned?: Date;
+    unavailable?: boolean;
+    [key: string]: any;
+}
+
+export interface IMediaChannelItem extends IChannelItem {
+    type: 'file'
+}
+
+export interface IContainerChannelItem extends IChannelItem {
+    type: 'container'
+}
+
+export interface ITvShow extends IContainerChannelItem {
+    seasons?: ITvShowSeason[];
+}
+
+export interface ITvShowSeason extends IContainerChannelItem {
+    episodes?: ITvShowEpisode[];
+}
+
+export interface ITvShowEpisode extends IMediaChannelItem {
+    season: number;
+    episode: number;
+    mediatype: 'episode',
+    airDate: Date
 }
 
 export interface IPlayState {
