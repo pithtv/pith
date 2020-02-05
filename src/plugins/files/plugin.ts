@@ -4,7 +4,6 @@ import mimetypes from '../../lib/mimetypes';
 import vidstreamer from '../../lib/vidstreamer';
 import async from 'async';
 import $path from 'path';
-import lib from '../../lib/global';
 import {playstate} from './playstate';
 import ff from 'fluent-ffmpeg';
 import {Channel} from '../../lib/channel';
@@ -19,8 +18,10 @@ import fanart from './fanart';
 import {Pith} from '../../pith';
 import {IChannelItem} from '../../channel';
 import {IStream} from '../../stream';
+import {SettingsStoreSymbol} from '../../settings/SettingsStore';
+import {container} from 'tsyringe';
 
-const settings = lib().settings;
+const settingsStore = container.resolve(SettingsStoreSymbol);
 
 export const metaDataProviders = [new movie_nfo(), new tvshow_nfo(), new thumbnails(), new fanart()];
 
@@ -32,7 +33,7 @@ export class FilesChannel extends Channel {
     constructor(pith: Pith, statestore) {
         super();
 
-        this.rootDir = settings.files.rootDir;
+        this.rootDir = settingsStore.settings.files.rootDir;
         this.pith = pith;
 
         const channel = this;
@@ -65,7 +66,7 @@ export class FilesChannel extends Channel {
                 if (err) {
                     cb(err);
                 } else {
-                    const filteredFiles = files.filter(e => (e[0] !== '.' || settings.files.showHiddenFiles) && settings.files.excludeExtensions.indexOf($path.extname(e)) === -1);
+                    const filteredFiles = files.filter(e => (e[0] !== '.' || settingsStore.settings.files.showHiddenFiles) && settingsStore.settings.files.excludeExtensions.indexOf($path.extname(e)) === -1);
                     Promise.all(filteredFiles.map(file => {
                         const filepath = $path.resolve(path, file);
                         const itemId = $path.relative(rootDir, filepath);

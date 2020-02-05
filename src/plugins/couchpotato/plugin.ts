@@ -1,4 +1,3 @@
-import lib from '../../lib/global';
 import * as async from '../../lib/async';
 import fetch from 'node-fetch';
 import {parse as parseUrl} from 'url';
@@ -10,8 +9,10 @@ import {getLogger} from 'log4js';
 import {Pith} from '../../pith';
 import {IChannelItem} from '../../channel';
 import {FilesChannel} from '../files/plugin';
+import {SettingsStoreSymbol} from '../../settings/SettingsStore';
+import {container} from 'tsyringe';
 
-const settings = lib().settings;
+const settingsStore = container.resolve(SettingsStoreSymbol);
 
 const logger = getLogger('pith.plugin.couchpotato');
 
@@ -98,7 +99,7 @@ class CouchPotatoChannel extends Channel {
     }
 
     extractPosterFromCache(movie) {
-        let path = movie.files.image_poster[0];
+        let path = movie.files && movie.files.image_poster[0];
         if (path) {
             let uuid = path.substr(path.lastIndexOf('/'));
             return this.url.resolve(`api/${this.apikey}/file.cache/${uuid}`);
@@ -198,8 +199,9 @@ class CouchPotatoChannel extends Channel {
 }
 
 export function init(opts) {
-    if (settings.couchpotato && settings.couchpotato.enabled && settings.couchpotato.url) {
-        let channel = new CouchPotatoChannel(opts.pith, settings.couchpotato.url, settings.couchpotato.apikey);
+    const pluginSettings = settingsStore.settings.couchpotato;
+    if (pluginSettings && pluginSettings.enabled && pluginSettings.url) {
+        let channel = new CouchPotatoChannel(opts.pith, pluginSettings.url, pluginSettings.apikey);
         opts.pith.registerChannel({
             id: 'couchpotato',
             title: 'CouchPotato',

@@ -1,5 +1,3 @@
-import lib from '../../lib/global';
-
 import {Channel} from '../../lib/channel';
 import {getLogger} from 'log4js';
 import async from 'async';
@@ -9,9 +7,11 @@ import moviesDirectory from './directory.movies';
 import showsDirectory from './directory.shows';
 import moviesScanner from './scanner.movie';
 import showsScanner from './scanner.tvshow';
+import {container} from 'tsyringe';
+import {SettingsStoreSymbol} from '../../settings/SettingsStore';
 
 const logger = getLogger("pith.plugin.library");
-const global = lib();
+const settingsStore = container.resolve(SettingsStoreSymbol);
 
 class LibraryChannel extends Channel {
     private pithApp: Pith;
@@ -136,7 +136,7 @@ module.exports = {
             logger.info("Starting library scan");
             const scanStartTime = new Date().getTime();
 
-            async.eachSeries(global.settings.library.folders.filter(function(c) {
+            async.eachSeries(settingsStore.settings.library.folders.filter(function(c) {
                 return scanners[c.contains] !== undefined && (c.scanAutomatically || manual === true);
             }), function(dir, cb) {
                 const channelInstance = pith.getChannelInstance(dir.channelId);
@@ -148,7 +148,7 @@ module.exports = {
                 logger.info("Library scan complete. Took %d ms", (scanEndTime - scanStartTime));
                 setTimeout(function () {
                     plug.scan();
-                }, global.settings.library.scanInterval);
+                }, settingsStore.settings.library.scanInterval);
             });
         };
 

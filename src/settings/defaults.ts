@@ -1,4 +1,6 @@
-export default {
+import {Settings} from './Settings';
+
+const defaults : Settings = {
   dbEngine: "mongodb",
   mongoUrl: "mongodb://localhost:27017/pith",
   httpPort: 3333,
@@ -52,4 +54,8 @@ export default {
   upnpsharing: {
     enabled: true,
   },
+
+  uuid: {}
 };
+
+export default defaults;

@@ -1,4 +1,3 @@
-import lib from '../../lib/global';
 import mimetypes from '../../lib/mimetypes';
 import {parseDate} from '../../lib/util';
 import * as TvShowUtils from '../../lib/tvshowutils';
@@ -9,9 +8,10 @@ import {Pith} from '../../pith';
 import {FilesChannel} from '../files/plugin';
 import {IChannelItem, ITvShow, ITvShowEpisode, ITvShowSeason} from '../../channel';
 import {mapSeries} from '../../lib/async';
+import {SettingsStoreSymbol} from '../../settings/SettingsStore';
+import {container} from 'tsyringe';
 
-const settings = lib().settings;
-const global = lib();
+const settingsStore = container.resolve(SettingsStoreSymbol);
 
 interface SonarrSeries {
     title: string,
@@ -167,7 +167,7 @@ class SonarrChannel extends Channel {
 
                 return {
                     episodes: mappedEpisodes,
-                    hasNew: lastPlayable && (!lastPlayable.playState || lastPlayable.playState.status !== 'watched') && lastPlayable.dateScanned > (new Date(new Date().getTime() - 1000 * 60 * 60 * 24 * global.settings.maxAgeForNew)),
+                    hasNew: lastPlayable && (!lastPlayable.playState || lastPlayable.playState.status !== 'watched') && lastPlayable.dateScanned > (new Date(new Date().getTime() - 1000 * 60 * 60 * 24 * settingsStore.settings.maxAgeForNew)),
                     playState: TvShowUtils.aggregatePlayState(pithShow.seasons),
                     ...pithShow
                 };
@@ -316,12 +316,13 @@ class SonarrChannel extends Channel {
 }
 
 export function init(opts) {
-    if (settings.sonarr && settings.sonarr.enabled && settings.sonarr.url) {
+    const pluginSettings = settingsStore.settings.sonarr;
+    if (pluginSettings && pluginSettings.enabled && pluginSettings.url) {
         opts.pith.registerChannel({
             id: 'sonarr',
             title: 'Sonarr',
             init(opts) {
-                return new SonarrChannel(opts.pith, settings.sonarr.url, settings.sonarr.apikey);
+                return new SonarrChannel(opts.pith, pluginSettings.url, pluginSettings.apikey);
             }
         })
     }

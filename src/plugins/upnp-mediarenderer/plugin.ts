@@ -9,10 +9,13 @@ import {EventEmitter} from 'events';
 import {parseString as xml2js} from 'xml2js';
 import {Icon, IPlayer, IPlayerStatus} from '../../player';
 import {AVTransport, PositionInfo} from './upnp';
+import {IdentifierService} from '../../settings/IdentifierService';
+import {container} from 'tsyringe';
 
 const Global = lib();
 const client = SSDPClient({unicastHost: Global.bindAddress});
 const logger = getLogger('pith.plugin.upnp-mediarenderer');
+const identifierService = container.resolve(IdentifierService);
 
 const iconTypePreference = [
     'image/jpeg',
@@ -193,7 +196,7 @@ class MediaRenderer extends EventEmitter implements IPlayer {
         if (positionInfo.TrackMetaData && typeof positionInfo.TrackMetaData === 'string') {
             const meta = await wrap(cb => xml2js(positionInfo.TrackMetaData, cb));
             const didlLite = meta['DIDL-Lite'].item[0];
-            pos.fingerprint = decodeURIComponent(didlLite.$.id.match(Global.persistentUuid('instance') + '[^/]*'));
+            pos.fingerprint = decodeURIComponent(didlLite.$.id.match(identifierService.get('instance') + '[^/]*'));
             for (let x of Object.keys(didlLite)) {
                 const val = didlLite[x][0];
                 switch (x) {

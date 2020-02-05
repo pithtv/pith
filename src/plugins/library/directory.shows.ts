@@ -1,9 +1,11 @@
 import * as async from '../../lib/async';
 import * as TvShowUtils from '../../lib/tvshowutils';
-import lib from '../../lib/global';
 import {ITvShow, ITvShowEpisode} from '../../channel';
+import {container} from 'tsyringe';
+import {SettingsStore} from '../../settings/SettingsStore';
 
-const global = lib();
+const settingsStore = container.resolve<SettingsStore>('SettingsStore');
+
 export default function(plugin) {
 
     const db = plugin.db;
@@ -38,7 +40,7 @@ export default function(plugin) {
             episodes: episodes,
             seasons: seasons,
             playState: playState,
-            hasNew: lastPlayable && (!lastPlayable.playState || lastPlayable.playState.status !== 'watched') && lastPlayable.dateScanned > (new Date(new Date().getTime() - 1000 * 60 * 60 * 24 * global.settings.maxAgeForNew))
+            hasNew: lastPlayable && (!lastPlayable.playState || lastPlayable.playState.status !== 'watched') && lastPlayable.dateScanned > (new Date(new Date().getTime() - 1000 * 60 * 60 * 24 * settingsStore.settings.maxAgeForNew))
         });
     }
 

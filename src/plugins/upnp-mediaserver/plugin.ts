@@ -5,9 +5,14 @@ import entities from 'entities';
 import {sprintf} from 'sprintf-js';
 import {getLogger} from 'log4js';
 import {Pith} from '../../pith';
+import {SettingsStoreSymbol} from '../../settings/SettingsStore';
+import {container} from 'tsyringe';
+import {IdentifierService} from '../../settings/IdentifierService';
 const Global = lib();
 
-const settings = lib().settings;
+const settingsStore = container.resolve(SettingsStoreSymbol);
+const identifierService = container.resolve(IdentifierService);
+
 const logger = getLogger('pith.plugin.upnp-mediaserver');
 
 function upnpClassFromItem(item) {
@@ -198,13 +203,13 @@ class MediaServerDelegate {
 
 module.exports = {
     init(opts) {
-        if(settings.upnpsharing && settings.upnpsharing.enabled) {
+        if(settingsStore.settings.upnpsharing && settingsStore.settings.upnpsharing.enabled) {
             let mediaserver = new MediaServer({
                 name: 'Pith',
                 manufacturer: 'Pith',
                 address: Global.bindAddress,
                 delegate: new MediaServerDelegate(opts.pith),
-                uuid: Global.persistentUuid('MediaServer'),
+                uuid: identifierService.get('MediaServer'),
                 presentationURL: Global.rootUrl,
                 iconSizes: [16,32,48,64,72,96,120,128,144,152,192,256,384,512]
             });

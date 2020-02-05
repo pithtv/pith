@@ -1,9 +1,7 @@
 import {Router} from "express";
 import {IChannel, IChannelInitialiser} from "./channel";
 import {EventEmitter} from "./lib/events";
-import lib from "./lib/global";
 import {IPlayer} from "./player";
-const global = lib() as any;
 
 const route = Router();
 
@@ -158,13 +156,5 @@ export class Pith extends EventEmitter implements Pith {
         require("./plugins/sonarr/plugin").init({pith: this});
         require("./plugins/couchpotato/plugin").init({pith: this});
         require("./plugins/upnp-mediaserver/plugin").init({pith: this});
-    }
-
-    public settings(settings) {
-        if (arguments.length === 0) {
-            return global.settings;
-        } else {
-            global.storeSettings(settings);
-        }
     }
 }

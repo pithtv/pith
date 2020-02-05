@@ -1,4 +1,12 @@
+require('source-map-support').install();
+
+import "reflect-metadata";
+
+import {FileSettingsStore} from './settings/FileSettingsStore';
+
 const log4js = require("log4js");
+const logger = log4js.getLogger("pith");
+
 log4js.configure({
     appenders: {
         console: {
@@ -13,7 +21,19 @@ log4js.configure({
     }
 });
 
-require("./lib/global")(function(err, Global) {
+process.on('uncaughtException', function(err) {
+    // handle the error safely
+    logger.error(err);
+});
+
+import {container} from 'tsyringe';
+import {SettingsStore, SettingsStoreSymbol} from './settings/SettingsStore';
+
+container.registerInstance(SettingsStoreSymbol, new FileSettingsStore());
+
+async function startup() {
+    const settingsStore = container.resolve<SettingsStore>("SettingsStore");
+    await settingsStore.load();
     const {Pith} = require("./pith.js");
     const rest = require("./lib/pithrest.js").handle;
     const express = require("express");
@@ -21,14 +41,8 @@ require("./lib/global")(function(err, Global) {
     const ws = require("ws");
     const scaler = require("./lib/imagescaler");
     const bodyparser = require("body-parser");
-    const logger = log4js.getLogger("pith");
     const path = require('path');
-
-
-    process.on('uncaughtException', function(err) {
-        // handle the error safely
-        logger.error(err);
-    });
+    const Global = require('./lib/global')();
 
     // workaround
     Object.defineProperty(http.IncomingMessage.prototype, "upgrade", {
@@ -47,7 +61,7 @@ require("./lib/global")(function(err, Global) {
 
             const serverAddress = Global.bindAddress;
             const port = Global.httpPort;
-            const pithPath = Global.settings.pithContext;
+            const pithPath = settingsStore.settings.pithContext;
 
             logger.info("Listening on http://" + serverAddress + ":" + port);
 
@@ -64,7 +78,7 @@ require("./lib/global")(function(err, Global) {
             app.set('x-powered-by', false);
 
             app.use(pithPath, pithApp.handle);
-            app.use(Global.settings.apiContext, rest(pithApp));
+            app.use(settingsStore.settings.apiContext, rest(pithApp));
             app.use("/webui", express.static(path.resolve(__dirname, "..", "webui", "dist")));
             app.use("/scale", scaler.handle);
 
@@ -89,18 +103,18 @@ require("./lib/global")(function(err, Global) {
                     try {
                         const message = JSON.parse(data);
                         switch(message.action) {
-                        case 'on':
-                            const listener = function () {
-                                try {
-                                    ws.send(JSON.stringify({
-                                        event: message.event,
-                                        arguments: Array.prototype.slice.apply(arguments)
-                                    }, jsonReplacer));
-                                } catch (e) {
-                                    logger.error(e);
-                                }
-                            };
-                            listeners.push({event: message.event, listener: listener});
+                            case 'on':
+                                const listener = function () {
+                                    try {
+                                        ws.send(JSON.stringify({
+                                            event: message.event,
+                                            arguments: Array.prototype.slice.apply(arguments)
+                                        }, jsonReplacer));
+                                    } catch (e) {
+                                        logger.error(e);
+                                    }
+                                };
+                                listeners.push({event: message.event, listener: listener});
                                 pithApp.on(message.event, listener);
                                 break;
                         }
@@ -121,4 +135,6 @@ require("./lib/global")(function(err, Global) {
             });
         }
     );
-});
+}
+
+startup();

@@ -4,9 +4,14 @@ import fs from 'fs';
 import sharp from 'sharp';
 import fetch from 'node-fetch';
 import mimetypes from './mimetypes';
+import {container} from 'tsyringe';
+import {SettingsStore} from '../settings/SettingsStore';
+import path = require('path');
 
+const settingsStore = container.resolve<SettingsStore>("SettingsStore");
 const Global = global();
-const dbDir = Global.dataDir + "/thumbnails";
+
+const dbDir = path.resolve(settingsStore.datadir, "thumnbnails");
 
 if(!fs.existsSync(dbDir)) {
     fs.mkdirSync(dbDir);
