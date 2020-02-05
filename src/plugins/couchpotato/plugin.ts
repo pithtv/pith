@@ -15,18 +15,20 @@ const settings = lib().settings;
 
 const logger = getLogger('pith.plugin.couchpotato');
 
-function parseItemId(itemId) {
+function parseItemId(itemId) : Partial<IChannelItem> {
     if (itemId) {
         let i = itemId.indexOf('/');
         if (i === -1) {
             throw 'Incorrect id';
         }
         return {
+            type: 'file',
             id: itemId.substring(i + 1),
             mediatype: itemId.substring(0, i)
         };
     } else {
         return {
+            type: 'container',
             id: 'root',
             mediatype: 'root'
         };
@@ -75,7 +77,7 @@ class CouchPotatoChannel extends Channel {
             }
         }).then(result => {
             logger.debug('Couchpotato index fetched and processed');
-            this.listing = Promise.resolve(result);
+            return this.listing = Promise.resolve(result as IChannelItem[]);
         });
     }
 
@@ -103,7 +105,7 @@ class CouchPotatoChannel extends Channel {
         }
     }
 
-    async mapMovie(movie) {
+    async mapMovie(movie) : Promise<IChannelItem> {
         let release = movie.releases.find(r => r.status === 'done');
         let movieFile = release && release.files.movie && release.files.movie[0];
         let stat;
@@ -149,8 +151,10 @@ class CouchPotatoChannel extends Channel {
         }
         return Promise.resolve({
             sortableFields: ['title', 'year', 'rating', 'runtime', 'creationTime'],
-            id: itemId
-        });
+            id: itemId,
+            title: 'CouchPotato',
+            type: 'container'
+        } as IChannelItem);
     }
 
     getFile(item) {

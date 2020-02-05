@@ -7,7 +7,7 @@ import {parse as parseUrl} from 'url';
 import fetch from 'node-fetch';
 import {Pith} from '../../pith';
 import {FilesChannel} from '../files/plugin';
-import {ITvShow, ITvShowEpisode, ITvShowSeason} from '../../channel';
+import {IChannelItem, ITvShow, ITvShowEpisode, ITvShowSeason} from '../../channel';
 import {mapSeries} from '../../lib/async';
 
 const settings = lib().settings;
@@ -252,7 +252,7 @@ class SonarrChannel extends Channel {
             case 'episode':
                 return this._get(`api/episode/${sonarrId}`).then(episode => this.convertEpisode(episode));
             default:
-                return Promise.resolve({id: itemId});
+                return Promise.resolve({id: itemId} as IChannelItem);
         }
     }
 
