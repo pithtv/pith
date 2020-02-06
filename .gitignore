@@ -6,4 +6,5 @@
 
 /webui/node_modules/
 /webui/dist/
+/webui/out-tsc/
 /built
