@@ -4,7 +4,7 @@ import mimetypes from '../../lib/mimetypes';
 import vidstreamer from '../../lib/vidstreamer';
 import async from 'async';
 import $path from 'path';
-import {playstate} from './playstate';
+import {StateStore} from './playstate';
 import ff from 'fluent-ffmpeg';
 import {Channel} from '../../lib/channel';
 import {wrap as wrapToPromise} from '../../lib/async';
@@ -18,31 +18,23 @@ import fanart from './fanart';
 import {Pith} from '../../pith';
 import {IChannelItem} from '../../channel';
 import {IStream} from '../../stream';
-import {SettingsStoreSymbol} from '../../settings/SettingsStore';
-import {container, injectable} from 'tsyringe';
-import {DBDriverSymbol} from '../../persistence/DBDriver';
+import {SettingsStore, SettingsStoreSymbol} from '../../settings/SettingsStore';
+import {container, inject, injectable} from 'tsyringe';
+import {DBDriver, DBDriverSymbol} from '../../persistence/DBDriver';
 import {PithPlugin, plugin} from '../plugins';
-
-// TODO move these to injections
-const settingsStore = container.resolve(SettingsStoreSymbol);
-const dbDriver = container.resolve(DBDriverSymbol);
 
 export const metaDataProviders = [new movie_nfo(), new tvshow_nfo(), new thumbnails(), new fanart()];
 
 export class FilesChannel extends Channel {
     private rootDir: string;
-    private pith: Pith;
-    private statestore: any;
 
-    constructor(pith: Pith, statestore) {
+    constructor(private pith: Pith, private statestore: StateStore, private settingsStore: SettingsStore) {
         super();
 
         this.rootDir = settingsStore.settings.files.rootDir;
         this.pith = pith;
 
         const channel = this;
-
-        this.statestore = statestore;
 
         vidstreamer.settings({
             getFile: function (path, cb) {
@@ -66,11 +58,11 @@ export class FilesChannel extends Channel {
 
             const filesChannel = this;
 
-            fs.readdir(path, function (err, files) {
+            fs.readdir(path, (err, files) => {
                 if (err) {
                     cb(err);
                 } else {
-                    const filteredFiles = files.filter(e => (e[0] !== '.' || settingsStore.settings.files.showHiddenFiles) && settingsStore.settings.files.excludeExtensions.indexOf($path.extname(e)) === -1);
+                    const filteredFiles = files.filter(e => (e[0] !== '.' || this.settingsStore.settings.files.showHiddenFiles) && this.settingsStore.settings.files.excludeExtensions.indexOf($path.extname(e)) === -1);
                     Promise.all(filteredFiles.map(file => {
                         const filepath = $path.resolve(path, file);
                         const itemId = $path.relative(rootDir, filepath);
@@ -228,16 +220,20 @@ export class FilesChannel extends Channel {
 @injectable()
 @plugin()
 export default class FilesPlugin implements PithPlugin {
-    init(opts) {
-        playstate(dbDriver, function (err, statestore) {
-            opts.pith.registerChannel({
-                id: 'files',
-                title: 'Files',
-                init: function (opts) {
-                    return new FilesChannel(opts.pith, statestore);
-                },
-                sequence: 0
-            });
+    constructor(@inject(SettingsStoreSymbol) private settingsStore: SettingsStore,
+                @inject(DBDriverSymbol) private dbDriver: DBDriver,
+                @inject(StateStore) private stateStore: StateStore) {
+    }
+
+    async init(opts) {
+        await this.stateStore.init();
+        opts.pith.registerChannel({
+            id: 'files',
+            title: 'Files',
+            init: (opts) => {
+                return new FilesChannel(opts.pith, this.stateStore, this.settingsStore);
+            },
+            sequence: 0
         });
     };
 }

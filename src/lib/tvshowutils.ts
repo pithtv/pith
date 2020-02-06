@@ -1,6 +1,6 @@
 import {IPlayState} from '../channel';
 
-export function aggregatePlayState(items) : IPlayState {
+export function aggregatePlayState(items) : Partial<IPlayState> {
     const aggr = items.reduce(function (state, ep) {
         if (!ep.playable && !ep.playState) {
             return state;
