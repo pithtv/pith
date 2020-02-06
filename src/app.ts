@@ -2,6 +2,7 @@ require('source-map-support').install();
 
 import "reflect-metadata";
 
+import {DBDriverSymbol} from './persistence/DBDriver';
 import {FileSettingsStore} from './settings/FileSettingsStore';
 
 const log4js = require("log4js");
@@ -28,11 +29,14 @@ process.on('uncaughtException', function(err) {
 
 import {container} from 'tsyringe';
 import {SettingsStore, SettingsStoreSymbol} from './settings/SettingsStore';
+import {MongoDBDriver} from './persistence/MongoDBDriver';
 
 container.registerInstance(SettingsStoreSymbol, new FileSettingsStore());
+container.registerInstance(DBDriverSymbol, container.resolve(MongoDBDriver));
 
 async function startup() {
     const settingsStore = container.resolve<SettingsStore>("SettingsStore");
+    const dbDriver = container.resolve(DBDriverSymbol);
     await settingsStore.load();
     const {Pith} = require("./pith.js");
     const rest = require("./lib/pithrest.js").handle;
@@ -53,88 +57,81 @@ async function startup() {
         }
     });
 
-    Global.OpenDatabase(
-        function startup(err, db) {
-            if(err) {
-                throw err;
+    await dbDriver.open();
+
+    const serverAddress = Global.bindAddress;
+    const port = Global.httpPort;
+    const pithPath = settingsStore.settings.pithContext;
+
+    logger.info("Listening on http://" + serverAddress + ":" + port);
+
+    const pithApp = new Pith({
+        rootUrl: Global.rootUrl + "/pith/",
+        rootPath: pithPath
+    });
+
+    const app = express();
+
+    app.use(bodyparser.json());
+
+    app.set('x-powered-by', false);
+
+    app.use(pithPath, pithApp.handle);
+    app.use(settingsStore.settings.apiContext, rest(pithApp));
+    app.use("/webui", express.static(path.resolve(__dirname, "..", "webui", "dist")));
+    app.use("/scale", scaler.handle);
+
+    // exclude all private members in JSON messages (those starting with underscore)
+    function jsonReplacer(k,v) {
+        if(k.charAt(0) === '_') return undefined;
+        else return v;
+    }
+
+    app.set("json replacer", jsonReplacer);
+
+    const server = new http.Server(app);
+
+    server.listen(port, serverAddress);
+    server.listen(port);
+
+    const wss = new ws.Server({server: server});
+
+    wss.on('connection', function(ws) {
+        const listeners = [];
+        ws.on('message', function(data) {
+            try {
+                const message = JSON.parse(data);
+                switch(message.action) {
+                    case 'on':
+                        const listener = function () {
+                            try {
+                                ws.send(JSON.stringify({
+                                    event: message.event,
+                                    arguments: Array.prototype.slice.apply(arguments)
+                                }, jsonReplacer));
+                            } catch (e) {
+                                logger.error(e);
+                            }
+                        };
+                        listeners.push({event: message.event, listener: listener});
+                        pithApp.on(message.event, listener);
+                        break;
+                }
+            } catch(e) {
+                logger.error("Error processing event message", data, e);
             }
-
-            const serverAddress = Global.bindAddress;
-            const port = Global.httpPort;
-            const pithPath = settingsStore.settings.pithContext;
-
-            logger.info("Listening on http://" + serverAddress + ":" + port);
-
-            const pithApp = new Pith({
-                rootUrl: Global.rootUrl + "/pith/",
-                rootPath: pithPath,
-                db: db
+        });
+        ws.on('close', function() {
+            logger.debug("Client disconnected, cleaning up listeners");
+            listeners.forEach(function(e) {
+                pithApp.removeListener(e.event, e.listener);
             });
+        });
+    });
 
-            const app = express();
-
-            app.use(bodyparser.json());
-
-            app.set('x-powered-by', false);
-
-            app.use(pithPath, pithApp.handle);
-            app.use(settingsStore.settings.apiContext, rest(pithApp));
-            app.use("/webui", express.static(path.resolve(__dirname, "..", "webui", "dist")));
-            app.use("/scale", scaler.handle);
-
-            // exclude all private members in JSON messages (those starting with underscore)
-            function jsonReplacer(k,v) {
-                if(k.charAt(0) === '_') return undefined;
-                else return v;
-            }
-
-            app.set("json replacer", jsonReplacer);
-
-            const server = new http.Server(app);
-
-            server.listen(port, serverAddress);
-            server.listen(port);
-
-            const wss = new ws.Server({server: server});
-
-            wss.on('connection', function(ws) {
-                const listeners = [];
-                ws.on('message', function(data) {
-                    try {
-                        const message = JSON.parse(data);
-                        switch(message.action) {
-                            case 'on':
-                                const listener = function () {
-                                    try {
-                                        ws.send(JSON.stringify({
-                                            event: message.event,
-                                            arguments: Array.prototype.slice.apply(arguments)
-                                        }, jsonReplacer));
-                                    } catch (e) {
-                                        logger.error(e);
-                                    }
-                                };
-                                listeners.push({event: message.event, listener: listener});
-                                pithApp.on(message.event, listener);
-                                break;
-                        }
-                    } catch(e) {
-                        logger.error("Error processing event message", data, e);
-                    }
-                });
-                ws.on('close', function() {
-                    logger.debug("Client disconnected, cleaning up listeners");
-                    listeners.forEach(function(e) {
-                        pithApp.removeListener(e.event, e.listener);
-                    });
-                });
-            });
-
-            app.use((req, res, next) => {
-                res.redirect('/webui/');
-            });
-        }
-    );
+    app.use((req, res, next) => {
+        res.redirect('/webui/');
+    });
 }
 
 startup();

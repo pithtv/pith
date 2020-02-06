@@ -9,9 +9,11 @@ import moviesScanner from './scanner.movie';
 import showsScanner from './scanner.tvshow';
 import {container} from 'tsyringe';
 import {SettingsStoreSymbol} from '../../settings/SettingsStore';
+import {DBDriverSymbol} from '../../persistence/DBDriver';
 
 const logger = getLogger("pith.plugin.library");
 const settingsStore = container.resolve(SettingsStoreSymbol);
+const dbDriver = container.resolve(DBDriverSymbol);
 
 class LibraryChannel extends Channel {
     private pithApp: Pith;
@@ -22,7 +24,7 @@ class LibraryChannel extends Channel {
         super();
 
         this.pithApp = pithApp;
-        this.db = new Repository(pithApp.db);
+        this.db = new Repository(dbDriver);
 
         this.directory = directoryFactory(this);
     }
@@ -120,7 +122,7 @@ module.exports = {
 
         // set up scanners
         const scannerOpts = {
-            db: new Repository(opts.pith.db)
+            db: new Repository(dbDriver)
         };
         const scanners = {
             movies: moviesScanner(scannerOpts),

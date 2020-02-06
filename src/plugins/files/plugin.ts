@@ -20,8 +20,10 @@ import {IChannelItem} from '../../channel';
 import {IStream} from '../../stream';
 import {SettingsStoreSymbol} from '../../settings/SettingsStore';
 import {container} from 'tsyringe';
+import {DBDriverSymbol} from '../../persistence/DBDriver';
 
 const settingsStore = container.resolve(SettingsStoreSymbol);
+const dbDriver = container.resolve(DBDriverSymbol);
 
 export const metaDataProviders = [new movie_nfo(), new tvshow_nfo(), new thumbnails(), new fanart()];
 
@@ -222,7 +224,7 @@ export class FilesChannel extends Channel {
 }
 
 export function init(opts) {
-    playstate(opts.pith.db, function (err, statestore) {
+    playstate(dbDriver, function (err, statestore) {
         opts.pith.registerChannel({
             id: 'files',
             title: 'Files',
