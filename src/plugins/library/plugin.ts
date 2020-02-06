@@ -10,8 +10,11 @@ import showsScanner from './scanner.tvshow';
 import {container} from 'tsyringe';
 import {SettingsStoreSymbol} from '../../settings/SettingsStore';
 import {DBDriverSymbol} from '../../persistence/DBDriver';
+import {PithPlugin, plugin} from '../plugins';
 
 const logger = getLogger("pith.plugin.library");
+
+// TODO inject
 const settingsStore = container.resolve(SettingsStoreSymbol);
 const dbDriver = container.resolve(DBDriverSymbol);
 
@@ -114,45 +117,30 @@ class LibraryChannel extends Channel {
     }
 }
 
-module.exports = {
-    init: function(opts) {
-        const self = this, pith = opts.pith;
+@plugin()
+export default class LibraryPlugin implements PithPlugin {
+
+    scanners: any;
+    private pith: Pith;
+
+    init(opts) {
+        const self = this;
         const moviesChannel = new LibraryChannel(opts.pith, moviesDirectory);
         const showsChannel = new LibraryChannel(opts.pith, showsDirectory);
+
+        this.pith = opts.pith;
 
         // set up scanners
         const scannerOpts = {
             db: new Repository(dbDriver)
         };
-        const scanners = {
+        this.scanners = {
             movies: moviesScanner(scannerOpts),
             tvshows: showsScanner(scannerOpts)
         };
         setTimeout(function() {
-            self.scan();
+            self.scan(false);
         }, 10000);
-
-        this.scan = function(manual) {
-            const plug = this;
-
-            logger.info("Starting library scan");
-            const scanStartTime = new Date().getTime();
-
-            async.eachSeries(settingsStore.settings.library.folders.filter(function(c) {
-                return scanners[c.contains] !== undefined && (c.scanAutomatically || manual === true);
-            }), function(dir, cb) {
-                const channelInstance = pith.getChannelInstance(dir.channelId);
-                if(channelInstance !== undefined) {
-                    scanners[dir.contains].scan(channelInstance, dir, cb);
-                }
-            }, function(err) {
-                const scanEndTime = new Date().getTime();
-                logger.info("Library scan complete. Took %d ms", (scanEndTime - scanStartTime));
-                setTimeout(function () {
-                    plug.scan();
-                }, settingsStore.settings.library.scanInterval);
-            });
-        };
 
         opts.pith.registerChannel({
             id: 'movies',
@@ -169,6 +157,28 @@ module.exports = {
             init: function(opts) {
                 return showsChannel;
             }
+        });
+    }
+
+    scan(manual) {
+        const plug = this;
+
+        logger.info("Starting library scan");
+        const scanStartTime = new Date().getTime();
+
+        async.eachSeries(settingsStore.settings.library.folders.filter(function(c) {
+            return plug.scanners[c.contains] !== undefined && (c.scanAutomatically || manual === true);
+        }), function(dir, cb) {
+            const channelInstance = plug.pith.getChannelInstance(dir.channelId);
+            if(channelInstance !== undefined) {
+                plug.scanners[dir.contains].scan(channelInstance, dir, cb);
+            }
+        }, function(err) {
+            const scanEndTime = new Date().getTime();
+            logger.info("Library scan complete. Took %d ms", (scanEndTime - scanStartTime));
+            setTimeout(function () {
+                plug.scan(false);
+            }, settingsStore.settings.library.scanInterval);
         });
     }
 };

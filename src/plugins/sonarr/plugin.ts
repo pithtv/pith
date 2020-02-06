@@ -10,6 +10,7 @@ import {IChannelItem, ITvShow, ITvShowEpisode, ITvShowSeason} from '../../channe
 import {mapSeries} from '../../lib/async';
 import {SettingsStoreSymbol} from '../../settings/SettingsStore';
 import {container} from 'tsyringe';
+import {PithPlugin, plugin} from '../plugins';
 
 const settingsStore = container.resolve(SettingsStoreSymbol);
 
@@ -315,15 +316,18 @@ class SonarrChannel extends Channel {
     }
 }
 
-export function init(opts) {
-    const pluginSettings = settingsStore.settings.sonarr;
-    if (pluginSettings && pluginSettings.enabled && pluginSettings.url) {
-        opts.pith.registerChannel({
-            id: 'sonarr',
-            title: 'Sonarr',
-            init(opts) {
-                return new SonarrChannel(opts.pith, pluginSettings.url, pluginSettings.apikey);
-            }
-        })
-    }
-};
+@plugin()
+export default class SonarrPlugin implements PithPlugin {
+    init(opts) {
+        const pluginSettings = settingsStore.settings.sonarr;
+        if (pluginSettings && pluginSettings.enabled && pluginSettings.url) {
+            opts.pith.registerChannel({
+                id: 'sonarr',
+                title: 'Sonarr',
+                init(opts) {
+                    return new SonarrChannel(opts.pith, pluginSettings.url, pluginSettings.apikey);
+                }
+            })
+        }
+    };
+}

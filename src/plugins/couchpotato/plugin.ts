@@ -9,10 +9,9 @@ import {getLogger} from 'log4js';
 import {Pith} from '../../pith';
 import {IChannelItem} from '../../channel';
 import {FilesChannel} from '../files/plugin';
-import {SettingsStoreSymbol} from '../../settings/SettingsStore';
-import {container} from 'tsyringe';
-
-const settingsStore = container.resolve(SettingsStoreSymbol);
+import {SettingsStore, SettingsStoreSymbol} from '../../settings/SettingsStore';
+import {container, inject, injectable, scoped} from 'tsyringe';
+import {PithPlugin, plugin} from '../plugins';
 
 const logger = getLogger('pith.plugin.couchpotato');
 
@@ -198,16 +197,24 @@ class CouchPotatoChannel extends Channel {
     }
 }
 
-export function init(opts) {
-    const pluginSettings = settingsStore.settings.couchpotato;
-    if (pluginSettings && pluginSettings.enabled && pluginSettings.url) {
-        let channel = new CouchPotatoChannel(opts.pith, pluginSettings.url, pluginSettings.apikey);
-        opts.pith.registerChannel({
-            id: 'couchpotato',
-            title: 'CouchPotato',
-            init(opts) {
-                return channel;
-            }
-        })
+@injectable()
+@plugin()
+export default class CouchPotatoPlugin implements PithPlugin {
+    constructor(@inject(SettingsStoreSymbol) private settingsStore: SettingsStore) {
+
+    }
+
+    init(opts) {
+        const pluginSettings = this.settingsStore.settings.couchpotato;
+        if (pluginSettings && pluginSettings.enabled && pluginSettings.url) {
+            let channel = new CouchPotatoChannel(opts.pith, pluginSettings.url, pluginSettings.apikey);
+            opts.pith.registerChannel({
+                id: 'couchpotato',
+                title: 'CouchPotato',
+                init(opts) {
+                    return channel;
+                }
+            })
+        }
     }
 }

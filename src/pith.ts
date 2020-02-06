@@ -2,6 +2,8 @@ import {Router} from "express";
 import {IChannel, IChannelInitialiser} from "./channel";
 import {EventEmitter} from "./lib/events";
 import {IPlayer} from "./player";
+import {container} from 'tsyringe';
+import {PluginSymbol} from './plugins/plugins';
 
 const route = Router();
 
@@ -150,11 +152,13 @@ export class Pith extends EventEmitter implements Pith {
     }
 
     public load() {
-        require("./plugins/files/plugin").init({pith: this});
-        require("./plugins/library/plugin").init({pith: this});
-        require("./plugins/upnp-mediarenderer/plugin").init({pith: this});
-        require("./plugins/sonarr/plugin").init({pith: this});
-        require("./plugins/couchpotato/plugin").init({pith: this});
-        require("./plugins/upnp-mediaserver/plugin").init({pith: this});
+        require("./plugins/files/plugin");
+        require("./plugins/library/plugin");
+        require("./plugins/upnp-mediarenderer/plugin");
+        require("./plugins/sonarr/plugin");
+        require("./plugins/couchpotato/plugin");
+        require("./plugins/upnp-mediaserver/plugin");
+
+        container.resolveAll(PluginSymbol).forEach(plugin => plugin.init({pith: this}));
     }
 }

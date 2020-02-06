@@ -19,9 +19,11 @@ import {Pith} from '../../pith';
 import {IChannelItem} from '../../channel';
 import {IStream} from '../../stream';
 import {SettingsStoreSymbol} from '../../settings/SettingsStore';
-import {container} from 'tsyringe';
+import {container, injectable} from 'tsyringe';
 import {DBDriverSymbol} from '../../persistence/DBDriver';
+import {PithPlugin, plugin} from '../plugins';
 
+// TODO move these to injections
 const settingsStore = container.resolve(SettingsStoreSymbol);
 const dbDriver = container.resolve(DBDriverSymbol);
 
@@ -223,15 +225,19 @@ export class FilesChannel extends Channel {
     }
 }
 
-export function init(opts) {
-    playstate(dbDriver, function (err, statestore) {
-        opts.pith.registerChannel({
-            id: 'files',
-            title: 'Files',
-            init: function (opts) {
-                return new FilesChannel(opts.pith, statestore);
-            },
-            sequence: 0
+@injectable()
+@plugin()
+export default class FilesPlugin implements PithPlugin {
+    init(opts) {
+        playstate(dbDriver, function (err, statestore) {
+            opts.pith.registerChannel({
+                id: 'files',
+                title: 'Files',
+                init: function (opts) {
+                    return new FilesChannel(opts.pith, statestore);
+                },
+                sequence: 0
+            });
         });
-    });
-};
+    };
+}

@@ -11,6 +11,7 @@ import {Icon, IPlayer, IPlayerStatus} from '../../player';
 import {AVTransport, PositionInfo} from './upnp';
 import {IdentifierService} from '../../settings/IdentifierService';
 import {container} from 'tsyringe';
+import {PithPlugin, plugin} from '../plugins';
 
 const Global = lib();
 const client = SSDPClient({unicastHost: Global.bindAddress});
@@ -300,33 +301,36 @@ class MediaRenderer extends EventEmitter implements IPlayer {
     }
 }
 
-export function init(opts) {
-    function handlePresence(data, rinfo) {
-        if (!players[data.USN]) {
-            handlePlayerAppearance(data, rinfo, opts, function (err, renderer) {
-                if (err) {
-                    logger.log('Error in handlePlayerAppearance', err);
-                } else if (!(data.USN in players)) {
-                    players[data.USN] = renderer;
-                    opts.pith.registerPlayer(renderer);
-                }
-            });
+@plugin()
+export default class UPnPMediaRendererPlugin implements PithPlugin {
+    init(opts) {
+        function handlePresence(data, rinfo) {
+            if (!players[data.USN]) {
+                handlePlayerAppearance(data, rinfo, opts, function (err, renderer) {
+                    if (err) {
+                        logger.log('Error in handlePlayerAppearance', err);
+                    } else if (!(data.USN in players)) {
+                        players[data.USN] = renderer;
+                        opts.pith.registerPlayer(renderer);
+                    }
+                });
+            }
         }
-    }
 
-    function handleDisappearance(data) {
-        if (data.USN in players) {
-            players[data.USN].offline();
-            opts.pith.unregisterPlayer(players[data.USN]);
-            delete players[data.USN];
+        function handleDisappearance(data) {
+            if (data.USN in players) {
+                players[data.USN].offline();
+                opts.pith.unregisterPlayer(players[data.USN]);
+                delete players[data.USN];
+            }
         }
-    }
 
-    client.subscribe('urn:schemas-upnp-org:device:MediaRenderer:1')
-        .on('response', handlePresence)
-        .on('alive', handlePresence)
-        .on('byebye', handleDisappearance)
-        .on('timeout', handleDisappearance);
+        client.subscribe('urn:schemas-upnp-org:device:MediaRenderer:1')
+            .on('response', handlePresence)
+            .on('alive', handlePresence)
+            .on('byebye', handleDisappearance)
+            .on('timeout', handleDisappearance);
+    }
 }
 
 function handlePlayerAppearance(headers, rinfo, opts, cb) {

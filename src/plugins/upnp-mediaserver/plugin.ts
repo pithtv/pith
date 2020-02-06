@@ -8,6 +8,7 @@ import {Pith} from '../../pith';
 import {SettingsStoreSymbol} from '../../settings/SettingsStore';
 import {container} from 'tsyringe';
 import {IdentifierService} from '../../settings/IdentifierService';
+import {PithPlugin, plugin} from '../plugins';
 const Global = lib();
 
 const settingsStore = container.resolve(SettingsStoreSymbol);
@@ -201,7 +202,8 @@ class MediaServerDelegate {
     }
 }
 
-module.exports = {
+@plugin()
+export default class UPnPMediaServerPlugin implements PithPlugin {
     init(opts) {
         if(settingsStore.settings.upnpsharing && settingsStore.settings.upnpsharing.enabled) {
             let mediaserver = new MediaServer({
