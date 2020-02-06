@@ -5,7 +5,7 @@
     "build": "tsc && npm --prefix webui install && npm --prefix webui run-script build-prod",
     "prepare": "npm run-script build",
     "start": "node $NODE_DEBUG_OPTION app",
-    "test": "ava"
+    "test": "npm run-script build ; ava built/test/*.js"
   },
   "main": "./built/app.js",
   "bin": {
@@ -40,7 +40,6 @@
     "src",
     "resources",
     "icons",
-    "test",
     "README.md",
     "LICENSE",
     "AUTHORS"
