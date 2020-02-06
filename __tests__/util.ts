@@ -1,7 +1,6 @@
-import test from 'ava';
-import * as util from '../lib/util';
+import * as util from '../src/lib/util';
 
-test("Test assign", function (t) {
+test("Test assign", function () {
     var target = {
         a: 1,
         b: {
@@ -24,24 +23,23 @@ test("Test assign", function (t) {
 
     util.assign(target, source);
 
-    t.deepEqual(
-        {
-            a: 6,
-            b: {
-                c: 7,
-                d: 3,
-                e: [9]
-            },
-            f: {
-                d: 8
-            }
-        } as unknown,
-        target
-    );
+    expect({
+        a: 6,
+        b: {
+            c: 7,
+            d: 3,
+            e: [9]
+        },
+        f: {
+            d: 8
+        }
+    } as unknown).toEqual(target);
 });
 
-test("Test XML", function (t) {
-    t.is('<xbmc:artwork type="fanart">http://1</xbmc:artwork><xbmc:artwork type="poster">http://2</xbmc:artwork><xbmc:userrating>0</xbmc:userrating><xbmc:dateadded>2009-03-19</xbmc:dateadded><somethingelse><test>1</test></somethingelse>', util.toXml({
+test("Test XML", function () {
+    expect(
+        '<xbmc:artwork type="fanart">http://1</xbmc:artwork><xbmc:artwork type="poster">http://2</xbmc:artwork><xbmc:userrating>0</xbmc:userrating><xbmc:dateadded>2009-03-19</xbmc:dateadded><somethingelse><test>1</test></somethingelse>'
+    ).toBe(util.toXml({
         "xbmc:artwork": [
             {
                 _attribs: {type: 'fanart'},

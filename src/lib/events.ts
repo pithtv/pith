@@ -73,7 +73,7 @@ export class EventEmitter implements IEventEmitter {
         }
     }
 
-    public emit(event, otherArgs, callback?: (cancelled?: boolean) => void) {
+    public emit(event, otherArgs?, callback?: (cancelled?: boolean) => void) {
         let handlers = this.eventHandlers && this.eventHandlers[event];
         const lastArg = arguments[arguments.length - 1];
         callback = (typeof lastArg === "function") ? lastArg : undefined;

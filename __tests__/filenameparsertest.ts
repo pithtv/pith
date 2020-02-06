@@ -1,5 +1,4 @@
-import test from 'ava';
-import filenameparser from '../lib/filenameparser';
+import filenameparser from '../src/lib/filenameparser';
 
 const movietests = {
     "/media/2010.1984.720p.bluray.x264-sinners.mkv":
@@ -24,14 +23,14 @@ const tvtests = {
 };
 
 for(let x in tvtests) {
-    test(x, function(t) {
+    test(x, function() {
         const r = filenameparser(x, 'show');
-        t.deepEqual(r, tvtests[x]);
+        expect(r).toEqual(tvtests[x]);
     });
 }
 for(let x in movietests) {
-    test(x, function(t) {
+    test(x, function() {
         const r = filenameparser(x, 'movie');
-        t.deepEqual(r, movietests[x]);
+        expect(r).toEqual(movietests[x]);
     });
 }

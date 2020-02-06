@@ -5,7 +5,7 @@
     "build": "tsc && npm --prefix webui install && npm --prefix webui run-script build-prod",
     "prepare": "npm run-script build",
     "start": "node $NODE_DEBUG_OPTION app",
-    "test": "npm run-script build ; ava built/test/*.js"
+    "test": "jest __tests__/*.ts"
   },
   "main": "./built/app.js",
   "bin": {
@@ -45,7 +45,22 @@
     "AUTHORS"
   ],
   "devDependencies": {
-    "ava": "^2.4.0",
+    "@types/jest": "^25.1.2",
+    "jest": "^25.1.0",
+    "ts-jest": "^25.2.0",
     "typescript": "^3.7.5"
+  },
+  "jest": {
+    "transform": {
+      "^.+\\.tsx?$": "ts-jest"
+    },
+    "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js",
+      "jsx",
+      "json"
+    ]
   }
 }
