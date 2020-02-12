@@ -4,8 +4,10 @@ import {EventEmitter} from "./lib/events";
 import {IPlayer} from "./player";
 import {container} from 'tsyringe';
 import {PluginSymbol} from './plugins/plugins';
+import {getLogger} from 'log4js';
 
 const route = Router();
+const logger = getLogger("pith");
 
 let sequence = 0;
 
@@ -143,7 +145,10 @@ export class Pith extends EventEmitter implements Pith {
             () => player.play(opts && opts.time),
         ).then(
             () => cb(false),
-        ).catch((err) => cb(err));
+        ).catch((err) => {
+            logger.error(err);
+            cb(err)
+        });
     }
 
     public controlPlayback(playerId, command, query) {

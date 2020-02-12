@@ -98,6 +98,8 @@ export class Device extends DeviceControlProtocol {
             await wrap((cb: () => void) => httpServer.listen(0, this.address, cb));
             this.httpPort = (httpServer.address() as AddressInfo).port;
 
+            logger.info(`UPnP Server is listening on ${this.httpPort}`);
+
             this.broadcastSocket.bind(this.ssdp.port, () => {
                 this.broadcastSocket.addMembership(this.ssdp.address);
                 this.broadcastSocket.setMulticastTTL(this.ssdp.ttl);

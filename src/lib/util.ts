@@ -1,6 +1,19 @@
 import entities from 'entities';
 
-export function toXml(args) {
+export type XmlObject = {
+    [key: string]: XmlValue
+} | {
+    _attribs: {
+        [key: string]: string | number,
+    },
+    _value: {
+        [key: string]: XmlValue
+    }
+}
+
+export type XmlValue = string | number | XmlObject | XmlObject[];
+
+export function toXml(args : XmlValue) {
     if (typeof args === 'object') {
         return Object.entries(args).filter(([, value]) => value !== undefined && value !== null).map(([key, value]) => {
             function t(v) {

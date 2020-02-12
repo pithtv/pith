@@ -18,6 +18,7 @@ import {getLogger} from 'log4js';
 import entities from 'entities';
 import {toXml} from '../../../lib/util';
 import {SoapError} from '../Error';
+import {buildDidlXml} from '../../../lib/didl';
 
 const logger = getLogger('pith.plugin.upnp-mediaserver.ContentDirectory');
 
@@ -92,7 +93,7 @@ export class ContentDirectory extends Service {
             sort, start, max
         });
 
-        let didl = this.buildDidl(result.items);
+        let didl = buildDidlXml(result.items);
         return this.buildSoapResponse('Browse', {
             Result: didl,
             NumberReturned: result.items.length,
@@ -110,41 +111,12 @@ export class ContentDirectory extends Service {
             return this.buildSoapError(new SoapError(404));
         }
 
-        let didl = this.buildDidl([result.item]);
-        logger.debug(didl);
+        let didl = buildDidlXml([result.item]);
         return this.buildSoapResponse('Browse', {
             Result: didl,
             NumberReturned: 1,
             TotalMatches: 1,
             UpdateID: result.updateId
         }, 'xmlns:u="urn:schemas-upnp-org:service:ContentDirectory:1"');
-    }
-
-    buildDidl(arr) {
-        function buildResources(resources) {
-            if(resources) {
-                return resources.map(r => {
-                    if(!r) return '';
-                    let x = "<res";
-                    if(r.duration) x+= ` duration="${entities.encodeXML(r.duration)}"`;
-                    if(r.protocolInfo) x+= ` protocolInfo="${entities.encodeXML(r.protocolInfo)}"`;
-                    x += `>${r.uri}</res>`;
-                    return x;
-                }).join('');
-            } else {
-                return '';
-            }
-        }
-
-        function buildItem(object) {
-            return `<${object.type} id="${entities.encodeXML(object.id.toString())}" parentID="${entities.encodeXML(object.parentId.toString())}" restricted="1" searchable="0">${toXml(object.properties)}${buildResources(object.resources)}</${object.type}>`;
-        }
-
-        return `<DIDL-Lite xmlns="urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/"
-           xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:upnp="urn:schemas-upnp-org:metadata-1-0/upnp/"
-           xmlns:dlna="urn:schemas-dlna-org:metadata-1-0/" xmlns:sec="http://www.sec.co.kr/"
-           xmlns:xbmc="urn:schemas-xbmc-org:metadata-1-0/">
-           ${arr.map(object => buildItem(object)).join('')}
-        </DIDL-Lite>`;
     }
 }

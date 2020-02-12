@@ -2,7 +2,7 @@ import {SSDPClient} from '../../lib/ssdp';
 import {retry, wrap} from '../../lib/async';
 import {getLogger} from 'log4js';
 import lib from '../../lib/global';
-import {formatMsDuration, formatTime} from '../../lib/upnp';
+import {formatTime} from '../../lib/upnp';
 import Device from 'upnp-client-minimal';
 import entities from 'entities';
 import {EventEmitter} from 'events';
@@ -12,6 +12,8 @@ import {AVTransport, PositionInfo} from './upnp';
 import {IdentifierService} from '../../settings/IdentifierService';
 import {container} from 'tsyringe';
 import {PithPlugin, plugin} from '../plugins';
+import {buildDidlXml} from '../../lib/didl';
+import {convertToDidl} from '../../lib/pith2didl';
 
 const Global = lib();
 const client = SSDPClient({unicastHost: Global.bindAddress});
@@ -92,7 +94,7 @@ class MediaRenderer extends EventEmitter implements IPlayer {
     }
 
     async load(channel, item) {
-        let stream = await channel.getStream(item, {fingerprint: [Global.persistentUuid('instance'), channel.id, item.id].join(':')});
+        let stream = await channel.getStream(item, {fingerprint: [identifierService.get('instance'), channel.id, item.id].join(':')});
         const mediaUrl = stream.url;
         logger.debug(`Loading ${mediaUrl}`);
 
@@ -108,9 +110,13 @@ class MediaRenderer extends EventEmitter implements IPlayer {
                 CurrentURI: mediaUrl,
                 CurrentURIMetaData:
                     entities.encodeXML(
-                        `<DIDL-Lite xmlns="urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/" xmlns:pith="http://github.com/evinyatar/pith/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dlna="urn:schemas-dlna-org:metadata-1-0/" xmlns:upnp="urn:schemas-upnp-org:metadata-1-0/upnp/"><item id="${entities.encodeXML(item.id)}" parentID="0" restricted="1"><dc:title>${entities.encodeXML(item.title)}</dc:title><upnp:class>object.item.${type}Item</upnp:class><res duration="${formatMsDuration(stream.duration)}" protocolInfo="http-get:*:${stream.mimetype}:DLNA.ORG_OP=01;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=01500000000000000000000000000000">${mediaUrl}</res><pith:itemId>${entities.encodeXML(item.id)}</pith:itemId><pith:channelId>${entities.encodeXML(channel.id)}</pith:channelId></item></DIDL-Lite>`)
+                        this.toDidl(item, channel, `channel:${channel.id}`))
             }, cb);
         });
+    }
+
+    private toDidl(item, channel, parentId) {
+        return buildDidlXml([convertToDidl(channel, item, parentId, channel.id)]);
     }
 
     waitForAction(action, timeout) {

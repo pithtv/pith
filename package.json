@@ -4,8 +4,11 @@
   "scripts": {
     "build": "tsc && npm --prefix webui install && npm --prefix webui run-script build-prod",
     "prepare": "npm run-script build",
-    "start": "node $NODE_DEBUG_OPTION app",
+    "start": "node $NODE_DEBUG_OPTION built/app",
     "test": "jest __tests__/*.ts"
+  },
+  "engines": {
+    "node": ">=10.0.0"
   },
   "main": "./built/app.js",
   "bin": {
