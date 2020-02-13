@@ -5,6 +5,7 @@ import {getLogger} from 'log4js';
 import {sprintf} from 'sprintf-js';
 import {didl} from './didl';
 import {XmlObject} from './util';
+import {IChannel, IChannelItem} from '../channel';
 
 const Global = lib();
 const logger = getLogger("pith.pith2didl");
@@ -60,7 +61,7 @@ export function convertToDidl(channel, item, parentId, channelId): didl.Item {
         parentId: item.parentId ? `channel:${channel.id}:${item.parentId}` : parentId,
         updateId: 0,
         type: item.type === 'container' ? 'container' : 'item',
-        properties: toDidlProperties(item),
+        properties: toDidlProperties(item, channel),
         resources: [
             ...(item.playable ? [{
                 uri: `${Global.rootUrl}/rest/channel/${channelId}/redirect/${encodeURIComponent(item.id)}`,
@@ -78,7 +79,7 @@ export function convertToDidl(channel, item, parentId, channelId): didl.Item {
     });
 }
 
-function toDidlProperties(item) : XmlObject {
+function toDidlProperties(item : IChannelItem, channel : IChannel) : XmlObject {
     let coverArt = item.thumb || item.poster;
 
     let didl = {
@@ -89,13 +90,15 @@ function toDidlProperties(item) : XmlObject {
         'upnp:author': item.writers,
         'upnp:director': item.director,
         'upnp:longDescription': item.plot,
-        'xbmc:dateadded': item.creationTime,
+        'xbmc:dateadded': upnp.formatDate(item.creationTime),
         'xbmc:rating': item.tmdbRating,
         'xbmc:votes': item.tmdbVoteCount,
         'xbmc:uniqueIdentifier': item.imdbId,
         'upnp:lastPlaybackTime': '',
         'upnp:playbackCount': (item.playState && item.playState.status === 'watched' ? 1 : 0),
         'upnp:lastPlaybackPosition': (item.playState && item.playState.time),
+        'pith:itemId': item.id,
+        'pith:channelId': channel.id,
         'xbmc:artwork': [
             item.backdrop ? {_attribs: {type: 'fanart'}, _value: cache(item.backdrop)} : undefined,
             item.poster ? {_attribs: {type: 'poster'}, _value: cache(item.poster)} : undefined,

@@ -21,7 +21,7 @@ export function formatMsDuration(time) {
     return format(time, [60, 60, 1000], "%d:%02d:%02d.%03d");
 }
 
-export function formatDate(time) {
+export function formatDate(time) : string {
     if(time === undefined || time === null) return undefined;
     return sprintf('%04d-%02d-%02d', time.getFullYear(), time.getMonth() + 1, time.getDate());
 }
