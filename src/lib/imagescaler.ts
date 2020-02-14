@@ -33,7 +33,7 @@ export class ImageScaler {
             fs.mkdirSync(dir);
         }
 
-        fs.access(file, function(err) {
+        fs.access(file, (err) => {
             if(err) {
                 if(size === 'original') {
                     fetch(url).then(response => {
