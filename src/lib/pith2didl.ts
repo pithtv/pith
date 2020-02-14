@@ -1,13 +1,14 @@
 import * as upnp from './upnp';
-import lib from './global';
+import {Global} from './global';
 import entities from 'entities';
 import {getLogger} from 'log4js';
 import {sprintf} from 'sprintf-js';
 import {didl} from './didl';
 import {XmlObject} from './util';
 import {IChannel, IChannelItem} from '../channel';
+import {container} from 'tsyringe';
 
-const Global = lib();
+const global = container.resolve(Global);
 const logger = getLogger("pith.pith2didl");
 
 function upnpClassFromItem(item) {
@@ -48,11 +49,11 @@ function upnpClassFromItem(item) {
 }
 
 function cacheAndResize(sourceUrl, width, height, format) {
-    return `${Global.rootUrl}/scale/${encodeURIComponent(sourceUrl)}?size=${width}x${height}&format=${format}`;
+    return `${global.rootUrl}/scale/${encodeURIComponent(sourceUrl)}?size=${width}x${height}&format=${format}`;
 }
 
 function cache(sourceUrl) {
-    return `${Global.rootUrl}/scale/${encodeURIComponent(sourceUrl)}?size=original`;
+    return `${global.rootUrl}/scale/${encodeURIComponent(sourceUrl)}?size=original`;
 }
 
 export function convertToDidl(channel, item, parentId, channelId): didl.Item {
@@ -64,7 +65,7 @@ export function convertToDidl(channel, item, parentId, channelId): didl.Item {
         properties: toDidlProperties(item, channel),
         resources: [
             ...(item.playable ? [{
-                uri: `${Global.rootUrl}/rest/channel/${channelId}/redirect/${encodeURIComponent(item.id)}`,
+                uri: `${global.rootUrl}/rest/channel/${channelId}/redirect/${encodeURIComponent(item.id)}`,
                 protocolInfo: `http-get:*:${item.mimetype}:DLNA.ORG_OP=01;DLNA.ORG_CI=0`
             }] : []),
             ...(item.poster ? [{

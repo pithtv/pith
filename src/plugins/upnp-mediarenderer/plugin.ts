@@ -1,7 +1,7 @@
 import {SSDPClient} from '../../lib/ssdp';
 import {retry, wrap} from '../../lib/async';
 import {getLogger} from 'log4js';
-import lib from '../../lib/global';
+import {Global} from '../../lib/global';
 import {formatTime} from '../../lib/upnp';
 import Device from 'upnp-client-minimal';
 import entities from 'entities';
@@ -15,8 +15,8 @@ import {PithPlugin, plugin} from '../plugins';
 import {buildDidlXml} from '../../lib/didl';
 import {convertToDidl} from '../../lib/pith2didl';
 
-const Global = lib();
-const client = SSDPClient({unicastHost: Global.bindAddress});
+const global = container.resolve(Global);
+const client = SSDPClient({unicastHost: global.bindAddress});
 const logger = getLogger('pith.plugin.upnp-mediarenderer');
 const identifierService = container.resolve(IdentifierService);
 

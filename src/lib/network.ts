@@ -2,7 +2,7 @@ import os from 'os';
 
 export function getDefaultServerAddress() {
     const ni = os.networkInterfaces();
-    const addresses = {};
+    const addresses : {IPv4?: string, IPv6?: string} = {};
     let defaultNi;
 
     for (let name in ni) {

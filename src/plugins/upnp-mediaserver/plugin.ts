@@ -1,5 +1,5 @@
 import {MediaServer} from './MediaServer';
-import lib from '../../lib/global';
+import {Global} from '../../lib/global';
 import {getLogger} from 'log4js';
 import {Pith} from '../../pith';
 import {SettingsStoreSymbol} from '../../settings/SettingsStore';
@@ -8,7 +8,7 @@ import {IdentifierService} from '../../settings/IdentifierService';
 import {PithPlugin, plugin} from '../plugins';
 import {DeviceDelegate} from './Device';
 import {convertToDidl} from '../../lib/pith2didl';
-const Global = lib();
+const global = container.resolve(Global);
 
 const settingsStore = container.resolve(SettingsStoreSymbol);
 const identifierService = container.resolve(IdentifierService);
@@ -16,7 +16,7 @@ const identifierService = container.resolve(IdentifierService);
 const logger = getLogger('pith.plugin.upnp-mediaserver');
 
 function cache(sourceUrl) {
-    return `${Global.rootUrl}/scale/${encodeURIComponent(sourceUrl)}?size=original`;
+    return `${global.rootUrl}/scale/${encodeURIComponent(sourceUrl)}?size=original`;
 }
 
 class MediaServerDelegate implements DeviceDelegate {
@@ -77,10 +77,10 @@ export default class UPnPMediaServerPlugin implements PithPlugin {
             let mediaserver = new MediaServer({
                 name: 'Pith',
                 manufacturer: 'Pith',
-                address: Global.bindAddress,
+                address: global.bindAddress,
                 delegate: new MediaServerDelegate(opts.pith),
                 uuid: await identifierService.get('MediaServer'),
-                presentationURL: Global.rootUrl,
+                presentationURL: global.rootUrl,
                 iconSizes: [16,32,48,64,72,96,120,128,144,152,192,256,384,512]
             });
             mediaserver.on('ready', () => {

@@ -3,6 +3,7 @@ import {Settings} from './Settings';
 import path = require('path');
 import {promises as fs} from "fs";
 import defaults from './defaults';
+import {initialiser} from '../lib/AsyncInitialisation';
 
 export class FileSettingsStore implements SettingsStore {
 
@@ -15,7 +16,7 @@ export class FileSettingsStore implements SettingsStore {
         this.settingsPath = path.resolve(this.datadir, "settings.json");
     }
 
-    async load(): Promise<void> {
+    @initialiser() async load(): Promise<void> {
         const dataDirStat = await fs.stat(this.datadir);
         if(!dataDirStat.isDirectory()) {
             await fs.mkdir(this.datadir);
