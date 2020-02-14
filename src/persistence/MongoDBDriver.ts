@@ -2,7 +2,7 @@ import {DBDriver} from './DBDriver';
 import {inject, injectable, singleton} from 'tsyringe';
 import {SettingsStore} from '../settings/SettingsStore';
 import {getLogger} from 'log4js';
-import {MongoClient} from 'mongodb';
+import {Collection, Db, MongoClient} from 'mongodb';
 import {wrap} from '../lib/async';
 
 const logger = getLogger("peristence.mongodb");
@@ -10,15 +10,21 @@ const logger = getLogger("peristence.mongodb");
 @injectable()
 @singleton()
 export class MongoDBDriver implements DBDriver {
-    private database: any;
+    private database: Db;
     constructor(@inject("SettingsStore") private settingsStore: SettingsStore) {
     }
 
     async open() {
-        this.database = await wrap(cb => MongoClient.connect(this.settingsStore.settings.mongoUrl, cb));
+        const fullUrl = this.settingsStore.settings.mongoUrl;
+        const i = fullUrl.lastIndexOf('/');
+        const serverUrl = fullUrl.substr(0, i);
+        const databaseName = fullUrl.substr(i+1);
+
+        const client = await new MongoClient(serverUrl).connect();
+        this.database = client.db(databaseName);
     }
 
-    collection(name: string) {
+    collection(name: string) : Collection {
         if (!this.database) {
             throw new Error('Attempting to access database without opening first');
         }

@@ -1,17 +1,18 @@
 import {CallbackWithErrorAndArg} from '../../junk';
 import {MovieLibrary} from './types';
-
-const async = require('async');
-let {wrap} = require('../../lib/async');
-const uuid = require('node-uuid').v1;
-const logger = require('log4js').getLogger('pith.plugins.library.database');
+import {Collection} from 'mongodb';
+import async from 'async';
+import {wrap} from '../../lib/async';
+import {getLogger} from 'log4js';
+import {v1 as uuid} from 'node-uuid';
+const logger = getLogger('pith.plugins.library.database');
 
 export class Repository {
-    private readonly movies: any;
-    private readonly people: any;
-    private readonly keywords: any;
-    private readonly genres: any;
-    private readonly series: any;
+    private readonly movies: Collection;
+    private readonly people: Collection;
+    private readonly keywords: Collection;
+    private readonly genres: Collection;
+    private readonly series: Collection;
 
     constructor(db) {
         this.movies = db.collection('movies');
@@ -32,7 +33,7 @@ export class Repository {
             if (!entity.creationTime) {
                 entity.creationTime = new Date();
             }
-            collection.insert(entity, callback);
+            collection.insertOne(entity, callback);
         }
     }
 
@@ -147,7 +148,7 @@ export class Repository {
     }
 
     findSeason(item, callback) {
-        this.series.find({seasons: {$elemMatch: item}}, {'seasons.$': 1}).toArray((err, result) => {
+        this.series.find({seasons: {$elemMatch: item}}, {sort: {'seasons.$': 1}}).toArray((err, result) => {
             if (err) {
                 callback(err);
             } else {
@@ -157,7 +158,7 @@ export class Repository {
     }
 
     findSeasons(item, sorting) {
-        return this.series.find({id: item.showId}, {seasons: 1}).sort(sorting).toArray().catch(err => {
+        return this.series.find({id: item.showId}, {sort: {seasons: 1}}).sort(sorting).toArray().catch(err => {
             logger.error(err);
         }).then(e => e[0].seasons);
     }
@@ -166,7 +167,7 @@ export class Repository {
         this.series.updateOne({id: item.showId, seasons: {$elemMatch: item}}, {$set: {'seasons.$': item}}, (err, results) => {
             if (err) {
                 callback(err);
-            } else if (results.nMatched) {
+            } else if (results.matchedCount) {
                 callback(err, results);
             } else {
                 this.series.updateOne({id: item.showId}, {$push: {seasons: item}}, callback);
@@ -177,7 +178,7 @@ export class Repository {
     findEpisode(item, callback) {
         this.series.find(
             {episodes: {$elemMatch: item}},
-            {episodes: {$elemMatch: item}}
+            {projection: {episodes: {$elemMatch: item}}}
         ).toArray((err, show) => {
             if (err) {
                 callback(err);
@@ -242,10 +243,6 @@ export class Repository {
 
     findMovieByOriginalId(channelId, itemId, callback) {
         this.movies.find({channelId: channelId, originalId: itemId}).toArray(this.singleResult(callback));
-    }
-
-    getMovie(itemId, callback) {
-        this.movies.find({id: itemId}, this.singleResult(callback));
     }
 
     findMovies(query, opts, callback: CallbackWithErrorAndArg<MovieLibrary.Movie[]>) {
