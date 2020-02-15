@@ -84,7 +84,7 @@ class LibraryChannel extends Channel {
             if(directory._getItem) {
                 return directory._getItem(i > -1 ? itemId.substring(i+1).replace(/\/$/,'') : null);
             } else {
-                return Promise.resolve({id: itemId});
+                return Promise.resolve({id: itemId, sortableFields: directory.sortableFields});
             }
         }
     }
