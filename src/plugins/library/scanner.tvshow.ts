@@ -1,6 +1,6 @@
-import async from 'async';
 import {getLogger} from 'log4js';
 import filenameparser from '../../lib/filenameparser';
+import {wrap} from '../../lib/async';
 
 const logger = getLogger('pith.plugin.library.scanner.tvshow');
 const metadata = require('./metadata.tmdb');
@@ -15,172 +15,141 @@ export default opts => {
             }, 'show', cb);
         },
 
-        loadAndStoreSeason: (show, season, cb) => {
+        async loadAndStoreSeason(show, season) {
             logger.info('Fetching metadata for season ' + season + ' of ' + show.title);
-            const seasonMetaData = {
+            let seasonMetaData: any = {
                 season: season,
                 showTmdbId: show.tmdbId,
                 showId: show.id,
                 showname: show.title
             };
-            metadata(seasonMetaData, 'season', (err, seasonMetaData) => {
-                if (err) {
-                    cb(err);
-                    return;
-                }
-                const episodes = seasonMetaData._children;
-                seasonMetaData._children = undefined;
-                logger.info(show.title + ' season ' + season + ' has ' + episodes.length + ' episodes');
-                db.storeSeason(seasonMetaData).then(() => {
-                    async.eachSeries(episodes, (episodeMetaData, callback) => {
-                        db.findEpisode({
-                            showId: show.id,
-                            season: seasonMetaData.season,
-                            episode: episodeMetaData.episode
-                        }).then((episode) => {
-                            if (episode) {
-                                Object.assign(episode, episodeMetaData);
-                                db.storeEpisode(episode).then(() => callback()).catch(callback);
-                            } else {
-                                episodeMetaData.showId = show.id;
-                                episodeMetaData.showname = show.title;
-                                db.storeEpisode(episodeMetaData).then(() => callback()).catch(callback);
-                            }
-                        });
-                    }, err => {
-                        cb(err, seasonMetaData);
-                    });
+            seasonMetaData = await wrap(cb => metadata(seasonMetaData, 'season', cb));
+
+            const episodes = seasonMetaData._children;
+            seasonMetaData._children = undefined;
+            logger.info(show.title + ' season ' + season + ' has ' + episodes.length + ' episodes');
+
+            await db.storeSeason(seasonMetaData);
+            for (const episodeMetaData of episodes) {
+                const episode = await db.findEpisode({
+                    showId: show.id,
+                    season: seasonMetaData.season,
+                    episode: episodeMetaData.episode
                 });
-            });
-        },
-
-        updateEpisode: (show, season, episodeMetaData, cb) => {
-            db.findEpisode({showId: show.id, season: season.season, episode: episodeMetaData.episode}).then(episode => {
-                if (!episode) {
-                    episodeMetaData.showTmdbId = show.tmdbId;
+                if (episode) {
+                    Object.assign(episode, episodeMetaData);
+                    await db.storeEpisode(episode);
+                } else {
                     episodeMetaData.showId = show.id;
-                    episodeMetaData.season = season.season;
-                    metadata(episodeMetaData, 'episode', (err, extraMetaData) => {
-                        if (err) {
-                            logger.info('Episode found but no meta data exists for it.', episodeMetaData.title);
-                            const episode = {
-                                ...episodeMetaData,
-                                title: episodeMetaData.title,
-                                showId: show.id,
-                                showname: show.title,
-                                season: season.season,
-                                episode: episodeMetaData.episode,
-                                mediatype: 'episode',
-                                originalId: episodeMetaData.originalId,
-                                channelId: episodeMetaData.channelId,
-                                dateScanned: new Date()
-                            };
-                            db.storeEpisode(episode).then(() => cb()).catch(cb);
-                        } else {
-                            extraMetaData.dateScanned = new Date();
-                            extraMetaData.originalId = episodeMetaData.originalId;
-                            extraMetaData.channelId = episodeMetaData.channelId;
-                            db.storeEpisode(extraMetaData).then(() => cb()).catch(cb);
-                        }
+                    episodeMetaData.showname = show.title;
+                    await db.storeEpisode(episodeMetaData);
+                }
+            }
+        },
+
+        async updateEpisode(show, season, episodeMetaData) {
+            const episode = db.findEpisode({showId: show.id, season: season.season, episode: episodeMetaData.episode});
+            if (!episode) {
+                episodeMetaData.showTmdbId = show.tmdbId;
+                episodeMetaData.showId = show.id;
+                episodeMetaData.season = season.season;
+                try {
+                    const extraMetaData = await wrap<object>(cb => metadata(episodeMetaData, 'episode', cb));
+                    await db.storeEpisode({
+                        ...extraMetaData,
+                        dataScanned: new Date(),
+                        originalId: episodeMetaData.originalId,
+                        channelId: episodeMetaData.channelId
                     });
-                } else {
-                    logger.info('Episode found', episodeMetaData, episode);
-                    episode.dateScanned = new Date();
-                    db.storeEpisode({
+                } catch(err) {
+                    logger.info('Episode found but no meta data exists for it.', episodeMetaData.title);
+                    const episode = {
                         ...episodeMetaData,
-                        ...episode,
+                        title: episodeMetaData.title,
+                        showId: show.id,
+                        showname: show.title,
+                        season: season.season,
+                        episode: episodeMetaData.episode,
+                        mediatype: 'episode',
+                        originalId: episodeMetaData.originalId,
+                        channelId: episodeMetaData.channelId,
                         dateScanned: new Date()
-                    }).then(() => cb()).catch(cb);
+                    };
+                    await db.storeEpisode(episode);
                 }
-            }).catch(cb);
+            } else {
+                logger.info('Episode found', episodeMetaData, episode);
+                episode.dateScanned = new Date();
+                await db.storeEpisode({
+                    ...episodeMetaData,
+                    ...episode,
+                    dateScanned: new Date()
+                });
+            }
         },
 
-        updateInSeason: function (showMetaData, episodeMetaData, cb) {
-            db.findSeason({showId: showMetaData.id, season: episodeMetaData.season}).then(seasonMetaData => {
-                if (seasonMetaData == null) {
-                    this.loadAndStoreSeason(showMetaData, episodeMetaData.season, (err, season) => {
-                        if (err) {
-                            cb(err);
-                            return;
-                        }
-                        this.updateEpisode(showMetaData, season, episodeMetaData, cb);
-                    });
-                } else {
-                    this.updateEpisode(showMetaData, seasonMetaData, episodeMetaData, cb);
-                }
-            }).catch(cb);
+        async updateInSeason(showMetaData, episodeMetaData) {
+            const seasonMetaData = await db.findSeason({showId: showMetaData.id, season: episodeMetaData.season});
+            if (seasonMetaData == null) {
+                const season = await this.loadAndStoreSeason(showMetaData, episodeMetaData.season);
+                await this.updateEpisode(showMetaData, season, episodeMetaData);
+            } else {
+                await this.updateEpisode(showMetaData, seasonMetaData, episodeMetaData);
+            }
         },
 
-        updateInShow(episodeMetaData, cb) {
-            db.findShow({originalTitle: episodeMetaData.showname}).then(showMetaData => {
-                if (showMetaData == null) {
-                    logger.info('Found a new show', episodeMetaData.showname);
-                    this.loadShow(episodeMetaData.showname, (err, showMetaData) => {
-                        if (err) {
-                            cb(err);
-                        } else {
-                            showMetaData.originalTitle = episodeMetaData.showname; // use for reference later when querying again
-                            db.storeShow(showMetaData).then(() => {
-                                this.updateInSeason(showMetaData, episodeMetaData, cb);
-                            });
-                        }
-                    });
-                } else {
-                    this.updateInSeason(showMetaData, episodeMetaData, cb);
-                }
-            }).catch((err) => {
-                cb(false);
-            });
+        async updateInShow(episodeMetaData) {
+            let showMetaData = await db.findShow({originalTitle: episodeMetaData.showname});
+            if (showMetaData == null) {
+                logger.info('Found a new show', episodeMetaData.showname);
+                showMetaData = await wrap(cb => this.loadShow(episodeMetaData.showname, cb));
+                showMetaData.originalTitle = episodeMetaData.showname; // use for reference later when querying again
+
+                await db.storeShow(showMetaData);
+                await this.updateInSeason(showMetaData, episodeMetaData);
+            } else {
+                await this.updateInSeason(showMetaData, episodeMetaData);
+            }
         },
 
         scan: function (channelInstance, dir, cb) {
-            const scan = (container, done) => {
+            const scan = async (container) => {
                 if (container) {
-                    channelInstance.listContents(container.id).then(contents => {
-                        if (!contents) {
-                            done();
-                            return;
-                        }
+                    const contents = await channelInstance.listContents(container.id);
+                    if (!contents) {
+                        return;
+                    }
 
-                        async.eachSeries(contents, (item, cb) => {
-                            if (item.type === 'container') {
-                                scan(item, cb);
-                            } else if (item.playable && item.mimetype.match(/^video\//)) {
-                                db.findEpisode({originalId: item.id, channelId: channelInstance.id}).then(episode => {
-                                    if (episode == null) {
-                                        const md = filenameparser(item.title, 'show');
+                    for (const item of contents) {
+                        if (item.type === 'container') {
+                            await scan(item);
+                        } else if (item.playable && item.mimetype.match(/^video\//)) {
+                            const episode = await db.findEpisode({originalId: item.id, channelId: channelInstance.id});
+                            if (episode == null) {
+                                const md = filenameparser(item.title, 'show');
 
-                                        if (md) {
-                                            this.updateInShow({
-                                                ...md,
-                                                originalId: item.id,
-                                                channelId: channelInstance.id,
-                                                mimetype: item.mimetype
-                                            }, err => {
-                                                if (err) {
-                                                    logger.warn('Error while scanning item ' + item.id, err);
-                                                }
-                                                cb();
-                                            });
-
-                                            logger.info(md);
-                                        } else {
-                                            cb();
-                                        }
-                                    } else {
-                                        cb();
+                                if (md) {
+                                    try {
+                                        await this.updateInShow({
+                                            ...md,
+                                            originalId: item.id,
+                                            channelId: channelInstance.id,
+                                            mimetype: item.mimetype
+                                        });
+                                    } catch (err) {
+                                        logger.warn('Error while scanning item ' + item.id, err);
                                     }
-                                }).catch(cb);
-                            } else {
-                                cb();
+
+                                    logger.info(md);
+                                }
                             }
-                        }, done);
-                    }).catch(err => done(err));
+                        }
+                    }
                 }
             };
 
             channelInstance.getItem(dir.containerId).then(container => {
-                scan(container, cb);
+                scan(container);
             }).catch(cb);
         }
     };
