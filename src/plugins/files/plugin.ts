@@ -98,7 +98,7 @@ export class FilesChannel extends Channel {
         const applicableProviders = metaDataProviders.filter(f => f.appliesTo(channel, filepath, item));
 
         if (applicableProviders.length) {
-            await Promise.all(applicableProviders.map(provider => wrapNoErr(cb => provider.get(channel, filepath, item, cb))));
+            await Promise.all(applicableProviders.map(provider => provider.get(channel, filepath, item)));
             return item;
         } else {
             return item;

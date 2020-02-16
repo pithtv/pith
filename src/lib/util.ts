@@ -1,4 +1,5 @@
 import entities from 'entities';
+import {promises as fs} from 'fs';
 
 export type XmlObject = {
     [key: string]: XmlValue
@@ -67,4 +68,12 @@ export function parseDate(string) {
         return string;
     }
     return new Date(Date.parse(string));
+}
+
+export async function fileExists(path) {
+    try {
+        return (await fs.stat(path)).isFile();
+    } catch(err) {
+        return false;
+    }
 }
