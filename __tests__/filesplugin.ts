@@ -90,3 +90,47 @@ test('Movie file metadata', async () => {
 
     mock.restore();
 });
+
+test("nfo metadata provider", async () => {
+    mock({
+        '/data/movies': {
+            'Titled (2020)': {
+                'Titled.nfo': '<?xml version="1.0" ?><movie><title>Titled</title><year>2020</year></movie>',
+                'Titled.mkv': 'notempty'
+            },
+            'Imdbeed (1999)': {
+                'Imdbeed.nfo': 'Imdbeed\nImdb : tt9999999\n\nThanks!',
+                'Imdbeed.mkv': 'notempty'
+            },
+            'Scrambled (1988)': {
+                'movie.nfo': 'Nothing in here of any value',
+                'scrambled.mkv': 'notempty'
+            }
+        }
+    });
+
+    const channel = new FilesChannel({} as Pith, {} as StateStore, {
+        settings: {
+            files: {
+                rootDir: '/data',
+                showHiddenFiles: true,
+                excludeExtensions: []
+            }
+        }
+    } as SettingsStore);
+
+    expect(await channel.getItem('movies/Imdbeed (1999)/Imdbeed.mkv')).toMatchObject({
+        title: 'Imdbeed',
+        imdbId: 'tt9999999'
+    });
+
+    expect(await channel.getItem('movies/Titled (2020)/Titled.mkv')).toMatchObject({
+        title: 'Titled',
+        year: 2020
+    });
+
+    expect(await channel.getItem('movies/Scrambled (1988)/scrambled.mkv')).toMatchObject({
+        title: 'Scrambled',
+        year: 1988
+    });
+});

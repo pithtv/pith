@@ -6,7 +6,6 @@ import $path from 'path';
 import {StateStore} from './playstate';
 import ff from 'fluent-ffmpeg';
 import {Channel} from '../../lib/channel';
-import {wrapNoErr} from '../../lib/async';
 import profiles from '../../lib/profiles';
 import {keyframes} from '../../lib/keyframes';
 import {preview} from './preview';
