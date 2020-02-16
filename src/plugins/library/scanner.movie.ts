@@ -1,4 +1,4 @@
-import {TmdbMetaData} from './metadata.tmdb.js';
+import {queryMovie} from './metadata.tmdb.js';
 import * as async from '../../lib/async';
 import {getLogger} from 'log4js';
 import filenameparser from '../../lib/filenameparser';
@@ -33,8 +33,12 @@ export default opts => {
                                     };
 
                                     try {
-                                        item = await TmdbMetaData(item, 'movie');
-                                        await store(item);
+                                        const metaData = await queryMovie(item);
+                                        await store({
+                                            ...item,
+                                            ...metaData
+
+                                        });
                                     } catch(e) {
                                         const md = filenameparser(container.title, 'movie');
                                         if (md) {
@@ -44,8 +48,11 @@ export default opts => {
                                             item.title = container.title;
                                         }
                                         try {
-                                            item = await TmdbMetaData(item, 'movie');
-                                            await store(item);
+                                            const metaData = await queryMovie(item);
+                                            await store({
+                                                ...item,
+                                                ...metaData
+                                            });
                                         } catch(e) {
                                             logger.warn(`Fetching metadata failed`, e);
                                         }

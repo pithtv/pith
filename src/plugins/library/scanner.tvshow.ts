@@ -1,39 +1,33 @@
 import {getLogger} from 'log4js';
 import filenameparser from '../../lib/filenameparser';
 import {wrap} from '../../lib/async';
+import {queryEpisode, querySeason, queryShow} from './metadata.tmdb';
 
 const logger = getLogger('pith.plugin.library.scanner.tvshow');
-const {TmdbMetaData} = require('./metadata.tmdb');
 
 export default opts => {
     const db = opts.db;
 
     return {
-        loadShow(showName){
-            return TmdbMetaData({
-                title: showName
-            }, 'show');
-        },
-
-        async loadAndStoreSeason(show, season) {
-            logger.info('Fetching metadata for season ' + season + ' of ' + show.title);
-            let seasonMetaData: any = {
-                season: season,
+        async loadAndStoreSeason(show, seasonNumber) {
+            logger.info('Fetching metadata for season ' + seasonNumber + ' of ' + show.title);
+            let season: any = {
+                season: seasonNumber,
                 showTmdbId: show.tmdbId,
                 showId: show.id,
                 showname: show.title
             };
-            seasonMetaData = await TmdbMetaData(seasonMetaData, 'season');
-
-            const episodes = seasonMetaData._children;
-            seasonMetaData._children = undefined;
+            const seasonMetaData = await querySeason(season);
+            Object.assign(season, seasonMetaData);
+            const episodes = season._children;
+            season._children = undefined;
             logger.info(show.title + ' season ' + season + ' has ' + episodes.length + ' episodes');
 
-            await db.storeSeason(seasonMetaData);
+            await db.storeSeason(season);
             for (const episodeMetaData of episodes) {
                 const episode = await db.findEpisode({
                     showId: show.id,
-                    season: seasonMetaData.season,
+                    season: season.season,
                     episode: episodeMetaData.episode
                 });
                 if (episode) {
@@ -54,11 +48,11 @@ export default opts => {
                 episodeMetaData.showId = show.id;
                 episodeMetaData.season = season.season;
                 try {
-                    const extraMetaData = await TmdbMetaData(episodeMetaData, 'episode');
+                    const extraMetaData = await queryEpisode(episodeMetaData);
                     await db.storeEpisode({
                         ...extraMetaData,
                         dataScanned: new Date(),
-                        originalId: episodeMetaData.originalId,
+                        originalId: episodeMetaData.id,
                         channelId: episodeMetaData.channelId
                     });
                 } catch(err) {
@@ -102,7 +96,9 @@ export default opts => {
             let showMetaData = await db.findShow({originalTitle: episodeMetaData.showname});
             if (showMetaData == null) {
                 logger.info('Found a new show', episodeMetaData.showname);
-                showMetaData = await wrap(cb => this.loadShow(episodeMetaData.showname, cb));
+                showMetaData = await wrap(cb => queryShow({
+                    title: episodeMetaData.showname
+                }));
                 showMetaData.originalTitle = episodeMetaData.showname; // use for reference later when querying again
 
                 await db.storeShow(showMetaData);
