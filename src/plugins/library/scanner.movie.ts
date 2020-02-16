@@ -17,7 +17,7 @@ export default opts => {
                             if (item.type === 'container') {
                                 await listContents(item);
                             } else if (item.playable && item.mimetype.match(/^video\//)) {
-                                let result = await async.wrap<MovieLibrary.Movie>(cb => db.findMovieByOriginalId(dir.channelId, item.id, cb));
+                                let result = await db.findMovieByOriginalId(dir.channelId, item.id);
                                 if (!result) {
                                     logger.info("Found new item " + item.id);
 
@@ -30,7 +30,7 @@ export default opts => {
                                         result.channelId = dir.channelId;
                                         result.id = item.id;
                                         result.dateScanned = new Date();
-                                        await async.wrap(f => db.storeMovie(result, f));
+                                        await db.storeMovie(result);
                                     };
 
                                     try {

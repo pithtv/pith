@@ -1,10 +1,8 @@
-import {CallbackWithErrorAndArg} from '../../junk';
-import {MovieLibrary} from './types';
 import {Collection} from 'mongodb';
-import async from 'async';
-import {wrap} from '../../lib/async';
 import {getLogger} from 'log4js';
 import {v1 as uuid} from 'node-uuid';
+import {mapSeries} from '../../lib/async';
+
 const logger = getLogger('pith.plugins.library.database');
 
 export class Repository {
@@ -22,10 +20,10 @@ export class Repository {
         this.series = db.collection('series');
     }
 
-    insertOrUpdate(collection, entity, callback) {
+    insertOrUpdate(collection, entity): Promise<any> {
         entity.modificationTime = new Date();
         if (entity._id) {
-            collection.update({_id: entity._id}, {$set: entity}, callback);
+            return collection.update({_id: entity._id}, {$set: entity});
         } else {
             if (!entity.id) {
                 entity.id = uuid();
@@ -33,128 +31,80 @@ export class Repository {
             if (!entity.creationTime) {
                 entity.creationTime = new Date();
             }
-            collection.insertOne(entity, callback);
+            return collection.insertOne(entity);
         }
     }
 
-    findOrCreate(collection, query, callback);
-    findOrCreate(collection, query, constructor, callback?) {
-        if (typeof callback != 'function') {
-            callback = constructor;
-            constructor = (q, cb) => {
-                cb(undefined, q);
-            };
+    async findOrCreate(collection, query, constructor?: (query: any) => Promise<any>) {
+        let result = await collection.findOne(query);
+        if (result) {
+            return result;
         }
-        collection.findOne(query, (err, result) => {
-            if (result) {
-                callback(null, result);
-            } else {
-                constructor(query, (err, result) => {
-                    collection.insert(result, (err, result) => {
-                        callback(err, result && result[0]);
-                    });
-                });
-            }
-        });
+        result = await constructor(query);
+        return await collection.insertOne(result);
     }
 
-    getPerson(name, job, callback) {
-        this.people.findOne({name: name}, (err, result) => {
-            if (!result) {
-                result = {name: name};
-                result[job] = true;
-                this.people.insert(result, (err, result) => {
-                    callback(err, result && result[0]);
-                });
-            } else if (!result[job]) {
-                const update = {};
-                result[job] = true;
-                update[job] = true;
-                this.people.update({_id: result._id}, {$set: update}, err => {
-                    callback(err, result);
-                });
-            } else {
-                callback(null, result);
-            }
-        });
+    async getCreateOrUpdatePersonWithJob(name, job) {
+        let result = await this.people.findOne({name: name});
+        if (!result) {
+            result = {name: name};
+            result[job] = true;
+            await this.people.insertOne(result);
+            return result;
+        } else if (!result[job]) {
+            const update = {};
+            result[job] = true;
+            update[job] = true;
+            await this.people.updateOne({_id: result._id}, {$set: update});
+            return result;
+        } else {
+            return result;
+        }
     }
 
-    singleResult(callback) {
-        return (err, result) => {
-            if (!result || result.length === 0) {
-                callback(false, null);
-            } else if (result.length > 1) {
-                callback('Expecting single result');
-            } else {
-                callback(false, result[0]);
-            }
-        };
+    getKeyword(name) {
+        return this.findOrCreate(this.keywords, {name: name});
     }
 
-    getKeyword(name, callback) {
-        this.findOrCreate(this.keywords, {name: name}, callback);
+    getGenre(name) {
+        return this.findOrCreate(this.genres, {name: name});
     }
 
-    getGenre(name, callback) {
-        this.findOrCreate(this.genres, {name: name}, callback);
+    private _id(result) {
+        return result && result._id.toHexString();
     }
 
-    _id(callback) {
-        return (err, result) => {
-            callback(err, result && result._id.toHexString());
-        };
+    async getActorId(name) {
+        return this._id(await this.getCreateOrUpdatePersonWithJob(name, 'actor'));
     }
 
-    getActorId(name, callback) {
-        this.getPerson(name, 'actor', this._id(callback));
+    async getKeywordId(name) {
+        return this._id(await this.getKeyword(name));
     }
 
-    getDirectorId(name, callback) {
-        this.getPerson(name, 'director', this._id(callback));
+    async getGenreId(name) {
+        return this._id(await this.getGenre(name));
     }
 
-    getWriterId(name, callback) {
-        this.getPerson(name, 'writer', this._id(callback));
-    }
-
-    getKeywordId(name, callback) {
-        this.getKeyword(name, this._id(callback));
-    }
-
-    getGenreId(name, callback) {
-        this.getGenre(name, this._id(callback));
-    }
-
-    storeMovie(item, callback) {
+    async storeMovie(item) {
         const movie: any = {id: undefined};
         Object.assign(movie, item);
 
         movie.id = uuid();
 
-        async.mapSeries(movie.actors, (val, cb) => this.getActorId(val, cb), (err, result) => {
-            movie.actorIds = result;
-            async.mapSeries(movie.keywords, (val, cb) => this.getKeywordId(val, cb), (err, result) => {
-                movie.keywordIds = result;
-                async.mapSeries(movie.genres, (val, cb) => this.getGenreId(val, cb), (err, result) => {
-                    movie.genreIds = result;
-                    this.insertOrUpdate(this.movies, movie, callback);
-                });
-            });
-        });
+        movie.actorIds = await mapSeries(movie.actors, (val) => this.getActorId(val));
+        movie.keywordIds = await mapSeries(movie.keywords, val => this.getKeywordId(val));
+        movie.genreIds = await mapSeries(movie.genres, (val) => this.getGenreId(val));
+        await this.insertOrUpdate(this.movies, movie);
     }
 
-    storeShow(item, callback) {
-        this.insertOrUpdate(this.series, item, callback);
+    storeShow(item) {
+        return this.insertOrUpdate(this.series, item);
     }
 
-    findSeason(item, callback) {
-        this.series.find({seasons: {$elemMatch: item}}, {sort: {'seasons.$': 1}}).toArray((err, result) => {
-            if (err) {
-                callback(err);
-            } else {
-                callback(err, result[0] && result[0].seasons[0]);
-            }
-        });
+    async findSeason(item) {
+        const result = await this.series.find({seasons: {$elemMatch: item}}, {sort: {'seasons.$': 1}}).toArray();
+        return result[0] && result[0].seasons[0];
     }
 
     findSeasons(item, sorting) {
@@ -163,29 +113,21 @@ export class Repository {
         }).then(e => e[0].seasons);
     }
 
-    storeSeason(item, callback) {
-        this.series.updateOne({id: item.showId, seasons: {$elemMatch: item}}, {$set: {'seasons.$': item}}, (err, results) => {
-            if (err) {
-                callback(err);
-            } else if (results.matchedCount) {
-                callback(err, results);
-            } else {
-                this.series.updateOne({id: item.showId}, {$push: {seasons: item}}, callback);
-            }
-        });
+    async storeSeason(item) {
+        const results = await this.series.updateOne({id: item.showId, seasons: {$elemMatch: item}}, {$set: {'seasons.$': item}});
+        if (results.matchedCount) {
+            return results;
+        } else {
+            return await this.series.updateOne({id: item.showId}, {$push: {seasons: item}});
+        }
     }
 
-    findEpisode(item, callback) {
-        this.series.find(
+    async findEpisode(item) {
+        const show = await this.series.find(
             {episodes: {$elemMatch: item}},
             {projection: {episodes: {$elemMatch: item}}}
-        ).toArray((err, show) => {
-            if (err) {
-                callback(err);
-            } else {
-                callback(false, show[0] && show[0].episodes && show[0].episodes[0]);
-            }
-        });
+        ).toArray();
+        return show[0] && show[0].episodes && show[0].episodes[0];
     }
 
     findEpisodes(item, sort) {
@@ -198,58 +140,53 @@ export class Repository {
         ).toArray();
     }
 
-    storeEpisode(item, callback) {
-        this.series.updateOne({
+    async storeEpisode(item) {
+        const result = await this.series.updateOne({
             id: item.showId,
             episodes: {$elemMatch: {season: item.season, episode: item.episode}}
-        }, {$set: {'episodes.$': item}}, (err, result) => {
-            if (err || result.matchedCount) {
-                callback(err, result);
-            } else {
-                this.series.updateOne({
-                    id: item.showId
-                }, {$push: {'episodes': item}}, callback);
-            }
-        });
+        }, {$set: {'episodes.$': item}});
+        if (result.matchedCount) {
+            return result;
+        } else {
+            return await this.series.updateOne({
+                id: item.showId
+            }, {$push: {'episodes': item}});
+        }
     }
 
-    findShow(query, callback) {
-        this.series.find(query).toArray(this.singleResult(callback));
+    findShow(query) {
+        return this.series.findOne(query);
     }
 
-    getKeywords(callback) {
-        this.keywords.find({}).toArray(callback);
+    getKeywords() {
+        return this.keywords.find({}).toArray();
     }
 
-    getGenres(callback) {
-        this.genres.find({}).toArray(callback);
+    getGenres() {
+        return this.genres.find({}).toArray();
     }
 
-    getActors(callback) {
-        this.people.find({actor: true}).toArray(callback);
+    getActors() {
+        return this.people.find({actor: true}).toArray();
     }
 
-    getDirectors(callback) {
-        this.people.find({director: true}).toArray(callback);
+    getDirectors() {
+        return this.people.find({director: true}).toArray();
     }
 
-    getWriters(callback) {
-        this.people.find({writer: true}).toArray(callback);
+    getWriters() {
+        return this.people.find({writer: true}).toArray();
     }
 
     findShows(selector, sorting) {
-        return wrap(cb => this.series.find(selector).sort(sorting).toArray(cb));
+        return this.series.find(selector).sort(sorting).toArray();
     }
 
-    findMovieByOriginalId(channelId, itemId, callback) {
-        this.movies.find({channelId: channelId, originalId: itemId}).toArray(this.singleResult(callback));
+    findMovieByOriginalId(channelId, itemId) {
+        return this.movies.findOne({channelId: channelId, originalId: itemId});
     }
 
-    findMovies(query, opts, callback: CallbackWithErrorAndArg<MovieLibrary.Movie[]>) {
-        if (typeof opts === 'function') {
-            callback = opts;
-            opts = undefined;
-        }
+    findMovies(query, opts?: { order: any, limit: number }) {
         const cursor = this.movies.find(query);
         if (opts && opts.order) {
             cursor.sort(opts.order);
@@ -257,7 +194,7 @@ export class Repository {
         if (opts && opts.limit) {
             cursor.limit(opts.limit);
         }
-        return cursor.toArray(callback);
+        return cursor.toArray();
     }
 }
 

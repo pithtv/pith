@@ -92,7 +92,7 @@ export default function(plugin) {
             } else {
                 const p = itemId.split('/');
                 if(p.length === 1) {
-                    let show = await async.wrap<ITvShow>(cb => db.findShow({id: itemId}, cb));
+                    let show = await db.findShow({id: itemId});
                     if (show) {
                         return await mapShow(show);
                     }
@@ -100,7 +100,7 @@ export default function(plugin) {
                     let result = await db.findSeason({showId: p[0], season: p[1]});
                     return mapSeason(result);
                 } else if(p.length === 3) {
-                    let result = await async.wrap<ITvShowEpisode>(cb => db.findEpisode({showId: p[0], season: parseInt(p[1]), episode: parseInt(p[2])}, cb));
+                    let result = await db.findEpisode({showId: p[0], season: parseInt(p[1]), episode: parseInt(p[2])});
                     if (result) {
                         return await mapEpisode(result);
                     }
