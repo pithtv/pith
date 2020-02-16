@@ -52,6 +52,7 @@
   "devDependencies": {
     "@types/jest": "^25.1.2",
     "jest": "^25.1.0",
+    "mock-fs": "^4.10.4",
     "ts-jest": "^25.2.0",
     "typescript": "^3.7.5"
   },

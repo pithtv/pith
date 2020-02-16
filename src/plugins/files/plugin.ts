@@ -1,13 +1,12 @@
-import fs from 'fs';
+import {promises as fs} from 'fs';
 import mimetypes from '../../lib/mimetypes';
 
 import vidstreamer from '../../lib/vidstreamer';
-import async from 'async';
 import $path from 'path';
 import {StateStore} from './playstate';
 import ff from 'fluent-ffmpeg';
 import {Channel} from '../../lib/channel';
-import {wrap as wrapToPromise} from '../../lib/async';
+import {wrapNoErr} from '../../lib/async';
 import profiles from '../../lib/profiles';
 import {keyframes} from '../../lib/keyframes';
 import {preview} from './preview';
@@ -19,11 +18,12 @@ import {Pith} from '../../pith';
 import {IChannelItem} from '../../channel';
 import {IStream} from '../../stream';
 import {SettingsStore, SettingsStoreSymbol} from '../../settings/SettingsStore';
-import {container, inject, injectable} from 'tsyringe';
+import {inject, injectable} from 'tsyringe';
 import {DBDriver, DBDriverSymbol} from '../../persistence/DBDriver';
 import {PithPlugin, plugin} from '../plugins';
+import {MetaDataProvider} from './MetaDataProvider';
 
-export const metaDataProviders = [new movie_nfo(), new tvshow_nfo(), new thumbnails(), new fanart()];
+export const metaDataProviders : MetaDataProvider[] = [new movie_nfo(), new tvshow_nfo(), new thumbnails(), new fanart()];
 
 export class FilesChannel extends Channel {
     private rootDir: string;
@@ -42,84 +42,67 @@ export class FilesChannel extends Channel {
             }
         });
 
-        pith.handle.use('/stream/:fingerprint', vidstreamer);
-        pith.handle.use('/preview', preview(path => this.getFile(path)));
+        if(pith.handle) {
+            pith.handle.use('/stream/:fingerprint', vidstreamer);
+            pith.handle.use('/preview', preview(path => this.getFile(path)));
+        }
     }
 
-    listContents(containerId) {
-        return wrapToPromise<IChannelItem[]>(cb => {
-            const rootDir = this.rootDir;
-            let path;
-            if (containerId) {
-                path = $path.resolve(rootDir, containerId);
-            } else {
-                path = rootDir;
-            }
+    async listContents(containerId?) {
+        const rootDir = this.rootDir;
+        let path;
+        if (containerId) {
+            path = $path.resolve(rootDir, containerId);
+        } else {
+            path = rootDir;
+        }
 
-            const filesChannel = this;
+        const filesChannel = this;
 
-            fs.readdir(path, (err, files) => {
-                if (err) {
-                    cb(err);
-                } else {
-                    const filteredFiles = files.filter(e => (e[0] !== '.' || this.settingsStore.settings.files.showHiddenFiles) && this.settingsStore.settings.files.excludeExtensions.indexOf($path.extname(e)) === -1);
-                    Promise.all(filteredFiles.map(file => {
-                        const filepath = $path.resolve(path, file);
-                        const itemId = $path.relative(rootDir, filepath);
-                        return filesChannel.getItem(itemId, false);
-                    })).then(items => {
-                        cb(false, items.filter(e => e !== undefined));
-                    }).catch(err => {
-                        cb(err);
-                    });
-                }
-            });
-        });
+        const files = await fs.readdir(path);
+        const filteredFiles = files.filter(e => (e[0] !== '.' || this.settingsStore.settings.files.showHiddenFiles) && this.settingsStore.settings.files.excludeExtensions.indexOf($path.extname(e)) === -1);
+
+        const transformed = await Promise.all(filteredFiles.map(file => {
+            const filepath = $path.resolve(path, file);
+            const itemId = $path.relative(rootDir, filepath);
+            return filesChannel.getItem(itemId, false);
+        }));
+
+        return transformed.filter(e => e !== undefined);
     }
 
     getFile(path) {
         return $path.resolve(this.rootDir, path);
     }
 
-    getItem(itemId, detailed = true) {
-        return new Promise((resolve) => {
-            const filepath = $path.resolve(this.rootDir, itemId);
-            const channel = this;
-            fs.stat(filepath, function (err, stats) {
-                const item: Partial<IChannelItem> = {
-                    title: $path.basename(itemId),
-                    id: itemId
-                };
+    async getItem(itemId, detailed = true) {
+        const filepath = $path.resolve(this.rootDir, itemId);
+        const channel = this;
+        const stats = await fs.stat(filepath);
+        const item: IChannelItem = {
+            title: $path.basename(itemId),
+            id: itemId,
+            ...(stats && stats.isDirectory() ? {
+                type: 'container'
+            }: {
+                type: 'file',
+                mimetype: mimetypes.fromFilePath(itemId),
+                playable: mimetypes.fromFilePath(itemId) && true,
 
-                if (stats && stats.isDirectory()) {
-                    item.type = 'container';
-                } else {
-                    item.type = 'file';
-                    item.mimetype = mimetypes.fromFilePath(itemId);
-                    item.playable = item.mimetype && true;
+                fileSize: stats && stats.size,
+                modificationTime: stats && stats.mtime,
+                creationTime: stats && stats.ctime,
+            })
+        };
 
-                    item.fileSize = stats && stats.size;
-                    item.modificationTime = stats && stats.mtime;
-                    item.creationTime = stats && stats.ctime;
-                }
+        const applicableProviders = metaDataProviders.filter(f => f.appliesTo(channel, filepath, item));
 
-                const applicableProviders = metaDataProviders.filter(function (f) {
-                    return f.appliesTo(channel, filepath, item);
-                });
-
-                if (applicableProviders.length) {
-                    async.parallel(applicableProviders.map(function (f) {
-                        return function (cb) {
-                            f.get(channel, filepath, item, cb);
-                        };
-                    }), function () {
-                        resolve(item as IChannelItem);
-                    });
-                } else {
-                    resolve(item as IChannelItem);
-                }
-            });
-        }) as Promise<IChannelItem>;
+        if (applicableProviders.length) {
+            await Promise.all(applicableProviders.map(provider => wrapNoErr(cb => provider.get(channel, filepath, item, cb))));
+            return item;
+        } else {
+            return item;
+        }
     }
 
     getStream(item, options) {

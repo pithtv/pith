@@ -1,0 +1,92 @@
+import 'reflect-metadata';
+import mock from 'mock-fs';
+import {FilesChannel} from '../src/plugins/files/plugin';
+import {Pith} from '../src/pith';
+import {StateStore} from '../src/plugins/files/playstate';
+import {SettingsStore} from '../src/settings/SettingsStore';
+
+test('Movie file metadata', async () => {
+    mock({
+        '/data/movies/': {
+            'Angels In Antwerp (2020)': {
+                'moviefile.mkv': 'notempty'
+            },
+            'The Beckoning (1971)': {
+                'VIDEO_TS': {
+                    'VTS_03_01.VOB': 'notempty'
+                }
+            }
+        }
+    });
+
+    const channel = new FilesChannel({} as Pith, {} as StateStore, {
+        settings: {
+            files: {
+                rootDir: '/data',
+                showHiddenFiles: true,
+                excludeExtensions: []
+            }
+        }
+    } as SettingsStore);
+
+    const rootContents = await channel.listContents();
+
+    expect(rootContents).toEqual([{'id': 'movies', 'title': 'movies', 'type': 'container'}]);
+
+    const movieContents = await channel.listContents('movies');
+
+    expect(movieContents).toEqual([{
+        id: 'movies/Angels In Antwerp (2020)',
+        title: 'Angels In Antwerp (2020)',
+        type: 'container'
+    },{
+        id: 'movies/The Beckoning (1971)',
+        title: 'The Beckoning (1971)',
+        type: 'container'
+    }]);
+
+    const movieOneContents = await channel.listContents('movies/Angels In Antwerp (2020)');
+
+    expect(movieOneContents).toMatchObject([{
+        id: 'movies/Angels In Antwerp (2020)/moviefile.mkv',
+        title: 'Angels In Antwerp',
+        year: 2020,
+        type: 'file',
+        mediatype: 'movie',
+        mimetype: 'video/x-matroska'
+    }]);
+
+    const movieOneItem = await channel.getItem('movies/Angels In Antwerp (2020)/moviefile.mkv');
+
+    expect(movieOneItem).toMatchObject({
+        id: 'movies/Angels In Antwerp (2020)/moviefile.mkv',
+        title: 'Angels In Antwerp',
+        year: 2020,
+        type: 'file',
+        mediatype: 'movie',
+        mimetype: 'video/x-matroska'
+    });
+
+    const movieTwoContents = await channel.listContents('movies/The Beckoning (1971)/VIDEO_TS');
+
+    expect(movieTwoContents).toMatchObject([{
+        id: 'movies/The Beckoning (1971)/VIDEO_TS/VTS_03_01.VOB',
+        title: 'The Beckoning',
+        year: 1971,
+        type: 'file',
+        mediatype: 'movie',
+        mimetype: 'video/dvd'
+    }]);
+
+    const movieTwoItem = await channel.getItem('movies/The Beckoning (1971)/VIDEO_TS/VTS_03_01.VOB');
+    expect(movieTwoItem).toMatchObject({
+        id: 'movies/The Beckoning (1971)/VIDEO_TS/VTS_03_01.VOB',
+        title: 'The Beckoning',
+        year: 1971,
+        type: 'file',
+        mediatype: 'movie',
+        mimetype: 'video/dvd'
+    });
+
+    mock.restore();
+});

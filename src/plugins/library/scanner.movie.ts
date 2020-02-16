@@ -1,5 +1,4 @@
 import {queryMovie} from './metadata.tmdb.js';
-import * as async from '../../lib/async';
 import {getLogger} from 'log4js';
 import filenameparser from '../../lib/filenameparser';
 const logger = getLogger("pith.plugin.library.scanner.movie");
@@ -19,9 +18,6 @@ export default opts => {
                                 let result = await db.findMovieByOriginalId(dir.channelId, item.id);
                                 if (!result) {
                                     logger.info("Found new item " + item.id);
-
-                                    item.modificationTime = container.modificationTime;
-                                    item.creationTime = container.creationTime;
 
                                     const store = async result => {
                                         logger.info(result.title, result.year);

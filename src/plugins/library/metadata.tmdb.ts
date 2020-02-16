@@ -101,25 +101,31 @@ async function parseSeason(result) {
     };
 }
 
+async function queryMovieByImdbId(imdbId) {
+    return await wrap<{movie_results: any[]}>(cb => tmdb.find({
+        id: imdbId,
+        external_source: 'imdb_id'
+    }, cb));
+}
+
+async function queryMovieByTitleAndYear(title, year) {
+    return await wrap<{results: any[]}>(cb => tmdb.searchMovie({
+        query: title,
+        year: year
+    }, cb));
+}
+
 export async function queryMovie(item) {
     let searchResult;
     if (item.imdbId) {
-        searchResult = await wrap(cb => tmdb.find({
-            id: item.imdbId,
-            external_source: 'imdb_id'
-        }, cb));
-    } else {
-        const q = {
-            query: item.title,
-            year: item.year
-        };
-        searchResult = await wrap(cb => tmdb.searchMovie(q, cb));
+        searchResult = (await queryMovieByImdbId(item.imdbId)).movie_results[0];
     }
 
-    const movies = searchResult.movie_results || searchResult.results;
-    const movie = movies[0]; // for now just pick the first one
+    if(!searchResult) {
+        searchResult = (await queryMovieByTitleAndYear(item.title, item.year)).results[0];
+    }
 
-    if (!movie) {
+    if (!searchResult) {
         throw new Error(`Movie not found for imdbid ${item.imdbId}, title: ${item.title}, year: ${item.year}`);
     }
 

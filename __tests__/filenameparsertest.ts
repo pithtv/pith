@@ -20,6 +20,14 @@ test("Title and year in both directory and filename", () => {
     const r = filenameparser("/media/12 Angry Men (1957)/12.Angry.Men.1957.720p.x264-bla.mkv", 'movie');
     expect(r).toEqual({title: "12 Angry Men", year: 1957, mediatype: 'movie'});
 });
+test("Title and year only in directory with another subdirectory", () => {
+    const r = filenameparser("Movies HD/Angels in America (2003)/VIDEO_TS/VTS_03_1.VOB", "movie");
+    expect(r).toEqual({title: "Angels in America", year: 2003, mediatype: 'movie'});
+});
+test("Title and year only in directory", () => {
+    const r = filenameparser("Movies HD/Angels in America (2003)/VIDEO_TS", "movie");
+    expect(r).toEqual({title: "Angels in America", year: 2003, mediatype: 'movie'});
+});
 
 test("Showname/season/showname - seasonxepisode - title", () => {
     const r = filenameparser("/media/Series/Mad Men/Season 3/Mad Men - 3x07 - Seven Twenty Three.mkv", "show");
