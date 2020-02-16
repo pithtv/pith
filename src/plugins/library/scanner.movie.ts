@@ -1,8 +1,7 @@
-import metadata from './metadata.tmdb.js';
+import {TmdbMetaData} from './metadata.tmdb.js';
 import * as async from '../../lib/async';
 import {getLogger} from 'log4js';
 import filenameparser from '../../lib/filenameparser';
-import {MovieLibrary} from './types';
 const logger = getLogger("pith.plugin.library.scanner.movie");
 
 export default opts => {
@@ -34,7 +33,7 @@ export default opts => {
                                     };
 
                                     try {
-                                        item = await async.wrap(cb => metadata(item, 'movie', cb));
+                                        item = await TmdbMetaData(item, 'movie');
                                         await store(item);
                                     } catch(e) {
                                         const md = filenameparser(container.title, 'movie');
@@ -45,7 +44,7 @@ export default opts => {
                                             item.title = container.title;
                                         }
                                         try {
-                                            item = await async.wrap(cb => metadata(item, 'movie', cb));
+                                            item = await TmdbMetaData(item, 'movie');
                                             await store(item);
                                         } catch(e) {
                                             logger.warn(`Fetching metadata failed`, e);

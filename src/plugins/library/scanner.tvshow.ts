@@ -3,16 +3,16 @@ import filenameparser from '../../lib/filenameparser';
 import {wrap} from '../../lib/async';
 
 const logger = getLogger('pith.plugin.library.scanner.tvshow');
-const metadata = require('./metadata.tmdb');
+const {TmdbMetaData} = require('./metadata.tmdb');
 
 export default opts => {
     const db = opts.db;
 
     return {
-        loadShow: (showName, cb) => {
-            metadata({
+        loadShow(showName){
+            return TmdbMetaData({
                 title: showName
-            }, 'show', cb);
+            }, 'show');
         },
 
         async loadAndStoreSeason(show, season) {
@@ -23,7 +23,7 @@ export default opts => {
                 showId: show.id,
                 showname: show.title
             };
-            seasonMetaData = await wrap(cb => metadata(seasonMetaData, 'season', cb));
+            seasonMetaData = await TmdbMetaData(seasonMetaData, 'season');
 
             const episodes = seasonMetaData._children;
             seasonMetaData._children = undefined;
@@ -54,7 +54,7 @@ export default opts => {
                 episodeMetaData.showId = show.id;
                 episodeMetaData.season = season.season;
                 try {
-                    const extraMetaData = await wrap<object>(cb => metadata(episodeMetaData, 'episode', cb));
+                    const extraMetaData = await TmdbMetaData(episodeMetaData, 'episode');
                     await db.storeEpisode({
                         ...extraMetaData,
                         dataScanned: new Date(),

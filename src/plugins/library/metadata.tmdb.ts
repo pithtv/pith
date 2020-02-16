@@ -1,6 +1,8 @@
 import moviedb from 'moviedb';
 import {getLogger} from 'log4js';
-const tmdb = moviedb("a08cfd3b50689d40b46a078ecc7390bb");
+import {wrap} from '../../lib/async';
+
+const tmdb = moviedb('a08cfd3b50689d40b46a078ecc7390bb');
 const dateParser = /(\d{4})-(\d{2})-(\d{2})/;
 const logger = getLogger('pith.plugin.library.metadata.tmdb');
 
@@ -10,72 +12,60 @@ tmdb.configuration((err, conf) => {
 });
 
 function createUrl(path) {
-    return path && configuration.images.base_url + "original" + path;
+    return path && configuration.images.base_url + 'original' + path;
 }
 
 function parseDate(d) {
-    if(d==null) {
+    if (d == null) {
         return null;
     }
     const p = d.match(dateParser);
-    if(!p) {
+    if (!p) {
         return null;
     }
-    return new Date(parseInt(p[1]),parseInt(p[2])-1,parseInt(p[3]));
+    return new Date(parseInt(p[1]), parseInt(p[2]) - 1, parseInt(p[3]));
 }
 
 function get(property) {
     return e => e[property];
 }
 
-export default (item, mediatype, callback) => {
-    let movie;
+export async function TmdbMetaData(item, mediatype) {
+    async function parser(searchResult) {
+        const movies = searchResult.movie_results || searchResult.results;
+        const movie = movies[0]; // for now just pick the first one
 
-    function parser(err, result) {
-        if(err) {
-            logger.error(err, item);
-            callback(err);
-        } else {
-            const movies = result.movie_results || result.results;
-            const movie = movies[0]; // for now just pick the first one
-
-            if(!movie) {
-                callback("No movie found");
-                return;
-            }
-
-            tmdb.movieInfo({
-                id: movie.id,
-                append_to_response: 'credits,keywords'
-            }, (err, result) => {
-                if(err) {
-                    callback(err, item);
-                } else {
-                    item.genres = result.genres.map(get('name'));
-                    item.title = result.title;
-                    item.imdbId = result.imdb_id;
-                    item.poster = createUrl(result.poster_path);
-                    item.backdrop = createUrl(result.backdrop_path);
-                    item.releaseDate = parseDate(result.release_date);
-                    item.runtime = result.runtime;
-                    item.tagline = result.tagline;
-                    item.plot = result.overview;
-                    item.tmdbRating = result.vote_average;
-                    item.tmdbVoteCount = result.vote_count;
-                    item.keywords = result.keywords.keywords.map(get('name'));
-                    item.actors = result.credits.cast.map(get('name'));
-
-                    item.directors = result.credits.crew.filter(e => e.job === 'Director').map(get('name'));
-
-                    item.writers = result.credits.crew.filter(e => e.job === "Screenplay").map(get('name'));
-
-                    callback(undefined, item);
-                }
-            });
+        if (!movie) {
+            throw new Error('Movie not found');
         }
+
+        const result = await wrap<any>(cb => tmdb.movieInfo({
+            id: movie.id,
+            append_to_response: 'credits,keywords'
+        }, cb));
+
+        item.genres = result.genres.map(get('name'));
+        item.title = result.title;
+        item.imdbId = result.imdb_id;
+        item.poster = createUrl(result.poster_path);
+        item.backdrop = createUrl(result.backdrop_path);
+        item.releaseDate = parseDate(result.release_date);
+        item.runtime = result.runtime;
+        item.tagline = result.tagline;
+        item.plot = result.overview;
+        item.tmdbRating = result.vote_average;
+        item.tmdbVoteCount = result.vote_count;
+        item.keywords = result.keywords.keywords.map(get('name'));
+        item.actors = result.credits.cast.map(get('name'));
+
+        item.directors = result.credits.crew.filter(e => e.job === 'Director').map(get('name'));
+
+        item.writers = result.credits.crew.filter(e => e.job === 'Screenplay').map(get('name'));
+
+        return item;
     }
 
-    function tvParser(err, result) {
+    async function tvParser(result) {
         const metadata = {
             backdrop: createUrl(result.backdrop_path),
             genres: result.genres.map(get('name')),
@@ -88,19 +78,20 @@ export default (item, mediatype, callback) => {
             overview: result.overview,
             poster: createUrl(result.poster_path),
             tmdbRating: result.vote_average,
-            tmdbVoteCount: result.vote_count
+            tmdbVoteCount: result.vote_count,
         };
 
-        for(let x in metadata) item[x] = metadata[x];
-        callback(undefined, item);
+        Object.assign(item, metadata);
+        return item;
     }
 
-    function episodeParser(ep, item) {
-        if(!ep) {
+    async function episodeParser(ep) {
+        if (!ep) {
             return item;
         }
 
-        const metadata = {
+        return {
+            ...item,
             mediatype: 'episode',
             tmdbId: ep.id,
             episode: ep.episode_number,
@@ -112,23 +103,14 @@ export default (item, mediatype, callback) => {
             tmdbRating: ep.vote_average,
             tmdbVoteCount: ep.vote_count
         };
-
-        if(item) {
-            for(let x of Object.keys(item)) {
-                metadata[x] = metadata[x] || item[x];
-            }
-            return metadata;
-        } else {
-            return metadata;
-        }
     }
 
-    function seasonParser(err, result) {
-        if(err) {
-            callback(err);
-                return;
+    async function seasonParser(result) {
+        if (!result) {
+            return item;
         }
-        const metadata = {
+        return {
+            ...item,
             _children: result.episodes.map(episodeParser),
 
             title: result.name,
@@ -137,18 +119,16 @@ export default (item, mediatype, callback) => {
             poster: createUrl(result.poster_path),
             season: result.season_number
         };
-
-        for(let x in metadata) item[x] = metadata[x];
-        callback(undefined, item);
     }
 
     switch (mediatype) {
-        case "movie":
+        case 'movie':
             if (item.imdbId) {
-                movie = tmdb.find({
+                const movie = await wrap(cb => tmdb.find({
                     id: item.imdbId,
                     external_source: 'imdb_id'
-                }, parser);
+                }, cb));
+                return await parser(movie);
             } else {
                 const q = {
                     query: item.title,
@@ -157,43 +137,46 @@ export default (item, mediatype, callback) => {
                 if (item.year) {
                     q.year = item.year;
                 }
-                tmdb.searchMovie(q, parser);
+                const movie = await wrap(cb => tmdb.searchMovie(q, cb));
+                return await parser(movie);
             }
-            break;
-        case "show":
+        case 'show':
             if (item.tmdbId) {
-                tmdb.tvInfo({id:item.tmdbId}, tvParser)
-            } else if(item.tvdbId) {
-                tmdb.find({
+                const show = await wrap(cb => tmdb.tvInfo({id: item.tmdbId}, cb));
+                return await tvParser(show);
+            } else if (item.tvdbId) {
+                const show = await wrap(cb => tmdb.find({
                     id: item.tvdbId,
                     external_source: 'tvdb_id'
-                }, tvParser);
+                }, cb));
+                return await tvParser(show);
             } else {
                 const query = {query: item.showname || item.title};
-                tmdb.searchTv(query, (err, result) => {
-                    if(err || !result.results[0]) {
-                        callback(err || Error(`No result found for show ${item} using query ${query.query}`));
-                    } else {
-                        tmdb.tvInfo({id: result.results[0].id}, tvParser);
-                    }
-                });
+                const result = await wrap<any>(cb => tmdb.searchTv(query, cb));
+                if (!result.results[0]) {
+                    throw new Error(`No result found for show ${item} using query ${query.query}`);
+                } else {
+                    const tv = await wrap(cb => tmdb.tvInfo({id: result.results[0].id}, cb));
+                    return await tvParser(tv);
+                }
             }
-            break;
-        case "season":
+        case 'season':
             if (item.showTmdbId) {
-                tmdb.tvSeasonInfo({id: item.showTmdbId, season_number: item.season}, seasonParser);
+                const season = await wrap(cb => tmdb.tvSeasonInfo({id: item.showTmdbId, season_number: item.season}));
+                return await seasonParser(season);
             } else {
-                callback(Error("Need show tmdb id"));
+                throw new Error('Need show tmdb id');
             }
-            break;
-        case "episode":
+        case 'episode':
             if (item.showTmdbId) {
-                tmdb.tvEpisodeInfo({id: item.showTmdbId, season_number: item.season, episode_number: item.episode}, (err, ep) => {
-                    callback(undefined, episodeParser(ep, item));
-                });
+                const episode = await wrap(cb => tmdb.tvEpisodeInfo({
+                    id: item.showTmdbId,
+                    season_number: item.season,
+                    episode_number: item.episode
+                }, cb));
+                return await episodeParser(episode);
             } else {
-                callback(Error("Need show tmdb id"));
+                throw new Error('Need show tmdb id');
             }
-            break;
     }
-};
+}
