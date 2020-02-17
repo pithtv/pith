@@ -77,3 +77,11 @@ export async function fileExists(path) {
         return false;
     }
 }
+
+export async function directoryExists(path) {
+    try {
+        return (await fs.stat(path)).isDirectory();
+    } catch(err) {
+        return false;
+    }
+}

@@ -20,7 +20,7 @@ export class ImageScaler {
         this.dbDir = path.resolve(settingsStore.datadir, "thumnbnails");
 
         if(!fs.existsSync(this.dbDir)) {
-            fs.mkdirSync(this.dbDir);
+            fs.mkdirSync(this.dbDir, { recursive: true });
         }
     }
 

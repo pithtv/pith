@@ -4,6 +4,7 @@ import path = require('path');
 import {promises as fs} from "fs";
 import defaults from './defaults';
 import {initialiser} from '../lib/AsyncInitialisation';
+import {directoryExists, fileExists} from "../lib/util";
 
 export class FileSettingsStore implements SettingsStore {
 
@@ -17,13 +18,11 @@ export class FileSettingsStore implements SettingsStore {
     }
 
     @initialiser() async load(): Promise<void> {
-        const dataDirStat = await fs.stat(this.datadir);
-        if(!dataDirStat.isDirectory()) {
+        if(!(await directoryExists(this.datadir))) {
             await fs.mkdir(this.datadir);
         }
 
-        const settingsFileStat = await fs.stat(this.settingsPath);
-        if(!settingsFileStat.isFile()) {
+        if(!(await fileExists(this.settingsPath))) {
             this.storeSettings(defaults);
         } else {
            const content = await fs.readFile(this.settingsPath, {encoding: 'utf-8'});
