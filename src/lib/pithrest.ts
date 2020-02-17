@@ -1,4 +1,6 @@
 import express from 'express';
+import {SettingsStoreSymbol} from "../settings/SettingsStore";
+import {container} from "tsyringe";
 
 function json(err, result) {
     if(err) {
@@ -32,9 +34,11 @@ export function handle(pith) {
         pith.controlPlayback(req.params.playerId, req.params.command, req.query);
         res.end();
     }).get("/settings", function(req, res) {
-        res.json(pith.settings());
+        let settingsStore = container.resolve(SettingsStoreSymbol);
+        res.json(settingsStore.settings);
     }).put("/settings", function(req, res) {
-        pith.settings(req.body);
+        let settingsStore = container.resolve(SettingsStoreSymbol);
+        settingsStore.storeSettings(req.body);
         res.end();
     });
 
