@@ -133,4 +133,6 @@ test("nfo metadata provider", async () => {
         title: 'Scrambled',
         year: 1988
     });
+
+    mock.restore();
 });
