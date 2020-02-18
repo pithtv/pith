@@ -66,7 +66,8 @@ export function convertToDidl(channel, item, parentId, channelId): didl.Item {
         resources: [
             ...(item.playable ? [{
                 uri: `${global.rootUrl}/rest/channel/${channelId}/redirect/${encodeURIComponent(item.id)}`,
-                protocolInfo: `http-get:*:${item.mimetype}:DLNA.ORG_OP=01;DLNA.ORG_CI=0`
+                protocolInfo: `http-get:*:${item.mimetype}:DLNA.ORG_OP=01;DLNA.ORG_CI=0`,
+                size: item.fileSize
             }] : []),
             ...(item.poster ? [{
                 uri: entities.encodeXML(cache(item.poster)),
@@ -91,7 +92,7 @@ function toDidlProperties(item : IChannelItem, channel : IChannel) : XmlObject {
         'upnp:author': item.writers,
         'upnp:director': item.director,
         'upnp:longDescription': item.plot,
-        'xbmc:dateadded': upnp.formatDate(item.creationTime),
+        'xbmc:dateadded': item.creationTime && upnp.formatDate(item.creationTime),
         'xbmc:rating': item.tmdbRating,
         'xbmc:votes': item.tmdbVoteCount,
         'xbmc:uniqueIdentifier': item.imdbId,

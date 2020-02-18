@@ -7,6 +7,7 @@ const logger = getLogger('pith.didl');
 export namespace didl {
     export interface Resource {
         duration?: string;
+        size?: number;
         protocolInfo: string;
         uri: string;
     }
@@ -34,6 +35,9 @@ export function buildDidlXml(arr: didl.Item[]) {
                 }
                 if (r.protocolInfo) {
                     x += ` protocolInfo="${entities.encodeXML(r.protocolInfo)}"`;
+                }
+                if (r.size) {
+                    x+= ` size="${r.size}"`;
                 }
                 x += `>${r.uri}</res>`;
                 return x;
