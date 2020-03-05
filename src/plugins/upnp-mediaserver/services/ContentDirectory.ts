@@ -15,10 +15,9 @@
 
 import {Service} from './Service';
 import {getLogger} from 'log4js';
-import entities from 'entities';
-import {toXml} from '../../../lib/util';
 import {SoapError} from '../Error';
 import {buildDidlXml} from '../../../lib/didl';
+import {parseXmlProperties} from '../../../lib/util';
 
 const logger = getLogger('pith.plugin.upnp-mediaserver.ContentDirectory');
 
@@ -38,7 +37,6 @@ export class ContentDirectory extends Service {
                 'Search',
                 'CreateObject',
                 'DestroyObject',
-                'UpdateObject',
                 'ImportResource',
                 'ExportResource',
                 'StopTransferResource',
@@ -54,7 +52,7 @@ export class ContentDirectory extends Service {
     }
 
     async actionHandler(action, options) {
-        logger.debug("ContentDirectory received " + action);
+        logger.debug("ContentDirectory received " + action, options);
 
         if (this.optionalActions.includes(action)) {
             return await this.optionalAction();
@@ -74,6 +72,13 @@ export class ContentDirectory extends Service {
                         default:
                             return (new SoapError(402));
                     }
+                } catch(err) {
+                    logger.error(err);
+                    return this.buildSoapError(err);
+                }
+            case 'UpdateObject':
+                try {
+                    return await this.updateObject(options);
                 } catch(err) {
                     logger.error(err);
                     return this.buildSoapError(err);
@@ -118,5 +123,12 @@ export class ContentDirectory extends Service {
             TotalMatches: 1,
             UpdateID: result.updateId
         }, 'xmlns:u="urn:schemas-upnp-org:service:ContentDirectory:1"');
+    }
+
+    async updateObject(options) {
+        let id = decodeURIComponent(options.ObjectID[0] || 0);
+        let currentTagValue = await parseXmlProperties(options['CurrentTagValue']);
+        let newTagValue = await parseXmlProperties(options['NewTagValue']);
+        return await this.device.delegate.updateObject(id, currentTagValue, newTagValue);
     }
 }

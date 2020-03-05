@@ -39,6 +39,7 @@ export interface SSDPOptions {
 export interface DeviceDelegate {
     fetchChildren(id: string, opts: { max: number; start: number; sort: any }): Promise<any>;
     fetchObject(id: any): Promise<any>;
+    updateObject(id: string, currentTagValue: any, newTagValue: any): Promise<any>;
 }
 
 export class Device extends DeviceControlProtocol {

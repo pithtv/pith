@@ -8,6 +8,8 @@ import {IdentifierService} from '../../settings/IdentifierService';
 import {PithPlugin, plugin} from '../plugins';
 import {DeviceDelegate} from './Device';
 import {convertToDidl} from '../../lib/pith2didl';
+import {SoapError} from './Error';
+import {IPlayState} from '../../channel';
 const global = container.resolve(Global);
 
 const settingsStore = container.resolve(SettingsStoreSymbol);
@@ -66,6 +68,38 @@ class MediaServerDelegate implements DeviceDelegate {
                 updateId: 0,
                 item: item
             };
+        }
+    }
+
+    async updateObject(id: string, currentTagValue: any, newTagValue: any): Promise<any> {
+        if(!newTagValue) {
+            return; // we don't support deleting tags yet.
+        }
+        let [, channelId, , itemId] = id.match(/^channel:(\w+)(:(.*))?$/) || [,,,,];
+        logger.info(`UpdateObject`, id, currentTagValue, newTagValue);
+        if (itemId) {
+            let channel = this.pith.getChannelInstance(channelId);
+            let playstate = null as IPlayState;
+            for(const [key, value] of Object.entries(newTagValue)) {
+                switch (key) {
+                    case "upnp:playCount":
+                        if(value === "0") {
+                            playstate = {...playstate, status: 'none'};
+                        } else {
+                            playstate = {...playstate, status: 'watched'}
+                        }
+                        break;
+                    case "upnp:lastPlaybackPosition":
+                        playstate = {...playstate, runtime: parseInt(value as string)};
+                        break;
+                }
+            }
+
+            if(playstate) {
+                channel.putPlayState(itemId, playstate);
+            }
+        } else {
+            throw new SoapError(701);
         }
     }
 }

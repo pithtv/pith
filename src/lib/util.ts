@@ -1,5 +1,7 @@
 import entities from 'entities';
 import {promises as fs} from 'fs';
+import {parseString as xml2js} from 'xml2js';
+import {wrap} from './async';
 
 export type XmlObject = {
     [key: string]: XmlValue
@@ -44,6 +46,17 @@ export function toXml(args : XmlValue) {
     } else {
         return args.toString();
     }
+}
+
+export async function parseXmlProperties(input: string) : Promise<{[key: string]: string}> {
+    const parseResult = await wrap<any>(cb => xml2js(`<?xml version="1.0"?><root>` + input + `</root>`, cb));
+    const output = {};
+    for(const [key, value] of Object.entries(parseResult.root)) {
+        if(key !== '_') {
+            output[key] = value[0];
+        }
+    }
+    return output;
 }
 
 export function assign(target, ...sources) {

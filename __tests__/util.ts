@@ -58,3 +58,11 @@ test("Test XML", function () {
         "ignored": undefined
     }));
 });
+
+test("XML property list parsing", async function() {
+    expect(await util.parseXmlProperties("<upnp:lastPlaybackPosition>0</upnp:lastPlaybackPosition><xbmc:lastPlayerState></xbmc:lastPlayerState>,<upnp:playCount>1</upnp:playCount>")).toEqual({
+        "upnp:lastPlaybackPosition": "0",
+        "xbmc:lastPlayerState": "",
+        "upnp:playCount": "1"
+    })
+});
