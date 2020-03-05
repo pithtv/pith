@@ -40,7 +40,7 @@ export class Repository {
         if (result) {
             return result;
         }
-        result = await constructor(query);
+        result = constructor ? await constructor(query) : query;
         return await collection.insertOne(result);
     }
 
