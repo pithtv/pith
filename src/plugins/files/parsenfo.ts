@@ -20,7 +20,7 @@ async function parseXml(data) {
                 result[x] = value;
                 break;
             case 'genre':
-                result.genre = value.split(/ ?\/ ?/g);
+                result.genre = value && value.split(/ ?\/ ?/g);
                 break;
             case 'year':
                 result.year = parseInt(value);
