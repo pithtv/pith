@@ -94,15 +94,13 @@ class MediaRenderer extends EventEmitter implements IPlayer {
     }
 
     async load(channel, item) {
-        let stream = await channel.getStream(item, {fingerprint: [identifierService.get('instance'), channel.id, item.id].join(':')});
+        let stream = await channel.getStream(item, {fingerprint: [await identifierService.get('instance'), channel.id, item.id].join(':')});
         const mediaUrl = stream.url;
         logger.debug(`Loading ${mediaUrl}`);
 
         if (this.status.actions.stop) {
             await this.stop();
         }
-
-        const type = stream.mimetype.split('/')[0];
 
         await wrap(cb => {
             this._avTransport.SetAVTransportURI({
@@ -203,7 +201,7 @@ class MediaRenderer extends EventEmitter implements IPlayer {
         if (positionInfo.TrackMetaData && typeof positionInfo.TrackMetaData === 'string') {
             const meta = await wrap(cb => xml2js(positionInfo.TrackMetaData, cb));
             const didlLite = meta['DIDL-Lite'].item[0];
-            pos.fingerprint = decodeURIComponent(didlLite.$.id.match(identifierService.get('instance') + '[^/]*'));
+            pos.fingerprint = decodeURIComponent(didlLite.$.id.match(await identifierService.get('instance') + '[^/]*'));
             for (let x of Object.keys(didlLite)) {
                 const val = didlLite[x][0];
                 switch (x) {
