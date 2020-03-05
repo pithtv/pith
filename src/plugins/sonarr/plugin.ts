@@ -137,7 +137,7 @@ class SonarrChannel extends Channel {
 
     convertSeries(show, episodes): Promise<ITvShow> {
         let pithShow: ITvShow = {
-            creationTime: show.added,
+            creationTime: show.added && new Date(show.added),
             genres: show.genres,
             id: 'sonarr.show.' + show.id,
             mediatype: 'show',
