@@ -160,25 +160,29 @@ export default class LibraryPlugin implements PithPlugin {
         });
     }
 
-    scan(manual) {
+    async scan(manual) {
         const plug = this;
 
         logger.info("Starting library scan");
         const scanStartTime = new Date().getTime();
 
-        async.eachSeries(settingsStore.settings.library.folders.filter(function(c) {
-            return plug.scanners[c.contains] !== undefined && (c.scanAutomatically || manual === true);
-        }), function(dir, cb) {
-            const channelInstance = plug.pith.getChannelInstance(dir.channelId);
-            if(channelInstance !== undefined) {
-                plug.scanners[dir.contains].scan(channelInstance, dir, cb);
+        try {
+            let scanningCandidates = settingsStore.settings.library.folders.filter(c => plug.scanners[c.contains] !== undefined && (c.scanAutomatically || manual === true));
+            for (let dir of scanningCandidates) {
+                const channelInstance = plug.pith.getChannelInstance(dir.channelId);
+                if (channelInstance !== undefined) {
+                    await plug.scanners[dir.contains].scan(channelInstance, dir);
+                }
             }
-        }, function(err) {
+        } catch(e) {
+            logger.error("Scanning aborted due to error");
+            logger.error(e);
+        } finally {
             const scanEndTime = new Date().getTime();
             logger.info("Library scan complete. Took %d ms", (scanEndTime - scanStartTime));
-            setTimeout(function () {
+            setTimeout(() => {
                 plug.scan(false);
             }, settingsStore.settings.library.scanInterval);
-        });
+        }
     }
 };

@@ -108,7 +108,7 @@ export default opts => {
             }
         },
 
-        scan: function (channelInstance, dir, cb) {
+        async scan(channelInstance, dir) {
             const scan = async (container) => {
                 if (container) {
                     const contents = await channelInstance.listContents(container.id);
@@ -144,9 +144,8 @@ export default opts => {
                 }
             };
 
-            channelInstance.getItem(dir.containerId).then(container => {
-                scan(container);
-            }).catch(cb);
+            const container = await channelInstance.getItem(dir.containerId)
+            return scan(container);
         }
     };
 };

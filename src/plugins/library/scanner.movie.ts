@@ -6,7 +6,7 @@ const logger = getLogger("pith.plugin.library.scanner.movie");
 export default opts => {
     const db = opts.db;
     return {
-        scan: (channelInstance, dir, cb) => {
+        async scan(channelInstance, dir) {
             async function listContents(container) {
                 if (container) {
                     let contents = await channelInstance.listContents(container && container.id);
@@ -60,9 +60,7 @@ export default opts => {
                 }
             }
 
-            channelInstance.getItem(dir.containerId).then(container => {
-                listContents(container).then(result => cb(false, result)).catch(cb);
-            });
+            return listContents(await channelInstance.getItem(dir.containerId));
         }
     }
 };
