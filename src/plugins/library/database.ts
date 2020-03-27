@@ -41,7 +41,8 @@ export class Repository {
             return result;
         }
         result = constructor ? await constructor(query) : query;
-        return await collection.insertOne(result);
+        const r = await collection.insertOne(result);
+        return r.ops[0];
     }
 
     async getCreateOrUpdatePersonWithJob(name, job) {
