@@ -2,6 +2,7 @@ import {IPlayState} from '../../channel';
 import {inject, injectable, singleton} from 'tsyringe';
 import {DBDriver, DBDriverSymbol} from '../../persistence/DBDriver';
 import {initialiser} from '../../lib/AsyncInitialisation';
+import {Collection} from 'mongodb';
 
 interface PersistedPlayState extends IPlayState {
     _id;
@@ -10,71 +11,52 @@ interface PersistedPlayState extends IPlayState {
 @injectable()
 @singleton()
 export class StateStore {
-    private cache: {[key: string]: PersistedPlayState} = {};
+    private cache: { [key: string]: PersistedPlayState } = {};
     private queue: PersistedPlayState[] = [];
-    private collection: any;
+    private collection: Collection;
 
     constructor(@inject(DBDriverSymbol) db: DBDriver) {
         this.collection = db.collection('playstates');
     }
 
-    @initialiser() init() {
-        return new Promise((resolve, reject) => {
-            this.collection.find({}, (err, cursor) => {
-                cursor.each((err, doc) => {
-                    if (err) {
-                        reject(err);
-                    } else if (doc === null) {
-                        resolve();
-                        this.scheduleFlush();
-                    } else {
-                        this.cache[doc.id] = doc;
-                    }
-                });
-            });
+    @initialiser() async init() {
+        const cursor = this.collection.find();
+        await cursor.forEach(doc => {
+            this.cache[doc.id] = doc;
         });
+        this.scheduleFlush();
     }
 
-    get(id) {
+    get(id: string) {
         return this.cache[id];
     }
 
-    put(object) {
+    put(object: IPlayState) {
         const existing = this.get(object.id);
-        if (existing) {
-            object._id = existing._id;
-        }
+        const dbObject = {...existing, ...object};
 
-        this.cache[object.id] = object;
+        this.cache[object.id] = dbObject;
 
         let x = 0;
-        const l = this.queue.length;
         const idx = this.queue.findIndex(q => q.id === object.id);
-        if(idx >= 0) {
-            this.queue[x] = object;
+        if (idx >= 0) {
+            this.queue[x] = dbObject;
         } else {
-            this.queue.push(object);
+            this.queue.push(dbObject);
         }
     }
 
     private scheduleFlush() {
-        setTimeout(() => {
-
-            const next = () => {
-                if (this.queue.length) {
-                    const state = this.queue.pop();
-                    if (state._id) {
-                        this.collection.update({_id: state._id}, state, next);
-                    } else {
-                        this.collection.insert(state, next);
-                    }
+        setTimeout(async () => {
+            while (this.queue.length) {
+                const state = this.queue.pop();
+                if (state._id) {
+                    await this.collection.update({_id: state._id}, state);
                 } else {
-                    this.scheduleFlush();
+                    await this.collection.insertOne(state);
                 }
-            };
-
-            next();
-
+            }
+            this.scheduleFlush();
         }, 10000);
     }
 
