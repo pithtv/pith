@@ -1,0 +1,69 @@
+$navbar-width: 300px;
+
+.c-navBar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: $navbar-width;
+  background: black;
+  color: white;
+  transition: left 300ms ease-in-out;
+  padding: 15px;
+  z-index: 200;
+
+  &.closed {
+    left: -$navbar-width;
+  }
+
+  ul {
+    padding-left: 0;
+  }
+
+  .c-navBar__group {
+    text-transform: uppercase;
+    font-size: 12px;
+    list-style: none;
+    margin-bottom: 15px;
+    color: rgb(100,100,100);
+  }
+
+  .c-navBar__item {
+    text-transform: none;
+    font-size: 18px;
+    list-style: none;
+    a {
+      color: white;
+    }
+  }
+}
+
+.c-statusBar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: rgba(255,255,255,0.8);
+  padding: 10px;
+  z-index: 100;
+  align-items: center;
+
+  display: flex;
+  flex-direction: row;
+
+  .c-statusBar__playbackArea {
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    .c-statusBar__playerBox {
+      flex: 1;
+    }
+  }
+}
+
+.u-borderlessButton {
+  padding: 5px 10px;
+  display: inline-block;
+}
