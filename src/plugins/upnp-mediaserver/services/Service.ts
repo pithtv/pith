@@ -32,7 +32,7 @@ export abstract class Service extends DeviceControlProtocol {
     private subs: {[key: string]: Subscription};
     private serviceDescription: string;
     protected optionalActions: any[];
-    protected stateActions: any[];
+    protected stateActions: {[key: string]: string};
 
     constructor(...opts) {
         super(...opts);
