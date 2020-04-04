@@ -6,7 +6,7 @@ $navbar-width: 300px;
   left: 0;
   bottom: 0;
   width: $navbar-width;
-  background: black;
+  background: $nav-bar-background;
   color: white;
   transition: left 300ms ease-in-out;
   padding: 15px;
@@ -25,7 +25,7 @@ $navbar-width: 300px;
     font-size: 12px;
     list-style: none;
     margin-bottom: 15px;
-    color: rgb(100,100,100);
+    color: $nav-bar-group-color;
   }
 
   .c-navBar__item {
@@ -33,7 +33,7 @@ $navbar-width: 300px;
     font-size: 18px;
     list-style: none;
     a {
-      color: white;
+      color: $nav-bar-item-color;
     }
   }
 }
@@ -43,7 +43,8 @@ $navbar-width: 300px;
   top: 0;
   left: 0;
   right: 0;
-  background: rgba(255,255,255,0.8);
+  background: $status-bar-background;
+  color: $status-bar-color;
   padding: 10px;
   z-index: 100;
   align-items: center;
@@ -61,9 +62,31 @@ $navbar-width: 300px;
       flex: 1;
     }
   }
+
+  .c-statusBar__expandButton {
+    display: none;
+  }
 }
 
 .u-borderlessButton {
   padding: 5px 10px;
   display: inline-block;
+}
+
+
+@media only screen and (max-width: 600px) {
+  .c-statusBar {
+    .c-statusBar__playbackControls,
+    .c-statusBar__castSelector {
+      display: none;
+    }
+
+    .c-statusBar__expandButton {
+      display: inline-block;
+    }
+  }
+
+  .u-hideOnMobile {
+    display: none;
+  }
 }
