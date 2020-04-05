@@ -4,6 +4,7 @@ import {Observable, Subscription} from 'rxjs';
 import {PlayerService} from './core/player.service';
 import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {WebPlayer} from './videoplayer/web-player';
+import {NavigationStart, Router} from '@angular/router';
 
 @Component({
   selector: 'app-root',
@@ -22,7 +23,7 @@ export class AppComponent {
   public statusbarExpanded = false;
 
   constructor(private pithClient: PithClientService, private playerService: PlayerService,
-              private modalService: NgbModal, public webPlayer: WebPlayer) {
+              private modalService: NgbModal, public webPlayer: WebPlayer, private router: Router) {
     this.channels = pithClient.queryChannels();
     pithClient.errors.subscribe(error => {
       this.showError(error);
@@ -37,6 +38,11 @@ export class AppComponent {
         this.statusSubscription = player.status.subscribe(status => {
           this.status = status;
         });
+      }
+    });
+    router.events.subscribe(event => {
+      if (event instanceof NavigationStart) {
+        this.navbarCollapsed = true;
       }
     });
   }
