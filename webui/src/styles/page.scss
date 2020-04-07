@@ -49,11 +49,21 @@ $navbar-width: 300px;
   z-index: 100;
   align-items: center;
 
-  display: flex;
+  display: grid;
   flex-direction: row;
 
+  grid-template: "menu controls status selector" / min-content min-content 1fr min-content;
+
+  .c-statusBar__sidebarToggle {
+    grid-area: menu;
+  }
+
+  .c-statusBar__castSelector {
+    grid-area: selector;
+  }
+
   .c-statusBar__playbackArea {
-    flex: 1;
+    grid-area: status;
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -61,6 +71,10 @@ $navbar-width: 300px;
     .c-statusBar__playerBox {
       flex: 1;
     }
+  }
+
+  .c-statusBar__playbackControls {
+    grid-area: controls;
   }
 
   .c-statusBar__expandButton {
@@ -76,13 +90,34 @@ $navbar-width: 300px;
 
 @media only screen and (max-width: 600px) {
   .c-statusBar {
-    .c-statusBar__playbackControls,
+    grid-template-columns: min-content 1fr min-content;
+    grid-template-rows: min-content min-content;
+    grid-template-areas: "menu status expand" "controlsAndSelector controlsAndSelector controlsAndSelector";
+
+    &.expanded {
+      .c-statusBar__playbackControls {
+        grid-area: controlsAndSelector;
+        display: inline-block;
+        justify-self: left;
+      }
+
+      .c-statusBar__castSelector {
+        grid-area: controlsAndSelector;
+        display: inline-block;
+        justify-self: right;
+      }
+    }
+    .c-statusBar__playbackControls {
+      display: none;
+    }
+
     .c-statusBar__castSelector {
       display: none;
     }
 
     .c-statusBar__expandButton {
       display: inline-block;
+      grid-area: expand;
     }
   }
 

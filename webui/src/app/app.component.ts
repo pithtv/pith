@@ -19,6 +19,7 @@ export class AppComponent {
   private errorMessage: string;
   public status: PlayerStatus;
   public navbarCollapsed = true;
+  public statusbarExpanded = false;
 
   constructor(private pithClient: PithClientService, private playerService: PlayerService,
               private modalService: NgbModal, public webPlayer: WebPlayer) {
@@ -72,5 +73,9 @@ export class AppComponent {
 
   toggleNavBar() {
     this.navbarCollapsed = !this.navbarCollapsed;
+  }
+
+  toggleStatusBar() {
+    this.statusbarExpanded = !this.statusbarExpanded;
   }
 }
