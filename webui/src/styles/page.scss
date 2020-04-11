@@ -8,7 +8,7 @@ $navbar-width: 300px;
   width: $navbar-width;
   background: $nav-bar-background;
   color: white;
-  transition: left 300ms ease-in-out;
+  transition: left 200ms ease-in-out;
   padding: 15px;
   z-index: 200;
 
@@ -22,7 +22,7 @@ $navbar-width: 300px;
 
   .c-navBar__group {
     text-transform: uppercase;
-    font-size: 12px;
+    font-size: 16px;
     list-style: none;
     margin-bottom: 15px;
     color: $nav-bar-group-color;
@@ -30,11 +30,17 @@ $navbar-width: 300px;
 
   .c-navBar__item {
     text-transform: none;
-    font-size: 18px;
+    font-size: 24px;
     list-style: none;
     a {
       color: $nav-bar-item-color;
     }
+  }
+
+  .c-navBar__closeBtn {
+    display: block;
+    text-align: right;
+    cursor: pointer;
   }
 }
 

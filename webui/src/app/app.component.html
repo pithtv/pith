@@ -42,6 +42,7 @@
 </div>
 
 <div class="c-navBar" [class.closed]="navbarCollapsed">
+  <a class="c-navBar__closeBtn" (click)="toggleNavBar()"><i class="oi oi-chevron-left"></i></a>
   <ul>
     <li class="c-navBar__group">Channels
       <ul>
@@ -54,7 +55,6 @@
       <a routerLink="settings">Settings</a>
     </li>
   </ul>
-  <a class="c-navBar__closeBtn" (click)="toggleNavBar()"><i class="oi oi-medical-cross"></i></a>
 </div>
 
 <ng-template #errorModal let-d="dismiss">
