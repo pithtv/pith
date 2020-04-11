@@ -7,7 +7,7 @@
         [class.inprogress]="season.playState.status == 'inprogress'"
         [class.watched]="season.playState.status == 'watched'">{{ season.season == 0 ? 'Specials' : season.season }}</li>
   </ul>
-  <ul class="seasondetails scrollnative">
+  <ul class="seasondetails">
     <li *ngFor="let episode of episodes"
         [class.watched]="episode.playState && episode.playState.status == 'watched'"
         [class.inprogress]="episode.playState && episode.playState.status == 'inprogress'"

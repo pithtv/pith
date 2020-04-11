@@ -103,6 +103,8 @@ $navbar-width: 300px;
     grid-template-areas: "menu status expand" "controlsAndSelector controlsAndSelector controlsAndSelector";
 
     &.expanded {
+      height: auto;
+
       .c-statusBar__playbackControls {
         grid-area: controlsAndSelector;
         display: inline-block;
