@@ -81,6 +81,8 @@ $navbar-width: 300px;
 
   .c-statusBar__playbackControls {
     grid-area: controls;
+    display: flex;
+    flex-direction: row;
   }
 
   .c-statusBar__expandButton {
