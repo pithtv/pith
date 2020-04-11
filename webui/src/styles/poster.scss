@@ -22,7 +22,13 @@ $minLargeScreenWidth: 900px;
 @for $i from 2 to 20 {
   @media(min-width: #{$i * 110px + 20px}) {
     .contentbrowser.poster .contentitem {
-      margin: 4px calc(100% / (#{$i * 2}) - 51px);
+      width: calc(100% / #{$i});
+
+      &:before {
+        content: '';
+        display: inline-block;
+        margin-bottom: 145%;
+      }
     }
   }
 }
@@ -30,6 +36,7 @@ $minLargeScreenWidth: 900px;
 @media(min-width: 2220px) {
   .contentbrowser.poster .contentitem {
     margin: 4px;
+    width: 152px;
   }
 }
 
@@ -40,21 +47,19 @@ $minLargeScreenWidth: 900px;
     display: inline-block;
     border-radius: 4px;
     vertical-align: top;
-    height: 152px;
-    width: 102px;
+    position: relative;
 
     > a.thumbnail {
       cursor: pointer;
-
-      position: relative;
-      width: 102px;
-      height: 152px;
-      display: inline-block;
-      border-radius: 10px;
+      position: absolute;
+      left: 0;
+      top: 0;
+      right: 0;
+      bottom: 0;
 
       &:after {
         bottom: 0;
-        left: 76px;
+        right:0;
       }
     }
 
@@ -63,8 +68,8 @@ $minLargeScreenWidth: 900px;
       padding: 4px;
       transition: all .2s ease-in-out;
       background-color: $color_glare;
-      width: 100px;
-      height: 150px;
+      width: 100%;
+      height: 100%;
       z-index: 4;
       border: 1px solid $color_light_gray;
       background-size: cover;
@@ -80,6 +85,17 @@ $minLargeScreenWidth: 900px;
         left: auto;
         right: 100px;
       }
+    }
+
+    .contextinfo {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
 
     .itemtagline {
@@ -187,11 +203,6 @@ $minLargeScreenWidth: 900px;
 
     .itemrating {
       display: block;
-    }
-
-    .thumbnail {
-      width: 150px;
-      height: 100%;
     }
 
     &.inprogress > a:after {
