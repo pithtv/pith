@@ -1,0 +1,52 @@
+.c-channelNav {
+  display: flex;
+  flex-direction: row;
+
+  &__breadcrumb {
+    flex: 1;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+
+    li {
+      display: inline-block;
+      padding: 7px 0;
+      > a {
+        padding: 0 7px;
+        cursor: pointer;
+      }
+    }
+
+    li + li:before{
+      content: '/';
+    }
+  }
+
+  &__search {
+    position: relative;
+
+    &Input {
+      padding: 0 29px 0 7px;
+      background: rgba(255,255,255,0.2);
+      border: none;
+      height: 36px;
+      color: white;
+      width: 36px;
+      transition: width 100ms ease-in-out;
+
+      &:focus, &:valid {
+        width: 250px;
+        outline: none;
+      }
+    }
+
+    &Icon {
+      position: absolute;
+      right: 8px;
+      top: 10px;
+      pointer-events: none;
+    }
+  }
+}

@@ -1,52 +1,63 @@
+@import "./colors";
+
 $navbar-clear-color: black;
-$navbar-clear-bg: rgba(245,245,245,0.9);
+$navbar-width: 300px;
 
 body {
-  padding-top: 80px;
+  padding-top: 60px;
+  color: $text-color;
+  background: $page-background;
 }
 
-.navbar.navbar-clear {
-  background-color: $navbar-clear-bg;
+.c-navBar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: $navbar-width;
+  background: $nav-bar-background;
+  color: white;
+  transition: left 200ms ease-in-out;
+  padding: 15px;
+  z-index: 200;
+  backdrop-filter: blur(10px);
+  box-shadow: -4px 0px 10px 10px rgb(0,0,0,0.5);
 
-  .navbar-text {
-    color: $navbar-clear-color;
+  &.closed {
+    left: -$navbar-width;
+    box-shadow: none;
   }
-}
 
-.navbar-brand {
-  .pith-logo {
-    transform: translateY(5px);
+  ul {
+    padding-left: 0;
   }
-}
 
-.navbar-box {
-  display: flex !important;
-  display: -webkit-box !important;
-  display: -moz-box !important;
-  -webkit-box-orient: horizontal;
-  -ms-box-orient: horizontal;
-  -moz-box-orient: horizontal;
-  padding-right: 5px;
-}
+  .c-navBar__group {
+    text-transform: uppercase;
+    font-size: 16px;
+    list-style: none;
+    margin-bottom: 15px;
+    color: $nav-bar-group-color;
+  }
 
-.navbar-box > .navbar-nav {
-  float: none;
-}
+  .c-navBar__item {
+    text-transform: none;
+    font-size: 24px;
+    list-style: none;
+    a {
+      color: $nav-bar-item-color;
+    }
+  }
 
-.navbar-flex {
-  -webkit-box-flex: 1;
-  -moz-box-flex: 1;
-  -ms-box-flex: 1;
-  flex: 1;
-}
-
-.nav-link {
-  cursor: pointer;
+  .c-navBar__closeBtn {
+    display: block;
+    text-align: right;
+    cursor: pointer;
+  }
 }
 
 .player-box {
   margin: 0 35px;
-  color: $navbar-clear-color;
 
   .playback-info {
     .playback-title {

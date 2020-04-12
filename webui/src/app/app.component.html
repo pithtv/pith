@@ -26,8 +26,8 @@
   </div>
 
   <div class="c-statusBar__castSelector">
-    <div ngbDropdown class="u-borderlessButton dropdown" placement="bottom-right">
-      <a ngbDropdownToggle class="nav-link dropdown-toggle"><img *ngIf="activePlayer?.icons"
+    <div ngbDropdown class="dropdown" placement="bottom-right">
+      <a ngbDropdownToggle class="dropdown-toggle"><img *ngIf="activePlayer?.icons"
                                                                  [src]="activePlayer.icons['48x48'].url | prescale:'original'"
                                                                  height="24"/></a>
       <div ngbDropdownMenu class="dropdown-menu-right">

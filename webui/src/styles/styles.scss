@@ -88,11 +88,3 @@ a.link-imdb {
 .container-fullwidth {
   max-width: calc(100vw - 15px);
 }
-
-.navbar-nav.playback-controls {
-  flex-direction: row;
-  -webkit-box-orient: horizontal;
-  .nav-link {
-    padding: 0 0.5rem;
-  }
-}
