@@ -92,22 +92,6 @@ $minLargeScreenWidth: 900px;
       align-items: center;
     }
 
-    .c-itemDetails__tagline {
-      @extend %extend_2;
-    }
-
-    .c-itemDetails__overview {
-      @extend %extend_2;
-    }
-
-    .c-itemDetails__plot {
-      display: block;
-      font-weight: normal;
-    }
-
-    .c-itemDetails__rating {
-      display: block;
-    }
 
     &.inprogress > a:after {
       @extend %playstatus_inprogress;
@@ -144,41 +128,5 @@ $minLargeScreenWidth: 900px;
 
   .itemshowname {
     display: none;
-  }
-
-  .stillimg {
-    display: none;
-  }
-}
-
-@media(max-width: $minLargeScreenWidth) {
-  .c-contentBrowser.c-contentBrowser--poster .c-contentBrowser__item .c-itemDetails {
-    channel-details, channel-tv-details {
-      flex-direction: column;
-      align-items: center;
-      padding: 20px 0;
-      overflow: auto;
-
-      img.c-itemDetails__thumbnail {
-        width: 50vw;
-        height: auto;
-        margin-bottom: 25px;
-      }
-
-    }
-    channel-tv-details .episodeguide .seasondetails {
-      overflow: initial;
-    }
-  }
-
-  .episodeguide > {
-    .detailtabs, .seasondetails {
-      left: 0;
-      right: 0;
-
-      .still {
-        display: none;
-      }
-    }
   }
 }
