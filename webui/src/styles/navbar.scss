@@ -6,7 +6,18 @@ $navbar-width: 300px;
 body {
   padding-top: 60px;
   color: $text-color;
-  background: $page-background;
+
+  &:before {
+    display: block;
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: $page-background;
+    z-index: -1;
+  }
 }
 
 .c-navBar {
