@@ -16,7 +16,7 @@ body {
   bottom: 0;
   width: $navbar-width;
   background: $nav-bar-background;
-  color: white;
+  color: $nav-bar-item-color;
   transition: left 200ms ease-in-out;
   padding: 15px;
   z-index: 200;

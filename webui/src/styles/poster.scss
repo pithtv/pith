@@ -21,7 +21,7 @@ $minLargeScreenWidth: 900px;
 
 @for $i from 2 to 20 {
   @media(min-width: #{$i * 110px + 20px}) {
-    .contentbrowser.poster .contentitem {
+    .c-contentBrowser.c-contentBrowser--poster .c-contentBrowser__item {
       width: calc(100% / #{$i});
 
       &:before {
@@ -34,21 +34,21 @@ $minLargeScreenWidth: 900px;
 }
 
 @media(min-width: 2220px) {
-  .contentbrowser.poster .contentitem {
+  .c-contentBrowser.c-contentBrowser--poster .c-contentBrowser__item {
     margin: 4px;
     width: 152px;
   }
 }
 
-.contentbrowser.poster {
+.c-contentBrowser.c-contentBrowser--poster {
   padding: 0;
 
-  .contentitem {
+  .c-contentBrowser__item {
     display: inline-block;
     vertical-align: top;
     position: relative;
 
-    > a.thumbnail {
+    > a.c-contentBrowser__itemPresentation {
       cursor: pointer;
       position: absolute;
       left: 0;
@@ -75,7 +75,7 @@ $minLargeScreenWidth: 900px;
         display: none;
       }
 
-      &.alignleft .iteminfo {
+      &.alignleft .c-itemDetails {
         left: auto;
         right: 100px;
       }
@@ -92,20 +92,20 @@ $minLargeScreenWidth: 900px;
       align-items: center;
     }
 
-    .itemtagline {
+    .c-itemDetails__tagline {
       @extend %extend_2;
     }
 
-    .itemoverview {
+    .c-itemDetails__overview {
       @extend %extend_2;
     }
 
-    .itemplot {
+    .c-itemDetails__plot {
       display: block;
       font-weight: normal;
     }
 
-    .itemrating {
+    .c-itemDetails__rating {
       display: block;
     }
 
@@ -152,14 +152,14 @@ $minLargeScreenWidth: 900px;
 }
 
 @media(max-width: $minLargeScreenWidth) {
-  .contentbrowser.poster .contentitem .iteminfo {
+  .c-contentBrowser.c-contentBrowser--poster .c-contentBrowser__item .c-itemDetails {
     channel-details, channel-tv-details {
       flex-direction: column;
       align-items: center;
       padding: 20px 0;
       overflow: auto;
 
-      img.bigthumb {
+      img.c-itemDetails__thumbnail {
         width: 50vw;
         height: auto;
         margin-bottom: 25px;

@@ -1,10 +1,10 @@
 //colors
 $color_pumice_approx: rgb(200,200,200);
 
-.contentbrowser.list {
+.c-contentBrowser.list {
   list-style: none;
   padding: 0;
-  .contentitem {
+  .c-contentBrowser__item {
     list-style: none;
     padding: 10px;
     font-size: 90%;
@@ -12,7 +12,7 @@ $color_pumice_approx: rgb(200,200,200);
     overflow: hidden;
     width: 100%;
     border-bottom: 1px solid $color_pumice_approx;
-    .itemplot {
+    .c-itemDetails__plot {
       padding-top: 7px;
       overflow: auto;
       font-size: 90%;
@@ -24,15 +24,15 @@ $color_pumice_approx: rgb(200,200,200);
       float: left;
       margin-right: 15px;
     }
-    > .iteminfo {
+    > .c-itemDetails {
       > span {
         display: block;
       }
-      > .itemtagline {
+      > .c-itemDetails__tagline {
         display: none;
       }
     }
-    &.withthumb > .iteminfo > span {
+    &.withthumb > .c-itemDetails > span {
       margin-left: 88px;
     }
   }

@@ -1,5 +1,5 @@
-.contentbrowser.still {
-  .contentitem {
+.c-contentBrowser.still {
+  .c-contentBrowser__item {
     display: inline-block;
     margin: 4px;
     height: 152px;
@@ -10,7 +10,7 @@
     transition: 0.4s height ease, 0.4s;
   }
 
-  .contentitem.withstill {
+  .c-contentBrowser__item.withstill {
     pointer-events: none;
   }
 
@@ -20,15 +20,15 @@
     pointer-events: auto;
   }
 
-  .contentitem.withinfo.withstill:hover {
+  .c-contentBrowser__item.withinfo.withstill:hover {
     background: rgba(255,255,255,0.95);
     z-index: 2;
     box-shadow: 0px 0px 10px rgba(0,0,0,0.3);
     height: 311px;
   }
 
-  .contentitem.inprogress:after,
-  .contentitem.watched:after {
+  .c-contentBrowser__item.inprogress:after,
+  .c-contentBrowser__item.watched:after {
     @extend .oi;
 
     display: block;
@@ -51,15 +51,15 @@
     z-index: 5;
   }
 
-  .contentitem.inprogress:after {
+  .c-contentBrowser__item.inprogress:after {
     @extend .oi-media-pause;
   }
 
-  .contentitem.watched:after {
+  .c-contentBrowser__item.watched:after {
     @extend .oi-check;
   }
 
-  .contentitem .th {
+  .c-contentBrowser__item .th {
     left: 0px;
     padding: 4px;
     -webkit-transition: all .2s ease-in-out;
@@ -74,7 +74,7 @@
     position: absolute;
   }
 
-  .contentitem.unavailable .th:after {
+  .c-contentBrowser__item.unavailable .th:after {
     position: absolute;
     top: 0;
     left: 0;
@@ -85,25 +85,25 @@
     content: ''
   }
 
-  .contentitem.unavailable:hover .th:after {
+  .c-contentBrowser__item.unavailable:hover .th:after {
     background: none;
   }
 
-  contentbrowser.still .contentitem.withstill:not(:hover) .iteminfo,
-  .contentitem .itemplot,
-  .contentitem .itemgenres
+  contentbrowser.still .c-contentBrowser__item.withstill:not(:hover) .c-itemDetails,
+  .c-contentBrowser__item .c-itemDetails__plot,
+  .c-contentBrowser__item .itemgenres
   {
     display: none;
   }
 
-  .contentitem .itemtagline,
-  .contentitem .itemoverview {
+  .c-contentBrowser__item .c-itemDetails__tagline,
+  .c-contentBrowser__item .c-itemDetails__overview {
     display: block;
     font-size: 80%;
     font-weight: normal;
   }
 
-  .contentitem .iteminfo {
+  .c-contentBrowser__item .c-itemDetails {
     position: absolute;
     left: 5px;
     right: 5px;
@@ -116,22 +116,22 @@
     z-index: 3;
   }
 
-  .contentitem.withstill .iteminfo {
+  .c-contentBrowser__item.withstill .c-itemDetails {
     top: 182px;
     bottom: 0px;
     pointer-events: none;
   }
 
-  .contentitem .itemrating {
+  .c-contentBrowser__item .c-itemDetails__rating {
     display: block;
   }
 
-  .contentitem.withstill .actions {
+  .c-contentBrowser__item.withstill .actions {
     top: 150px;
     border-bottom: 1px solid rgb(200,200,200);
   }
 
-  .contentitem .actions {
+  .c-contentBrowser__item .actions {
     display: block;
     position: absolute;
     top: 117px;
@@ -145,7 +145,7 @@
     padding-right: 10px;
   }
 
-  .contentitem .thumbnail {
+  .c-contentBrowser__item .c-contentBrowser__itemPresentation {
     width: 150px;
     height: 100%;
   }

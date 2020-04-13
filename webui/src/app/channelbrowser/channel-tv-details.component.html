@@ -1,5 +1,5 @@
 <img *ngIf="item.poster || item.still"
-     [src]="((item.poster || item.still) | prescale:'680x1000')" class="bigthumb"/>
+     [src]="((item.poster || item.still) | prescale:'680x1000')" class="c-itemDetails__thumbnail"/>
 <div class="episodeguide">
   <ul class="detailtabs seasons">
     <li *ngFor="let season of item.seasons" (click)="selectSeason(season)"

@@ -25,11 +25,9 @@ $white_50: rgba(255,255,255,0.5);
   width: 26px;
   height: 26px;
   position: absolute;
-  //Instead of the line below you could use @include border-radius($radius, $vertical-radius)
   border-radius: 15px;
   border: 2px solid $white;
   background-color: $color_red;
-  //Instead of the line below you could use @include box-shadow($shadow-1, $shadow-2, $shadow-3, $shadow-4, $shadow-5, $shadow-6, $shadow-7, $shadow-8, $shadow-9, $shadow-10)
   box-shadow: 0 -5px 4px $color_shadow inset, 0 3px 4px $color_glare inset, 0 2px 4px $black;
   color: $white;
   text-align: center;
@@ -72,16 +70,6 @@ $white_50: rgba(255,255,255,0.5);
 // bootstrap fixes
 .dropdown {
   white-space: nowrap;
-}
-
-.navbar-toggler.collapsed > .navbar-toggler-icon {
-  @extend .oi;
-  @extend .oi-chevron-bottom;
-}
-
-.navbar-toggler > .navbar-toggler-icon {
-  @extend .oi;
-  @extend .oi-chevron-top;
 }
 
 .closebtn {

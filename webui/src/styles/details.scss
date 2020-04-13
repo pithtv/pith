@@ -1,4 +1,4 @@
-.iteminfo {
+.c-itemDetails {
   position: fixed;
   color: black;
 
@@ -37,11 +37,11 @@
     margin: 30px;
   }
 
-  .itemtitle {
+  .c-itemDetails__title {
     display: block;
   }
 
-  img.bigthumb {
+  img.c-itemDetails__thumbnail {
     height: 100%;
   }
 
