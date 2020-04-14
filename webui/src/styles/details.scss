@@ -198,6 +198,7 @@ ul.detailtabs {
       align-items: center;
       padding: 20px 0;
       overflow: auto;
+      -webkit-overflow-scrolling: touch;
 
       img.c-itemDetails__thumbnail {
         width: 50vw;
