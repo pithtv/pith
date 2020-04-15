@@ -2,8 +2,8 @@
   "name": "@pithmediaserver/pith",
   "version": "0.1.0",
   "scripts": {
-    "build": "tsc && npm --prefix webui install && npm --prefix webui run-script build-prod",
-    "prepare": "npm run-script build",
+    "build": "tsc && npm --prefix webui install && npm --prefix webui run build-prod",
+    "prepare": "npm run build",
     "start": "node $NODE_DEBUG_OPTION built/app",
     "test": "jest __tests__/*.ts"
   },
@@ -42,7 +42,7 @@
   },
   "files": [
     "webui/dist/**",
-    "src",
+    "built",
     "resources",
     "icons",
     "README.md",
