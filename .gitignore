@@ -8,3 +8,4 @@
 /webui/dist/
 /webui/out-tsc/
 /built
+/coverage/

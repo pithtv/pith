@@ -3,11 +3,18 @@ node_js:
 - 10
 addons:
   sonarcloud:
-    organization: "evinyatar"
+    organization: evinyatar
     token:
       secure: NyI30lB/YRqn4STth4k/uKdOIeKAC00Y/qHC2XFYxxlCP1JADksiIeLvq4hgYKQLoqcx4PudJ1/+gKX9GMAzhbi84ecDwPXpT1yxB6zi2N5fU8eqdbXQ4rEmt97zh9Bj1a2A01kdfTkeXiQ7CeJkoo0A0anPFkSR44y+z1vh+Qa9tm6SKA0eOzStKd0rYkoAey3sz6yh0OV1teR83tWx3SuWg7cTYU/WUmOjcJwcEyS+nsCXr5bFvwNfF0wcp4PQlfjoqgiXlvTYP4BhoRlwIFUY9TA6rQv26rZ6vNAU+2qWJkbvkGim57wuQT8eljI6n+pYZbe1morZiHbtXQ1MVGyoFd0TghQuoP0AFpH4bLl/+Hv1dvw6EXtciFYcbVRPoNPNZukySfKnVuLJfSz08Q5y2m98fMXrH/WoAmTIfsRuOZqWTgC1udiGSCtqCLIpWxzLh9BdGcF7sR2/nnDRHgPdxk4C+0kDTjHWQb+XpVQFQyZneFjdps9JIkUitW+tq6KSLIHvYXhmuimTIkEXiVuKIE61H3ozKHb6ozouPQ1SV+lrSPf3SaN+UWMpyVYmGr7SmlSE8GhUbEGxrRbcQCXz443ikOk1mt/XvhiXsgfBT2kekH4/o6b16Y3K1mBhLkpEIXdqG+7yEer9JTqof2tGRkC/dQKs1LaI9KpUIeQ=
 dist: trusty
 script:
-  - npm test
-  - sonar-scanner
-
+- npm test
+- sonar-scanner
+deploy:
+  provider: npm
+  email: christoph.cantillon@gmail.com
+  api_key:
+    secure: SPvh76j0wgU4SY2X4/U5j0trnheu9ChIgny4L11MwfraStqt9yhXe8HPSQcqrAmXY9wDtBvV1TiE4I9toKXcB4xtPU0m1dPdNHzCPI495oMjwxXf0LdUPU58RrokJ+HkkWcS2YO9LMIojhki8DpfWkPVErL9lTU6F8FY48Ao17ujCZc/xfVKBbHOneXn8dZbdjAifTMCm5skcCnIkDoLZ2Dbg/DwT70Gw7mIw+wUTS3s6C4lZT0xibhvSUkmP3IZK8VFTEWZIv7FpRDP9KeLSz4AW4PokcYFcDiVPbD3sguHh60Yfyy9aSGAXeX8Ki3/OgsKEKr10+oGa77LuRAj61OEBG0AATU8MA+SbijvlMXw+gT5u5ENiU0hZKS9eXxOjpPArwq2aV3sVaGHuHPbajQAAFpD8Udk8SJzp7QpRHdDCiFPXMsjBEwBAtpTzOLQHQku3cyFDh7bzWetjzobx7iRSW/khAUCvxMnOVHiD6ClmajRQFwTnB/qQU8W92JCYyPwQMWl7xmaASlCkTge1HXr5KsE8u3PgYR+B+oWEpLkyt1WXGaLNrnfTWEU1f1F+sd+GjptJLiut8Tz+uCSRAqUMJmIiVb8xWBP7yYhy/bBjKUsjjw5ZBdY54Y1FvF+zZrFz9tV575hdk1hOTXbwPVdRJcBUByjmEw9UARxhts=
+  on:
+    tags: true
+    repo: Evinyatar/pith
