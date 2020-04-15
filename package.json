@@ -4,6 +4,7 @@
   "scripts": {
     "build": "tsc && npm --prefix webui install && npm --prefix webui run build-prod",
     "prepare": "npm run build",
+    "prepublishOnly": "npm install",
     "start": "node $NODE_DEBUG_OPTION built/app",
     "test": "jest __tests__/*.ts"
   },
