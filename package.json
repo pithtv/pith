@@ -3,8 +3,7 @@
   "version": "0.1.0",
   "scripts": {
     "build": "tsc && npm --prefix webui install && npm --prefix webui run build-prod",
-    "prepare": "npm run build",
-    "prepublishOnly": "npm install",
+    "prepublishOnly": "npm install && npm run build",
     "start": "node $NODE_DEBUG_OPTION built/app",
     "test": "jest __tests__/*.ts"
   },
