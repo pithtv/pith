@@ -10,64 +10,56 @@ import * as path from "path";
 
 @injectable()
 export class ImageScaler {
-    public readonly router : express.Express;
-    private dbDir: string;
+    public readonly router: express.Express;
+    private readonly dbDir: string;
 
     constructor(@inject(SettingsStoreSymbol) settingsStore: SettingsStore) {
         this.router = express();
         this.router.use((req, res) => this.handle(req, res));
 
-        this.dbDir = path.resolve(settingsStore.datadir, "thumnbnails");
+        this.dbDir = path.resolve(settingsStore.datadir, "thumbnails");
 
-        if(!fs.existsSync(this.dbDir)) {
-            fs.mkdirSync(this.dbDir, { recursive: true });
+        if (!fs.existsSync(this.dbDir)) {
+            fs.mkdirSync(this.dbDir, {recursive: true});
         }
     }
 
-    getThumbnail(url, size, extension, callback) {
+    async getThumbnail(url, size, extension) {
         const dir = this.dbDir + "/" + size;
         const file = dir + "/" + md5(url) + "." + extension;
         const sizes = size.split(/x/).map(x => parseInt(x));
 
-        if(!fs.existsSync(dir)) {
-            fs.mkdirSync(dir);
+        if (!fs.existsSync(dir)) {
+            await fs.promises.mkdir(dir);
         }
 
-        fs.access(file, (err) => {
-            if(err) {
-                if(size === 'original') {
-                    fetch(url).then(response => {
-                        if(response.status === 200) {
-                            const stream = fs.createWriteStream(file);
-                            response.body.pipe(stream);
-                            stream.on('finish', function() {
-                                stream.close();
-                                callback(null, file);
-                            });
-                        } else {
-                            callback({notfound: true, message: "Unable to fetch image: status " + response.status});
-                        }
-                    }).catch(callback);
-                } else {
-                    this.getThumbnail(url, "original", extension, function(err, origFile) {
-                        if(err) {
-                            callback(err);
-                        } else {
-                            sharp(origFile)
-                                .resize(sizes[0], sizes[1])
-                                .toFile(file)
-                                .then(function(image) {
-                                    callback(null, file);
-                                }, function(err) {
-                                    callback(err);
-                                });
-                        }
+        try {
+            await fs.promises.access(file);
+            return file;
+        } catch (err) {
+            if (size === 'original') {
+                const response = await fetch(url);
+                if (response.status === 200) {
+                    const stream = fs.createWriteStream(file);
+                    await new Promise((resolve, reject) => {
+                        response.body.pipe(stream);
+                        stream.on('finish', function () {
+                            stream.close();
+                            resolve();
+                        });
                     });
+                    return file;
+                } else {
+                    throw {notfound: true, message: "Unable to fetch image: status " + response.status};
                 }
             } else {
-                callback(null, file);
+                const origFile = await this.getThumbnail(url, "original", extension);
+                await sharp(origFile)
+                    .resize(sizes[0], sizes[1])
+                    .toFile(file);
+                return file;
             }
-        });
+        }
     }
 
     handle(req, res) {
@@ -76,35 +68,33 @@ export class ImageScaler {
             format = req.originalUrl.substring(q).match(/[?&]format=([^&]*)/);
         let url = req.originalUrl.substring(0, q).replace(/.*\/scale\//, '');
 
-        if(url.match(/^https?%3A%2F%2F/)) {
+        if (url.match(/^https?%3A%2F%2F/)) {
             url = decodeURIComponent(url);
         }
 
-        if(!url) {
+        if (!url) {
             res.status(404);
             res.end();
             return;
         }
 
-        if(!url.match(/^https?:\/\//)) {
+        if (!url.match(/^https?:\/\//)) {
             url = this.router.path();
         }
 
         const extension = format && format[1] || url.replace(/.*\.([^.?]{3,4})?.*/g, '$1') || "png";
 
-        this.getThumbnail(url, size && size[1], extension, function(err, file) {
-            if(err) {
-                if(err.notfound) {
-                    res.status(404);
-                    res.end();
-                } else {
-                    res.status(500);
-                    res.json(err);
-                    res.end();
-                }
-            } else {
+        this.getThumbnail(url, size && size[1], extension).then(file => {
                 res.header('Content-Type', mimetypes.fromFilePath(file));
                 res.sendFile(file, {maxAge: 31536000});
+        }).catch(err => {
+            if (err.notfound) {
+                res.status(404);
+                res.end();
+            } else {
+                res.status(500);
+                res.json(err);
+                res.end();
             }
         });
     }
