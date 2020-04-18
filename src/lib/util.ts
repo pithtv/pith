@@ -25,7 +25,7 @@ export function toXml(args : XmlValue) {
                 }
                 let out = `<${key}`;
                 if (typeof v === 'object' && ('_attribs' in v)) {
-                    out += Object.entries(v._attribs).map(([key, value]) => ` ${key}="${entities.encodeXML(value)}"`).join('');
+                    out += Object.entries(v._attribs).map(([attribKey, attribValue]) => ` ${attribKey}="${entities.encodeXML(attribValue)}"`).join('');
                 }
                 out += '>';
                 if (typeof v === 'object' && ('_value' in v)) {

@@ -17,4 +17,4 @@ export default class TvShowNfoProvider implements MetaDataProvider {
             }
         }
     }
-};
+}

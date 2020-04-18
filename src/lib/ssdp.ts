@@ -17,7 +17,6 @@ export function SSDPClient(opts) {
 
     const multicastHost = opts.multicastHost || "239.255.255.250";
     const multicastPort = opts.multicastPort || 1900;
-    const unicastHost = opts.unicastHost || "0.0.0.0";
     const timeouts = {};
 
     function listenForNotifications(callback) {

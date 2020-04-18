@@ -87,7 +87,7 @@ class LibraryChannel extends Channel {
     getStream(item, options) {
         const channel = this;
         const targetChannel = channel.pithApp.getChannelInstance(item.channelId);
-        return targetChannel.getItem(item.originalId).then(item => targetChannel.getStream(item, options));
+        return targetChannel.getItem(item.originalId).then(targetItem => targetChannel.getStream(targetItem, options));
     }
 
     getLastPlayStateFromItem(item) {

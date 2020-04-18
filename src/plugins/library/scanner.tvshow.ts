@@ -57,7 +57,7 @@ export default opts => {
                     });
                 } catch(err) {
                     logger.info('Episode found but no meta data exists for it.', episodeMetaData.title);
-                    const episode = {
+                    await db.storeEpisode({
                         ...episodeMetaData,
                         title: episodeMetaData.title,
                         showId: show.id,
@@ -68,8 +68,7 @@ export default opts => {
                         originalId: episodeMetaData.originalId,
                         channelId: episodeMetaData.channelId,
                         dateScanned: new Date()
-                    };
-                    await db.storeEpisode(episode);
+                    });
                 }
             } else {
                 logger.info('Episode found', episodeMetaData, episode);
@@ -144,8 +143,7 @@ export default opts => {
                 }
             };
 
-            const container = await channelInstance.getItem(dir.containerId)
-            return scan(container);
+            return scan(await channelInstance.getItem(dir.containerId));
         }
     };
-};
+}

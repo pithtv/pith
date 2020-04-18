@@ -1,6 +1,5 @@
 import * as async from '../../lib/async';
 import * as TvShowUtils from '../../lib/tvshowutils';
-import {ITvShow, ITvShowEpisode} from '../../channel';
 import {container} from 'tsyringe';
 import {SettingsStore} from '../../settings/SettingsStore';
 
@@ -132,4 +131,4 @@ export default function(plugin) {
             return await async.mapSeries(result, mapEpisode);
         }
     }
-]};
+]}

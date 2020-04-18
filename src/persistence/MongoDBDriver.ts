@@ -3,7 +3,6 @@ import {inject, injectable, singleton} from 'tsyringe';
 import {SettingsStore} from '../settings/SettingsStore';
 import {getLogger} from 'log4js';
 import {Collection, Db, MongoClient} from 'mongodb';
-import {wrap} from '../lib/async';
 
 const logger = getLogger("peristence.mongodb");
 

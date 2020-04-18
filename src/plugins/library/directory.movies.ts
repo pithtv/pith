@@ -1,6 +1,3 @@
-import * as async from '../../lib/async';
-import {MovieLibrary} from './types';
-
 function mapMovie(e) {
     e.movieId = e.id;
     e.id = 'movies/' + e.id;
@@ -150,4 +147,4 @@ export default function (plugin) {
             }
         }
     ];
-};
+}

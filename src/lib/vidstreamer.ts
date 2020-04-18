@@ -14,7 +14,6 @@ import profiles from './profiles';
 import path from 'path';
 import {keyframes} from './keyframes';
 import {getLogger} from 'log4js';
-
 // Stuff to serve. Don't add null or "null" to the list (".null" should be fine) as the regex extension check will fail and you'll have a big security hole. And obviously don't add .js, .php or anything else you don't want to serve as source either.
 import mimeTypes from './mimetypes';
 
@@ -87,16 +86,15 @@ const vidStreamer = function (req, res) {
 
                         if (!frames) {
                             for (let x = 0; x < metadata.format.duration; x += 10) {
-                                let duration = Math.min(chunkSize, metadata.format.duration - x);
-                                playlist += frame(duration, x);
+                                playlist += frame(Math.min(chunkSize, metadata.format.duration - x), x);
                             }
                         } else {
                             let x, lastFrame = frames[0];
 
                             for (x = 1; x < frames.length - 1; x++) {
-                                let duration = (frames[x].timestamp - lastFrame.timestamp) / 1000;
-                                if (duration > chunkSize) {
-                                    playlist += frame(duration, lastFrame.timestamp / 1000);
+                                let fragmentDuration = (frames[x].timestamp - lastFrame.timestamp) / 1000;
+                                if (fragmentDuration > chunkSize) {
+                                    playlist += frame(fragmentDuration, lastFrame.timestamp / 1000);
                                     lastFrame = frames[x];
                                 }
                             }
@@ -114,23 +112,23 @@ const vidStreamer = function (req, res) {
         } else if (transcode) {
             ff.ffprobe(filePath, (err, metadata) => {
                 let preset = profiles[transcode];
-                let stream = ff(filePath);
+                let decoder = ff(filePath);
 
                 if (offset) {
-                    stream.seekInput(offset);
+                    decoder.seekInput(offset);
                 }
 
                 if (duration) {
-                    stream.duration(duration);
+                    decoder.duration(duration);
                 }
 
-                stream = preset.setup(stream, metadata);
+                decoder = preset.setup(decoder, metadata);
 
                 res.writeHead(200, {
                     'content-type': preset.mimetype
                 });
 
-                stream.pipe(res);
+                decoder.pipe(res);
             });
         } else {
             try {

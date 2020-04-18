@@ -14,4 +14,4 @@ export default class FanartProvider implements MetaDataProvider {
             item.backdrop = channel.pith.rootPath + "/stream/" + itemPath;
         }
     }
-};
+}

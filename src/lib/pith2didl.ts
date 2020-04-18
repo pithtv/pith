@@ -84,7 +84,7 @@ export function convertToDidl(channel, item, parentId, channelId): didl.Item {
 function toDidlProperties(item : IChannelItem, channel : IChannel) : XmlObject {
     let coverArt = item.thumb || item.poster;
 
-    let didl = {
+    let didlProperties = {
         'dc:title': item.title,
         'upnp:class': upnpClassFromItem(item),
         'dc:date': upnp.formatDate(item.airDate) || upnp.formatDate(item.releaseDate) || (item.year && `${item.year}-01-01`) || undefined,
@@ -123,7 +123,7 @@ function toDidlProperties(item : IChannelItem, channel : IChannel) : XmlObject {
     switch (item.mediatype) {
         case 'episode':
             return {
-                ...didl,
+                ...didlProperties,
                 // "dc:publisher": "",
                 'dc:title': `S${item.season}E${item.episode} : ${item.title}`,
                 'upnp:programTitle': `S${item.season}E${item.episode} : ${item.title}`,
@@ -133,7 +133,7 @@ function toDidlProperties(item : IChannelItem, channel : IChannel) : XmlObject {
             };
         case 'season':
             return {
-                ...didl,
+                ...didlProperties,
                 // "dc:publisher": "",
                 'upnp:seriesTitle': item.showname,
                 'upnp:episodeNumber': item.noEpisodes,
@@ -141,11 +141,11 @@ function toDidlProperties(item : IChannelItem, channel : IChannel) : XmlObject {
             };
         case 'show':
             return {
-                ...didl,
+                ...didlProperties,
                 // "dc:publisher": "",
                 'upnp:episodeNumber': item.noEpisodes
             };
         default:
-            return didl;
+            return didlProperties;
     }
 }

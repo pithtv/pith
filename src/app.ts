@@ -105,16 +105,16 @@ class Bootstrap {
 
         const wss = new ws.Server({server: server});
 
-        wss.on('connection', function (ws) {
+        wss.on('connection', connection => {
             const listeners = [];
-            ws.on('message', function (data) {
+            connection.on('message', data => {
                 try {
-                    const message = JSON.parse(data);
+                    const message = JSON.parse(data.toString());
                     switch (message.action) {
                         case 'on':
                             const listener = function () {
                                 try {
-                                    ws.send(JSON.stringify({
+                                    connection.send(JSON.stringify({
                                         event: message.event,
                                         arguments: Array.prototype.slice.apply(arguments)
                                     }, jsonReplacer));
@@ -130,7 +130,7 @@ class Bootstrap {
                     logger.error('Error processing event message', data, e);
                 }
             });
-            ws.on('close', function () {
+            connection.on('close', function () {
                 logger.debug('Client disconnected, cleaning up listeners');
                 listeners.forEach(function (e) {
                     pithApp.removeListener(e.event, e.listener);

@@ -9,7 +9,7 @@ export class IdentifierService {
     }
 
     async get(key: string): Promise<string> {
-        const settings = await this.settingsStore.settings;
+        const settings = this.settingsStore.settings;
         if(!(key in settings.uuid)) {
             const newUuid = uuid();
             await this.settingsStore.storeSettings({

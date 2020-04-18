@@ -98,14 +98,12 @@ export class FilesChannel extends Channel {
 
         if (applicableProviders.length) {
             await Promise.all(applicableProviders.map(provider => provider.get(channel, filepath, item)));
-            return item;
-        } else {
-            return item;
         }
+        return item;
     }
 
-    getStream(item, options) {
-        return new Promise((resolve, reject) => {
+    getStream(item, options?) {
+        return new Promise<IStream>((resolve, reject) => {
             const channel = this;
             const itemId = item.id;
             const itemPath = itemId.split($path.sep).map(encodeURIComponent).join('/');
@@ -117,7 +115,7 @@ export class FilesChannel extends Channel {
 
                     const baseUrl = `${channel.pith.rootUrl}stream/${encodeURIComponent(options && options.fingerprint) || '0'}/${itemPath}`;
 
-                    const desc = {
+                    const desc : IStream = {
                         url: baseUrl,
                         mimetype: item.mimetype || 'application/octet-stream',
                         seekable: true,
@@ -164,7 +162,7 @@ export class FilesChannel extends Channel {
                     }
                 }
             });
-        }) as Promise<IStream>;
+        });
     }
 
     getLastPlayState(itemId) {
@@ -212,10 +210,10 @@ export default class FilesPlugin implements PithPlugin {
         opts.pith.registerChannel({
             id: 'files',
             title: 'Files',
-            init: (opts) => {
+            init: () => {
                 return new FilesChannel(opts.pith, this.stateStore, this.settingsStore);
             },
             sequence: 0
         });
-    };
+    }
 }

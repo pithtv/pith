@@ -10,7 +10,7 @@ import {Pith} from '../../pith';
 import {IChannelItem} from '../../channel';
 import {FilesChannel} from '../files/plugin';
 import {SettingsStore, SettingsStoreSymbol} from '../../settings/SettingsStore';
-import {container, inject, injectable, scoped} from 'tsyringe';
+import {inject, injectable} from 'tsyringe';
 import {PithPlugin, plugin} from '../plugins';
 
 const logger = getLogger('pith.plugin.couchpotato');
@@ -98,9 +98,9 @@ class CouchPotatoChannel extends Channel {
     }
 
     extractPosterFromCache(movie) {
-        let path = movie.files && movie.files.image_poster[0];
-        if (path) {
-            let uuid = path.substr(path.lastIndexOf('/'));
+        let posterPath = movie.files && movie.files.image_poster[0];
+        if (posterPath) {
+            let uuid = posterPath.substr(posterPath.lastIndexOf('/'));
             return this.url.resolve(`api/${this.apikey}/file.cache/${uuid}`);
         }
     }
@@ -211,7 +211,7 @@ export default class CouchPotatoPlugin implements PithPlugin {
             opts.pith.registerChannel({
                 id: 'couchpotato',
                 title: 'CouchPotato',
-                init(opts) {
+                init() {
                     return channel;
                 }
             })

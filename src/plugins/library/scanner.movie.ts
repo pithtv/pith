@@ -49,8 +49,8 @@ export default opts => {
                                                 ...item,
                                                 ...metaData
                                             });
-                                        } catch(e) {
-                                            logger.warn(`Fetching metadata failed`, e);
+                                        } catch(ee) {
+                                            logger.warn(`Fetching metadata failed`, ee);
                                         }
                                     }
                                 }

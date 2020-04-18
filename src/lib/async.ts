@@ -1,6 +1,6 @@
 import async from 'async';
 import {getLogger} from 'log4js';
-import {Callback, CallbackWithErrorAndArg} from '../junk';
+import {CallbackWithErrorAndArg} from '../junk';
 
 const logger = getLogger('async');
 
@@ -36,14 +36,14 @@ export interface Queue<T> {
 }
 
 export function queue<T>(worker: (obj: T) => Promise<void>) : Queue<T> {
-    const queue = [];
+    const q = [];
     let running = false;
 
     async function startQueue() {
         try {
             running = true;
-            while (queue.length) {
-                await worker(queue.shift());
+            while (q.length) {
+                await worker(q.shift());
             }
         } finally {
             running = false;
@@ -52,7 +52,7 @@ export function queue<T>(worker: (obj: T) => Promise<void>) : Queue<T> {
 
     return {
         async push(obj) {
-            queue.push(obj);
+            q.push(obj);
             if (!running) {
                 await startQueue();
             }

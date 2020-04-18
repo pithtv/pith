@@ -27,4 +27,4 @@ export default class ThumbnailsProvider implements MetaDataProvider {
             }
         }
     }
-};
+}
