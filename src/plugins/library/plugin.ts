@@ -1,29 +1,24 @@
 import {Channel} from '../../lib/channel';
 import {getLogger} from 'log4js';
-import async from 'async';
 import {Repository} from './database';
 import {Pith} from '../../pith';
 import moviesDirectory from './directory.movies';
 import showsDirectory from './directory.shows';
 import moviesScanner from './scanner.movie';
 import showsScanner from './scanner.tvshow';
-import {container} from 'tsyringe';
-import {SettingsStoreSymbol} from '../../settings/SettingsStore';
-import {DBDriverSymbol} from '../../persistence/DBDriver';
+import {inject, injectable} from 'tsyringe';
+import {SettingsStore, SettingsStoreSymbol} from '../../settings/SettingsStore';
+import {DBDriver, DBDriverSymbol} from '../../persistence/DBDriver';
 import {PithPlugin, plugin} from '../plugins';
 
 const logger = getLogger("pith.plugin.library");
-
-// TODO inject
-const settingsStore = container.resolve(SettingsStoreSymbol);
-const dbDriver = container.resolve(DBDriverSymbol);
 
 class LibraryChannel extends Channel {
     private pithApp: Pith;
     private db: Repository;
     private directory: any;
 
-    constructor(pithApp, directoryFactory) {
+    constructor(pithApp, dbDriver, directoryFactory) {
         super();
 
         this.pithApp = pithApp;
@@ -118,21 +113,25 @@ class LibraryChannel extends Channel {
 }
 
 @plugin()
+@injectable()
 export default class LibraryPlugin implements PithPlugin {
 
     scanners: any;
     private pith: Pith;
 
+    constructor(@inject(SettingsStoreSymbol) private settingsStore: SettingsStore,
+                @inject(DBDriverSymbol) private dbDriver: DBDriver) {}
+
     init(opts) {
         const self = this;
-        const moviesChannel = new LibraryChannel(opts.pith, moviesDirectory);
-        const showsChannel = new LibraryChannel(opts.pith, showsDirectory);
+        const moviesChannel = new LibraryChannel(opts.pith, this.dbDriver, moviesDirectory);
+        const showsChannel = new LibraryChannel(opts.pith, this.dbDriver, showsDirectory);
 
         this.pith = opts.pith;
 
         // set up scanners
         const scannerOpts = {
-            db: new Repository(dbDriver)
+            db: new Repository(this.dbDriver)
         };
         this.scanners = {
             movies: moviesScanner(scannerOpts),
@@ -167,7 +166,7 @@ export default class LibraryPlugin implements PithPlugin {
         const scanStartTime = new Date().getTime();
 
         try {
-            let scanningCandidates = settingsStore.settings.library.folders.filter(c => plug.scanners[c.contains] !== undefined && (c.scanAutomatically || manual === true));
+            let scanningCandidates = this.settingsStore.settings.library.folders.filter(c => plug.scanners[c.contains] !== undefined && (c.scanAutomatically || manual === true));
             for (let dir of scanningCandidates) {
                 const channelInstance = plug.pith.getChannelInstance(dir.channelId);
                 if (channelInstance !== undefined) {
@@ -182,7 +181,7 @@ export default class LibraryPlugin implements PithPlugin {
             logger.info("Library scan complete. Took %d ms", (scanEndTime - scanStartTime));
             setTimeout(() => {
                 plug.scan(false);
-            }, settingsStore.settings.library.scanInterval);
+            }, this.settingsStore.settings.library.scanInterval);
         }
     }
 };
