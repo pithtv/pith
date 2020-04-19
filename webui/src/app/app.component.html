@@ -1,11 +1,11 @@
 <!--The content below is only a placeholder and can be replaced.-->
-<div class="c-statusBar" [class.expanded]="statusbarExpanded">
+<div class="c-statusBar" [class.expanded]="statusbarExpanded" [class.loading]="loading">
   <a class="c-statusBar__sidebarToggle u-borderlessButton" (click)="toggleNavBar()"><span class="oi oi-menu"></span></a>
 
   <div class="c-statusBar__playbackControls">
     <a class="u-borderlessButton" [hidden]="!(status?.actions?.pause)" (click)="pause()"><span class="oi oi-media-pause"></span></a>
     <a class="u-borderlessButton" [hidden]="!(status?.actions?.play)" (click)="play()"><span class="oi oi-media-play"></span></a>
-    <a class="u-borderlessButton" [hidden]="!(status?.actions?.stop)"(click)="stop()"><span class="oi oi-media-stop"></span></a>
+    <a class="u-borderlessButton" [hidden]="!(status?.actions?.stop)" (click)="stop()"><span class="oi oi-media-stop"></span></a>
   </div>
 
   <div class="c-statusBar__playbackArea">

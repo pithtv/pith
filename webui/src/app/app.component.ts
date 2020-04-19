@@ -21,12 +21,17 @@ export class AppComponent {
   public status: PlayerStatus;
   public navbarCollapsed = true;
   public statusbarExpanded = false;
+  private loading: boolean;
 
   constructor(private pithClient: PithClientService, private playerService: PlayerService,
               private modalService: NgbModal, public webPlayer: WebPlayer, private router: Router) {
     this.channels = pithClient.queryChannels();
     pithClient.errors.subscribe(error => {
       this.showError(error);
+    });
+
+    pithClient.progress.subscribe(progress => {
+      this.loading = progress.loading;
     });
 
     this.playerService.activePlayer.subscribe(player => {

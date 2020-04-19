@@ -1,3 +1,8 @@
+@keyframes barberpole {
+  from { background-position: 0 0; }
+  to { background-position: 0 -84.85px; }
+}
+
 .c-statusBar {
   position: fixed;
   top: 0;
@@ -43,6 +48,13 @@
 
   .c-statusBar__expandButton {
     display: none;
+  }
+
+  &.loading {
+    $lighter-bg: lighten($status-bar-background, 15%);
+    background: repeating-linear-gradient(45deg, $lighter-bg, $lighter-bg 30px, $status-bar-background 30px, $status-bar-background 60px);
+    background-size: 100% 85px;
+    animation: barberpole 1s infinite linear;
   }
 }
 

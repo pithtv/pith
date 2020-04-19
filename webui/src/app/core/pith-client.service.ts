@@ -35,6 +35,7 @@ abstract class RestModule {
 export class PlayerStatus {
   private timestamp: Date;
   actions: {play: boolean, stop: boolean, pause: boolean};
+  position?: {title?: string, time?: number, duration?: number};
 
   constructor(obj: any) {
     Object.assign(this, obj);
@@ -236,7 +237,7 @@ export class PithError {
 export class PithClientService {
   private root: string;
   private _errors: Subject<PithError> = new Subject();
-  private _progress: Subject<any> = new BehaviorSubject({loading: false});
+  private _progress: Subject<{loading: boolean}> = new BehaviorSubject({loading: false});
   private loadingCounter = 0;
 
   constructor(
