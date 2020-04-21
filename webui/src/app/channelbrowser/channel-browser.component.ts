@@ -32,6 +32,7 @@ export class ChannelBrowserComponent implements AfterViewInit, OnInit {
   filteredContents: ChannelItem[];
   currentPath: ChannelItem[] = [];
 
+  protected showDetailsItem: ChannelItem;
   protected showDetailsId: string;
   protected showDetailsIdx: number;
   protected showDetails: boolean;
@@ -95,10 +96,12 @@ export class ChannelBrowserComponent implements AfterViewInit, OnInit {
         this.showDetailsId = null;
         this.showDetails = false;
         this.showDetailsIdx = -1;
+        this.showDetailsItem = null;
       } else {
         this.showDetailsId = item.id;
         this.showDetails = true;
         this.showDetailsIdx = idx;
+        this.showDetailsItem = item;
       }
   }
 
@@ -123,6 +126,7 @@ export class ChannelBrowserComponent implements AfterViewInit, OnInit {
 
   sort(sortField: string) {
     let direction;
+    let transform = (x) => x;
     switch (sortField) {
       case 'year':
       case 'creationTime':
@@ -130,11 +134,13 @@ export class ChannelBrowserComponent implements AfterViewInit, OnInit {
       case 'rating':
         direction = -1;
         break;
+      case 'title':
+        transform = (x) => x.toUpperCase();
       default:
         direction = 1;
     }
     const compareFn = function(a, b) {
-      return direction * (a[sortField] < b[sortField] ? -1 : a[sortField] > b[sortField] ? 1 : 0);
+      return direction * (transform(a[sortField]) < transform(b[sortField]) ? -1 : transform(a[sortField]) > transform(b[sortField]) ? 1 : 0);
     };
     this.contents.sort(compareFn);
     this.filteredContents.sort(compareFn);

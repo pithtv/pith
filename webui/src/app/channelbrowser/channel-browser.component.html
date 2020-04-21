@@ -21,7 +21,6 @@
 <ul class="c-contentBrowser c-contentBrowser--poster" #container infiniteScroll [infiniteScrollDistance]="2" [infiniteScrollThrottle]="50" (scrolled)="loadMore()">
   <li class="c-contentBrowser__item"
       *ngFor="let item of filteredContents | slice:0:limit; index as idx"
-      [class.withthumb]="item.poster || item.still"
       [class.withposter]="item.poster"
       [class.withstill]="item.still"
       [class.withinfo]="item.tagline || item.rating || (item.genres?.length) || item.plot || item.overview"
@@ -32,20 +31,24 @@
       [class.showdetails]="showDetailsId == item.id"
       [id]="item.id"
   >
-
     <a class="c-contentBrowser__itemPresentation" (click)="(item.type == 'container' && item.mediatype!='show') ? open(item) : toggle(item, idx)">
-      <div *ngIf="item.poster || item.still" class="th"
-           [style.background-image]="'url(' + ((item.poster | prescale:(showDetailsId == item.id ? '300x450' : '130x195')) || (item.still | prescale:'266x150'))+ ')'">
+      <div *ngIf="item.poster" class="c-contentBrowser__poster"
+           [style.background-image]="'url(' + (item.poster | prescale:'130x195') + ')'">
       </div>
-      <span class="contextinfo"><span class="title" *ngIf="item.title">{{item.title}}</span><span
-        class="itemshowname" *ngIf="item.showname && item.showname != itemDetails.showname">{{item.showname}}</span><span
-        class="itemseason"   *ngIf="item.season && (item.showname !== itemDetails.showname || item.season !== itemDetails.season)">{{item.season}}</span><span
-        class="itemepisode"  *ngIf="item.episode">{{item.episode}}</span></span>
+      <img *ngIf="item.still" class="c-contentBrowser__still"
+           [src]="item.still | prescale:'266x150'" />
+      <span class="c-contentBrowser__itemInfo">
+        <span class="r-title" *ngIf="item.title">{{item.title}}</span>
+        <span class="r-year" *ngIf="item.year">{{item.year}}</span>
+        <span class="r-rating"><span class="stars" [attr.data-starrating]="item.rating" *ngIf="item.rating"></span></span>
+        <span class="r-duration" *ngIf="item.duration">{{item.duration | time}}</span>
+      </span>
     </a>
-    <div class="c-itemDetails" [class.c-itemDetails--show]="item.mediatype=='show'" *ngIf="showDetailsId == item.id" @enterAnimation>
-      <a class="closebtn" (click)="toggle(null)"><svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewbox="0 0 150 150" width="30px" height="30px"><use xlink:href="#close"></use></svg></a>
-      <channel-details *ngIf="item.type != 'container'" [item]="item" [channel]="channel"></channel-details>
-      <channel-tv-details *ngIf="item.mediatype == 'show'" [item]="item" [channel]="channel"></channel-tv-details>
-    </div>
   </li>
 </ul>
+
+<div class="c-itemDetails" [class.c-itemDetails--show]="showDetailsItem.mediatype=='show'" *ngIf="showDetails" @enterAnimation>
+  <a class="closebtn" (click)="toggle(null)"><svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewbox="0 0 150 150" width="30px" height="30px"><use xlink:href="#close"></use></svg></a>
+  <channel-details *ngIf="showDetailsItem.type != 'container'" [item]="showDetailsItem" [channel]="channel"></channel-details>
+  <channel-tv-details *ngIf="showDetailsItem.mediatype == 'show'" [item]="showDetailsItem" [channel]="channel"></channel-tv-details>
+</div>

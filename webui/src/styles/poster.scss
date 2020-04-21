@@ -41,7 +41,7 @@ $minLargeScreenWidth: 900px;
     vertical-align: top;
     position: relative;
 
-    > a.c-contentBrowser__itemPresentation {
+    a.c-contentBrowser__itemPresentation {
       cursor: pointer;
       position: absolute;
       left: 0;
@@ -55,7 +55,7 @@ $minLargeScreenWidth: 900px;
       }
     }
 
-    .th {
+    .c-contentBrowser__poster {
       width: 100%;
       height: 100%;
       z-index: 4;
@@ -63,18 +63,17 @@ $minLargeScreenWidth: 900px;
       background-repeat: no-repeat;
     }
 
-    &.withthumb {
+    &.withposter {
       .title {
         display: none;
       }
-
-      &.alignleft .c-itemDetails {
-        left: auto;
-        right: 100px;
-      }
     }
 
-    .contextinfo {
+    .c-contentBrowser__still {
+      display: none;
+    }
+
+    .c-contentBrowser__itemInfo {
       position: absolute;
       left: 0;
       right: 0;
@@ -96,11 +95,6 @@ $minLargeScreenWidth: 900px;
 
     &.hasnew > a:after {
       @extend %playstatus_hasnew;
-    }
-
-    &.alignleft .th {
-      left: auto;
-      right: 0;
     }
 
     .actions:not(:empty) {

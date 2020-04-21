@@ -1,0 +1,230 @@
+.c-itemDetails {
+  position: fixed;
+  color: black;
+
+  top: 60px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  @media(min-width: $minLargeScreenWidth) {
+    top: 80px;
+    left: 16px;
+    right: 16px;
+    bottom: 16px;
+    max-height: calc(100vw * 0.68);
+    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.5);
+    border-radius: 10px;
+  }
+  z-index: 10;
+  background: white;
+
+  font-weight: bold;
+  overflow: hidden;
+  display: block;
+
+  > a.closebtn {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    width: 30px;
+    height: 30px;
+    display: block;
+    z-index: 15;
+  }
+
+  > div {
+    margin: 30px;
+  }
+
+  .c-itemDetails__title {
+    display: block;
+  }
+
+  img.c-itemDetails__thumbnail {
+    height: 100%;
+  }
+
+  channel-details,
+  channel-tv-details {
+    display: flex;
+    flex-direction: row;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    @media(min-width: $minLargeScreenWidth) {
+      top: 0;
+    }
+
+    .details,
+    .episodeguide {
+      flex: 1;
+      position: relative;
+      @media(min-width: $minLargeScreenWidth) {
+        margin: 20px 0 0 10px;
+      }
+
+      display: flex;
+      flex-direction: column;
+    }
+
+    .details {
+      padding: 10px;
+    }
+
+    .episodeguide {
+      .seasondetails {
+        flex: 1;
+        overflow-x: auto;
+        background: $white_50;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        padding: 10px;
+        font-weight: normal;
+      }
+    }
+  }
+}
+
+.seasondetails > li {
+  display: inline-block;
+  min-height: 80px;
+  width: 100%;
+  padding: 5px;
+
+  &.unavailable {
+    opacity: 0.5;
+  }
+
+  > {
+    .still {
+      float: left;
+      margin: 3px 15px 3px 0;
+    }
+
+    .episode-no {
+      font-weight: bold;
+
+      &:after {
+        font-weight: bold;
+        content: '. ';
+      }
+    }
+
+    .episode-title {
+      font-weight: bold;
+    }
+
+    .episode-airdate {
+      font-style: italic;
+
+      &:before {
+        content: ' (';
+      }
+
+      &:after {
+        content: ') ';
+      }
+    }
+
+    .episode-synopsis {
+      display: block;
+      font-size: 90%;
+    }
+  }
+
+  &.inprogress > .still:after {
+    bottom: 5px;
+    right: 5px;
+    @extend %playstatus_inprogress;
+  }
+
+  &.watched > .still:after {
+    bottom: 5px;
+    right: 5px;
+    @extend %playstatus_watched;
+  }
+}
+
+ul.detailtabs {
+  display: inline-block;
+  margin-left: 0;
+  font-weight: normal;
+  padding: 0;
+
+  > li {
+    display: inline-block;
+    color: $black;
+    padding: 2px 15px;
+    cursor: pointer;
+
+    &.selected {
+      background: linear-gradient($color_fuscous_gray_approx, $color_storm_dust_approx);
+      color: $white;
+    }
+  }
+
+  &.seasons:before {
+    content: 'Season:';
+    padding: 2px 15px;
+    font-weight: bold;
+  }
+}
+
+.c-itemDetails__year {
+  &:before { content: '(' }
+  &:after { content: ')' }
+}
+
+.c-itemDetails__tagline {
+  @extend %extend_2;
+}
+
+.c-itemDetails__overview {
+  @extend %extend_2;
+}
+
+.c-itemDetails__plot {
+  display: block;
+  font-weight: normal;
+}
+
+.c-itemDetails__rating {
+  display: block;
+}
+
+@media(max-width: $minLargeScreenWidth) {
+  .c-itemDetails {
+    channel-details, channel-tv-details {
+      flex-direction: column;
+      align-items: center;
+      padding: 20px 0;
+      overflow: auto;
+      -webkit-overflow-scrolling: touch;
+
+      img.c-itemDetails__thumbnail {
+        width: 50vw;
+        height: auto;
+        margin-bottom: 25px;
+      }
+
+    }
+    channel-tv-details .episodeguide .seasondetails {
+      overflow: initial;
+    }
+  }
+
+  .episodeguide > {
+    .detailtabs, .seasondetails {
+      left: 0;
+      right: 0;
+
+      .still {
+        display: none;
+      }
+    }
+  }
+}

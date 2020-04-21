@@ -1,224 +1,67 @@
-.c-itemDetails {
-  position: fixed;
-  color: black;
+@for $i from 1 to 7 {
+  @media(min-width: #{$i * 350px}) and (max-width: #{($i + 1) * 350px}) {
+    .c-contentBrowser.c-contentBrowser--details .c-contentBrowser__item {
+      width: calc(100% / #{$i});
+      height: 30vw / $i;
+      box-sizing: content-box;
+      font-size: 4vw / $i;
 
-  top: 60px;
-  left: 0;
-  right: 0;
-  bottom: 0;
-
-  @media(min-width: $minLargeScreenWidth) {
-    top: 80px;
-    left: 16px;
-    right: 16px;
-    bottom: 16px;
-    max-height: calc(100vw * 0.68);
-    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.5);
-    border-radius: 10px;
-  }
-  z-index: 10;
-  background: white;
-
-  font-weight: bold;
-  overflow: hidden;
-  display: block;
-
-  > a.closebtn {
-    position: absolute;
-    top: 15px;
-    left: 15px;
-    width: 30px;
-    height: 30px;
-    display: block;
-    z-index: 15;
-  }
-
-  > div {
-    margin: 30px;
-  }
-
-  .c-itemDetails__title {
-    display: block;
-  }
-
-  img.c-itemDetails__thumbnail {
-    height: 100%;
-  }
-
-  channel-details,
-  channel-tv-details {
-    display: flex;
-    flex-direction: row;
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-
-    @media(min-width: $minLargeScreenWidth) {
-      top: 0;
-    }
-
-    .details,
-    .episodeguide {
-      flex: 1;
-      position: relative;
-      @media(min-width: $minLargeScreenWidth) {
-        margin: 20px 0 0 10px;
+      .c-contentBrowser__poster {
+        width: 20vw / $i;
+        height: 30vw / $i;
       }
 
-      display: flex;
-      flex-direction: column;
-    }
-
-    .details {
-      padding: 10px;
-    }
-
-    .episodeguide {
-      .seasondetails {
-        flex: 1;
-        overflow-x: auto;
-        background: $white_50;
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
-        padding: 10px;
-        font-weight: normal;
+      @for $j from 1 to $i + 2 {
+        @if $j % 2 == 0 {
+          &:nth-child(#{$i*2}n+#{$j}) {
+            background: rgba(255,255,255,0.1);
+          }
+          &:nth-child(#{$i*2}n+#{$i + $j - 1}) {
+            background: rgba(255,255,255,0.1);
+          }
+        }
       }
     }
   }
 }
 
-.seasondetails > li {
-  display: inline-block;
-  min-height: 80px;
-  width: 100%;
-  padding: 5px;
-
-  &.unavailable {
-    opacity: 0.5;
-  }
-
-  > {
-    .still {
-      float: left;
-      margin: 3px 15px 3px 0;
-    }
-
-    .episode-no {
-      font-weight: bold;
-
-      &:after {
-        font-weight: bold;
-        content: '. ';
-      }
-    }
-
-    .episode-title {
-      font-weight: bold;
-    }
-
-    .episode-airdate {
-      font-style: italic;
-
-      &:before {
-        content: ' (';
-      }
-
-      &:after {
-        content: ') ';
-      }
-    }
-
-    .episode-synopsis {
-      display: block;
-      font-size: 90%;
-    }
-  }
-
-  &.inprogress > .still:after {
-    bottom: 5px;
-    right: 5px;
-    @extend %playstatus_inprogress;
-  }
-
-  &.watched > .still:after {
-    bottom: 5px;
-    right: 5px;
-    @extend %playstatus_watched;
-  }
-}
-
-ul.detailtabs {
-  display: inline-block;
-  margin-left: 0;
-  font-weight: normal;
+.c-contentBrowser.c-contentBrowser--details {
   padding: 0;
+  line-height: 0;
 
-  > li {
+  .c-contentBrowser__item {
     display: inline-block;
-    color: $black;
-    padding: 2px 15px;
-    cursor: pointer;
 
-    &.selected {
-      background: linear-gradient($color_fuscous_gray_approx, $color_storm_dust_approx);
-      color: $white;
+    .c-contentBrowser__itemPresentation {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: row;
+      contain: content;
     }
-  }
 
-  &.seasons:before {
-    content: 'Season:';
-    padding: 2px 15px;
-    font-weight: bold;
-  }
-}
+    .c-contentBrowser__poster {
+      background-size: cover;
+    }
 
-.c-itemDetails__tagline {
-  @extend %extend_2;
-}
+    .c-contentBrowser__itemInfo {
+      flex: 1;
+      padding: 4px 10px;
+      line-height: 1.5;
 
-.c-itemDetails__overview {
-  @extend %extend_2;
-}
-
-.c-itemDetails__plot {
-  display: block;
-  font-weight: normal;
-}
-
-.c-itemDetails__rating {
-  display: block;
-}
-
-@media(max-width: $minLargeScreenWidth) {
-  .c-contentBrowser.c-contentBrowser--poster .c-contentBrowser__item .c-itemDetails {
-    channel-details, channel-tv-details {
-      flex-direction: column;
-      align-items: center;
-      padding: 20px 0;
-      overflow: auto;
-      -webkit-overflow-scrolling: touch;
-
-      img.c-itemDetails__thumbnail {
-        width: 50vw;
-        height: auto;
-        margin-bottom: 25px;
+      .r-year {
+        &:before { content: ' (' }
+        &:after { content: ')' }
+        font-style: italic;
       }
 
-    }
-    channel-tv-details .episodeguide .seasondetails {
-      overflow: initial;
-    }
-  }
+      .r-rating {
+        display: block;
+      }
 
-  .episodeguide > {
-    .detailtabs, .seasondetails {
-      left: 0;
-      right: 0;
-
-      .still {
-        display: none;
+      .r-runtime {
+        position: absolute;
+        right: 0;
       }
     }
   }

@@ -129,6 +129,7 @@ export class ChannelItem {
   showname: string;
   episode: number;
   season: number;
+  duration?: number;
 
   constructor(p: Object) {
     Object.assign(this, p);
