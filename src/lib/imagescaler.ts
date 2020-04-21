@@ -7,13 +7,14 @@ import express from 'express';
 import {inject, injectable} from 'tsyringe';
 import {SettingsStore, SettingsStoreSymbol} from '../settings/SettingsStore';
 import * as path from "path";
+import {Global} from "./global";
 
 @injectable()
 export class ImageScaler {
     public readonly router: express.Express;
     private readonly dbDir: string;
 
-    constructor(@inject(SettingsStoreSymbol) settingsStore: SettingsStore) {
+    constructor(@inject(SettingsStoreSymbol) settingsStore: SettingsStore, @inject(Global) private global: Global) {
         this.router = express();
         this.router.use((req, res) => this.handle(req, res));
 
@@ -79,7 +80,7 @@ export class ImageScaler {
         }
 
         if (!url.match(/^https?:\/\//)) {
-            url = this.router.path();
+            url = this.global.rootUrl + '/' + url;
         }
 
         const extension = format && format[1] || url.replace(/.*\.([^.?]{3,4})?.*/g, '$1') || "png";
