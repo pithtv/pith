@@ -85,6 +85,7 @@ class Bootstrap {
         app.use(pithPath, pithApp.handle);
         app.use(this.settingsStore.settings.apiContext, rest(pithApp));
         app.use('/webui', express.static(path.resolve(__dirname, '..', 'webui', 'dist')));
+        app.use('/icons', express.static(path.resolve(__dirname, '..', 'icons')));
         app.use('/scale', this.imageScaler.router);
 
         // exclude all private members in JSON messages (those starting with underscore)
