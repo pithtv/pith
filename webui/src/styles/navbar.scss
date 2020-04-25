@@ -32,7 +32,7 @@ body {
   padding: 15px;
   z-index: 200;
   backdrop-filter: blur(10px);
-  box-shadow: -4px 0px 10px 10px rgb(0,0,0,0.5);
+  box-shadow: -4px 0px 10px 10px rgb(0, 0, 0, 0.5);
 
   &.closed {
     left: -$navbar-width;
@@ -55,6 +55,7 @@ body {
     text-transform: none;
     font-size: 24px;
     list-style: none;
+
     a {
       color: $nav-bar-item-color;
     }
@@ -67,43 +68,44 @@ body {
   }
 }
 
-.player-box {
-  margin: 0 35px;
+.c-statusBar__playbackArea {
+  display: grid;
+  grid-template-columns: min-content minmax(100px, 1fr) min-content;
+  grid-template-areas: "title title title" "position bar duration";
 
-  .playback-info {
-    .playback-title {
-      display: block;
-      font-weight: bold;
-      text-align: center;
-      overflow: hidden;
-      white-space: nowrap;
+  .playback-title {
+    grid-area: title;
+    font-weight: bold;
+    text-align: center;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .playback-time {
+    grid-area: position;
+  }
+
+  .playback-time, .playback-runtime {
+    display: inline-block;
+    width: 40px;
+    font-size: 10px;
+  }
+
+  .playback-runtime {
+    grid-area: duration;
+    text-align: right;
+  }
+
+  .playback-bar {
+    grid-area: bar;
+
+    scrubber {
+      flex: 1;
     }
 
-    .playback-bar {
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-
-      .playback-time, .playback-runtime {
-        display: inline-block;
-        width: 40px;
-        font-size: 10px;
-      }
-
-      .playback-runtime {
-        text-align: right;
-      }
-
-      .playback-time {
-      }
-
-      scrubber {
-        flex: 1;
-      }
-
-      .progress {
-        height: 10px;
-      }
+    .progress {
+      height: 10px;
     }
   }
 }
