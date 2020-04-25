@@ -32,10 +32,10 @@ export class ChannelBrowserComponent implements AfterViewInit, OnInit {
   filteredContents: ChannelItem[];
   currentPath: ChannelItem[] = [];
 
-  protected showDetailsItem: ChannelItem;
-  protected showDetailsId: string;
-  protected showDetailsIdx: number;
-  protected showDetails: boolean;
+  public showDetailsItem: ChannelItem;
+  public showDetailsId: string;
+  public showDetailsIdx: number;
+  public showDetails: boolean;
 
   private currentSearch: string;
 

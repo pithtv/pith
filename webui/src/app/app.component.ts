@@ -21,7 +21,7 @@ export class AppComponent {
   public status: PlayerStatus;
   public navbarCollapsed = true;
   public statusbarExpanded = false;
-  private loading: boolean;
+  public loading: boolean;
 
   constructor(private pithClient: PithClientService, private playerService: PlayerService,
               private modalService: NgbModal, public webPlayer: WebPlayer, private router: Router) {
