@@ -1,27 +1,5 @@
 .c-itemDetails {
-  position: fixed;
-  color: black;
-
-  top: 60px;
-  left: 0;
-  right: 0;
-  bottom: 0;
-
-  @media(min-width: $minLargeScreenWidth) {
-    top: 80px;
-    left: 16px;
-    right: 16px;
-    bottom: 16px;
-    max-height: calc(100vw * 0.68);
-    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.5);
-    border-radius: 10px;
-  }
-  z-index: 10;
-  background: white;
-
   font-weight: bold;
-  overflow: hidden;
-  display: block;
 
   > a.closebtn {
     position: absolute;
@@ -45,46 +23,38 @@
     height: 100%;
   }
 
-  channel-details,
-  channel-tv-details {
-    display: flex;
-    flex-direction: row;
-    position: absolute;
+  display: flex;
+  flex-direction: row;
+
+  @media(min-width: $minLargeScreenWidth) {
     top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+  }
 
+  .details,
+  .episodeguide {
+    flex: 1;
+    position: relative;
     @media(min-width: $minLargeScreenWidth) {
-      top: 0;
+      margin: 20px 0 0 10px;
     }
 
-    .details,
-    .episodeguide {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .details {
+    padding: 10px;
+  }
+
+  .episodeguide {
+    .seasondetails {
       flex: 1;
-      position: relative;
-      @media(min-width: $minLargeScreenWidth) {
-        margin: 20px 0 0 10px;
-      }
-
-      display: flex;
-      flex-direction: column;
-    }
-
-    .details {
+      overflow-x: auto;
+      background: $white_50;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
       padding: 10px;
-    }
-
-    .episodeguide {
-      .seasondetails {
-        flex: 1;
-        overflow-x: auto;
-        background: $white_50;
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
-        padding: 10px;
-        font-weight: normal;
-      }
+      font-weight: normal;
     }
   }
 }
@@ -175,8 +145,13 @@ ul.detailtabs {
 }
 
 .c-itemDetails__year {
-  &:before { content: '(' }
-  &:after { content: ')' }
+  &:before {
+    content: '('
+  }
+
+  &:after {
+    content: ')'
+  }
 }
 
 .c-itemDetails__tagline {
@@ -198,21 +173,19 @@ ul.detailtabs {
 
 @media(max-width: $minLargeScreenWidth) {
   .c-itemDetails {
-    channel-details, channel-tv-details {
-      flex-direction: column;
-      align-items: center;
-      padding: 20px 0;
-      overflow: auto;
-      -webkit-overflow-scrolling: touch;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 0;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
 
-      img.c-itemDetails__thumbnail {
-        width: 50vw;
-        height: auto;
-        margin-bottom: 25px;
-      }
-
+    img.c-itemDetails__thumbnail {
+      width: 50vw;
+      height: auto;
+      margin-bottom: 25px;
     }
-    channel-tv-details .episodeguide .seasondetails {
+
+    .episodeguide .seasondetails {
       overflow: initial;
     }
   }

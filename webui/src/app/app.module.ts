@@ -12,8 +12,8 @@ import {HttpClientModule} from '@angular/common/http';
 import {PithClientService} from './core/pith-client.service';
 import {PrescalePipe} from './util/prescale.pipe';
 import {ChannelBrowserComponent} from './channelbrowser/channel-browser.component';
-import {ChannelDetailsComponent} from './channelbrowser/channel-details.component';
-import {ChannelTvDetailsComponent} from './channelbrowser/channel-tv-details.component';
+import {GenericDetailsComponent} from './channelbrowser/generic-details.component';
+import {TvDetailsComponent} from './channelbrowser/tv-details.component';
 import {PlayerService} from './core/player.service';
 import {PithEventsService} from './core/pith-events.service';
 import {TimePipe} from './core/time.pipe';
@@ -27,14 +27,16 @@ import {InfiniteScrollModule} from 'ngx-infinite-scroll';
 import { ServiceWorkerModule } from '@angular/service-worker';
 import { environment } from '../environments/environment';
 import {PlaybackModalComponent} from './core/playback-modal';
+import {DetailsComponent} from "./channelbrowser/details.component";
 
 @NgModule({
   declarations: [
     AppComponent,
     PithLogoComponent,
     ChannelBrowserComponent,
-    ChannelDetailsComponent,
-    ChannelTvDetailsComponent,
+    DetailsComponent,
+    GenericDetailsComponent,
+    TvDetailsComponent,
     PlaybackModalComponent,
     PrescalePipe,
     TimePipe,

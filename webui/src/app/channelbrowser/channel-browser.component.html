@@ -1,14 +1,14 @@
 <div class="c-channelNav u-hideOnMobile">
   <ul class="c-channelNav__breadcrumb">
-    <li><a (click)="goToChannelRoot()" tabindex="0">{{channel?.title}}</a></li>
-    <li *ngFor="let pathItem of currentPath"><a (click)="goBack(pathItem)" tabindex="1">{{pathItem.title}}</a></li>
+<!--    <li><a (click)="goToChannelRoot()" tabindex="0">{{channel?.title}}</a></li>-->
+    <li *ngFor="let pathItem of currentPath"><a [routerLink]="['/channel', channel.id, pathItem.id]" tabindex="1">{{pathItem.title}}</a></li>
   </ul>
 
-  <div class="c-channelNav__viewSelector" data-toggle="buttons" *ngIf="itemDetails?.sortableFields?.length">
+  <div class="c-channelNav__viewSelector" data-toggle="buttons" *ngIf="item?.sortableFields?.length">
     <div class="dropdown" ngbDropdown>
       <a class="btn dropdown-toggle" ngbDropdownToggle><i class="oi oi-sort-ascending"></i></a>
       <ul class="dropdown-menu" role="menu" ngbDropdownMenu>
-        <li *ngFor="let sortField of itemDetails.sortableFields" class="dropdown-item"><a (click)="sort(sortField)">{{fieldDescriptions[sortField]}}</a></li>
+        <li *ngFor="let sortField of item.sortableFields" class="dropdown-item"><a (click)="sort(sortField)">{{fieldDescriptions[sortField]}}</a></li>
       </ul>
     </div>
   </div>
@@ -28,14 +28,13 @@
       [class.inprogress]="item.playState?.status == 'inprogress'"
       [class.hasnew]="item.hasNew"
       [class.unavailable]="item.unavailable"
-      [class.showdetails]="showDetailsId == item.id"
       [id]="item.id"
   >
-    <a class="c-contentBrowser__itemPresentation" (click)="(item.type == 'container' && item.mediatype!='show') ? open(item) : toggle(item, idx)">
+    <a class="c-contentBrowser__itemPresentation" [routerLink]="['/channel', channel.id, item.id]">
       <div *ngIf="item.poster" class="c-contentBrowser__poster"
            [style.background-image]="'url(' + (item.poster | prescale:'130x195') + ')'">
       </div>
-      <img *ngIf="item.still" class="c-contentBrowser__still"
+      <img *ngIf="item.still && !item.poster" class="c-contentBrowser__still"
            [src]="item.still | prescale:'266x150'" />
       <span class="c-contentBrowser__itemInfo">
         <span class="r-title" *ngIf="item.title">{{item.title}}</span>
@@ -46,9 +45,3 @@
     </a>
   </li>
 </ul>
-
-<div class="c-itemDetails" [class.c-itemDetails--show]="showDetailsItem.mediatype=='show'" *ngIf="showDetails" @enterAnimation>
-  <a class="closebtn" (click)="toggle(null)"><svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewbox="0 0 150 150" width="30px" height="30px"><use xlink:href="#close"></use></svg></a>
-  <channel-details *ngIf="showDetailsItem.type != 'container'" [item]="showDetailsItem" [channel]="channel"></channel-details>
-  <channel-tv-details *ngIf="showDetailsItem.mediatype == 'show'" [item]="showDetailsItem" [channel]="channel"></channel-tv-details>
-</div>

@@ -1,4 +1,4 @@
-import {empty as observableEmpty, Observable, Subject, BehaviorSubject, EMPTY} from 'rxjs';
+import {Observable, Subject, BehaviorSubject, EMPTY} from 'rxjs';
 
 import {tap, map, catchError} from 'rxjs/operators';
 import {HttpClient, HttpParams} from '@angular/common/http';
@@ -58,7 +58,7 @@ export class RemotePlayer extends RestModule {
   readonly id: string;
   readonly icons: object[];
   readonly friendlyName: string;
-  private _statusSubject: Subject<PlayerStatus> = new BehaviorSubject(null);
+  private statusSubject: Subject<PlayerStatus> = new BehaviorSubject(null);
 
   constructor(pith, properties) {
     super(pith);
@@ -69,7 +69,7 @@ export class RemotePlayer extends RestModule {
 
     this.on('playerstatechange', event => {
       if (event.player.id === this.id) {
-        this._statusSubject.next(new PlayerStatus(event.status));
+        this.statusSubject.next(new PlayerStatus(event.status));
       }
     });
   }
@@ -99,11 +99,11 @@ export class RemotePlayer extends RestModule {
   }
 
   get status() {
-    return this._statusSubject.asObservable();
+    return this.statusSubject.asObservable();
   }
 }
 
-export class ChannelItem {
+export interface ChannelItem {
   id: string;
   still: string;
   poster: string;
@@ -130,23 +130,19 @@ export class ChannelItem {
   episode: number;
   season: number;
   duration?: number;
-
-  constructor(p: Object) {
-    Object.assign(this, p);
-  }
 }
 
-export class Episode extends ChannelItem {
+export interface Episode extends ChannelItem {
   season: number;
   episode: number;
   showname: string;
 }
 
-export class Season extends ChannelItem {
+export interface Season extends ChannelItem {
   season: number;
 }
 
-export class Show extends ChannelItem {
+export interface Show extends ChannelItem {
   seasons: Season[];
   episodes: Episode[];
 }
@@ -160,11 +156,11 @@ export class Channel extends RestModule {
   }
 
   listContents(path): Observable<ChannelItem[]> {
-    return this.get('list', path || '', {includePlayStates: true}).pipe(map((results: object[]) => results.map(r => new ChannelItem(r))));
+    return this.get('list', path || '', {includePlayStates: true}) as Observable<ChannelItem[]>;
   }
 
-  getDetails(path) {
-    return this.get('detail', path || '', {includePlayStates: true}).pipe(map(result => new ChannelItem(result)));
+  getDetails(path): Observable<ChannelItem> {
+    return this.get('detail', path || '', {includePlayStates: true}) as Observable<ChannelItem>;
   }
 
   togglePlayState(item) {
@@ -263,7 +259,7 @@ export class PithClientService {
         loading: false,
         error: true
       });
-      return observableEmpty();
+      return EMPTY;
     }), );
   }
 

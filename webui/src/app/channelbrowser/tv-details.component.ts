@@ -4,15 +4,14 @@ import {PlayerService} from '../core/player.service';
 
 @Component({
   selector: 'channel-tv-details',
-  templateUrl: './channel-tv-details.component.html'
+  templateUrl: './tv-details.component.html'
 })
-export class ChannelTvDetailsComponent {
+export class TvDetailsComponent {
   _selectedSeason: Season;
   _item: Show;
+  private channel: Channel;
   episodes: Episode[];
   seasons: Season[];
-  // @Input() item: Show;
-  @Input() channel: Channel;
 
   constructor(private playerService: PlayerService) {
   }
@@ -26,8 +25,9 @@ export class ChannelTvDetailsComponent {
   }
 
   @Input()
-  set item(newItem) {
-    this._item = newItem;
+  set channelAndItem({channel, item}: {channel: Channel, item: ChannelItem}) {
+    this._item = item as Show;
+    this.channel = channel;
     this.fetchDetails();
   }
 

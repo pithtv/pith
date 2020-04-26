@@ -4,13 +4,19 @@ import {PlayerService} from "../core/player.service";
 
 @Component({
   selector: 'channel-details',
-  templateUrl: './channel-details.component.html'
+  templateUrl: './generic-details.component.html'
 })
-export class ChannelDetailsComponent {
-  @Input() item: ChannelItem;
-  @Input() channel: Channel;
+export class GenericDetailsComponent {
+  item: ChannelItem;
+  channel: Channel;
 
   constructor(private playerService: PlayerService) {}
+
+  @Input()
+  set channelAndItem({channel, item}: {channel: Channel, item: ChannelItem}) {
+    this.channel = channel;
+    this.item = item;
+  }
 
   load() {
     this.playerService.load(this.channel, this.item);

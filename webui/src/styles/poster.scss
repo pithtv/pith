@@ -69,6 +69,10 @@ $minLargeScreenWidth: 900px;
       }
     }
 
+    .r-rating, .r-duration, .r-year {
+      display: none;
+    }
+
     .c-contentBrowser__still {
       display: none;
     }
