@@ -19,16 +19,16 @@ export class DetailsComponent implements OnInit {
       const channelId = params.get('id');
       const itemId = params.get('itemId');
       return this.pithClient.getChannel(channelId).pipe(switchMap(channel => {
-        if(itemId) {
+        // if(itemId) {
           return channel.getDetails(itemId).pipe(switchMap(itemDetails => Observable.of({
             channel: channel,
             item: itemDetails
           })));
-        } else {
-          return Observable.of({
-            channel: channel, item: null
-          });
-        }
+        // } else {
+        //   return Observable.of({
+        //     channel: channel, item: null
+        //   });
+        // }
       }))
     })).subscribe(channelAndItem => {
       this.channelAndItem = channelAndItem;

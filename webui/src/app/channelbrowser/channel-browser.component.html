@@ -1,7 +1,7 @@
 <div class="c-channelNav u-hideOnMobile">
   <ul class="c-channelNav__breadcrumb">
-<!--    <li><a (click)="goToChannelRoot()" tabindex="0">{{channel?.title}}</a></li>-->
-    <li *ngFor="let pathItem of currentPath"><a [routerLink]="['/channel', channel.id, pathItem.id]" tabindex="1">{{pathItem.title}}</a></li>
+    <li><a [routerLink]="['/channel', channel.id]" tabindex="0">{{channel?.title}}</a></li>
+    <li *ngFor="let pathItem of item?.path"><a [routerLink]="['/channel', channel.id, pathItem.id]" tabindex="1">{{pathItem.title}}</a></li>
   </ul>
 
   <div class="c-channelNav__viewSelector" data-toggle="buttons" *ngIf="item?.sortableFields?.length">
@@ -18,7 +18,7 @@
   </div>
 </div>
 
-<ul class="c-contentBrowser c-contentBrowser--poster" #container infiniteScroll [infiniteScrollDistance]="2" [infiniteScrollThrottle]="50" (scrolled)="loadMore()">
+<ul class="c-contentBrowser" [class.c-contentBrowser--poster]="item?.preferredView !== 'details'" [class.c-contentBrowser--details]="item?.preferredView === 'details'" #container infiniteScroll [infiniteScrollDistance]="2" [infiniteScrollThrottle]="50" (scrolled)="loadMore()">
   <li class="c-contentBrowser__item"
       *ngFor="let item of filteredContents | slice:0:limit; index as idx"
       [class.withposter]="item.poster"

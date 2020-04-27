@@ -1,61 +1,44 @@
-.c-itemDetails {
-  font-weight: bold;
+channel-tv-details, channel-details {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  display: grid;
+  grid-template-rows: min-content minmax(0, 1fr);
+  grid-template-columns: min-content minmax(0, 1fr);
+  grid-template-areas: "navbar navbar" "thumb details";
 
-  > a.closebtn {
-    position: absolute;
-    top: 15px;
-    left: 15px;
-    width: 30px;
-    height: 30px;
-    display: block;
-    z-index: 15;
+  .c-channelNav {
+    grid-area: navbar;
   }
 
-  > div {
-    margin: 30px;
-  }
-
-  .c-itemDetails__title {
-    display: block;
-  }
-
-  img.c-itemDetails__thumbnail {
+  .c-itemDetails__thumbnail {
+    grid-area: thumb;
     height: 100%;
   }
 
-  display: flex;
-  flex-direction: row;
+  .c-itemDetails__episodeGuide {
+    grid-area: details;
+    height: 100%;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 
-  @media(min-width: $minLargeScreenWidth) {
-    top: 0;
-  }
-
-  .details,
-  .episodeguide {
-    flex: 1;
-    position: relative;
-    @media(min-width: $minLargeScreenWidth) {
-      margin: 20px 0 0 10px;
+    .detailtabs {
+      padding: 0 15px;
     }
 
-    display: flex;
-    flex-direction: column;
+    .seasondetails {
+      padding: 0 30px;
+
+      > li {
+        padding: 5px 0;
+      }
+    }
   }
 
   .details {
-    padding: 10px;
-  }
-
-  .episodeguide {
-    .seasondetails {
-      flex: 1;
-      overflow-x: auto;
-      background: $white_50;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
-      padding: 10px;
-      font-weight: normal;
-    }
+    padding: 0 30px;
   }
 }
 
@@ -127,7 +110,6 @@ ul.detailtabs {
 
   > li {
     display: inline-block;
-    color: $black;
     padding: 2px 15px;
     cursor: pointer;
 
@@ -172,32 +154,33 @@ ul.detailtabs {
 }
 
 @media(max-width: $minLargeScreenWidth) {
-  .c-itemDetails {
+  channel-tv-details, channel-details {
+    display: grid;
     flex-direction: column;
-    align-items: center;
-    padding: 20px 0;
-    overflow: auto;
-    -webkit-overflow-scrolling: touch;
+    grid-template-columns: 1fr;
+    grid-template-rows: min-content;
+    grid-template-areas: "navbar" "thumb" "details";
 
-    img.c-itemDetails__thumbnail {
-      width: 50vw;
-      height: auto;
-      margin-bottom: 25px;
+    .c-itemDetails__thumbnail {
+      height: unset;
+      width: 100%;
+      margin: 0 0 15px 0;
     }
 
-    .episodeguide .seasondetails {
-      overflow: initial;
-    }
-  }
+    .c-itemDetails__episodeGuide {
+      overflow-y: visible;
+      .detailtabs, .seasondetails {
+        left: 0;
+        right: 0;
 
-  .episodeguide > {
-    .detailtabs, .seasondetails {
-      left: 0;
-      right: 0;
-
-      .still {
-        display: none;
+        .still {
+          display: none;
+        }
       }
+    }
+
+    .details {
+      padding: 10px;
     }
   }
 }

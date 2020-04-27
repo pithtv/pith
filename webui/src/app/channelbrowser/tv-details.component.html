@@ -1,6 +1,16 @@
-<img *ngIf="item.poster || item.still"
+<div class="c-channelNav u-hideOnMobile">
+  <ul class="c-channelNav__breadcrumb">
+    <li><a [routerLink]="['/channel', channel.id]" tabindex="0">{{channel?.title}}</a></li>
+    <li *ngFor="let pathItem of item?.path"><a [routerLink]="['/channel', channel.id, pathItem.id]"
+                                               tabindex="1">{{pathItem.title}}</a></li>
+  </ul>
+</div>
+
+<img class="c-itemDetails__thumbnail"
+     *ngIf="item.poster || item.still"
      [src]="((item.poster || item.still) | prescale:'680x1000')" class="c-itemDetails__thumbnail"/>
-<div class="episodeguide">
+
+<div class="c-itemDetails__episodeGuide">
   <ul class="detailtabs seasons">
     <li *ngFor="let season of item.seasons" (click)="selectSeason(season)"
         [class.selected]="selectedSeason == season"
@@ -17,7 +27,10 @@
            [class.imagemissing]="!episode.still">
       </div>
       <a (click)="togglePlayState(episode)" class="action-markwatched" title="Mark watched" *ngIf="episode.playable">
-        <svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewbox="0 0 100 100" width="24px" height="20px"><use [attr.xlink:href]="'#' + (episode.playState && episode.playState.status || 'none')" transform="scale(0.17)"></use></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewbox="0 0 100 100" width="24px" height="20px">
+          <use [attr.xlink:href]="'#' + (episode.playState && episode.playState.status || 'none')"
+               transform="scale(0.17)"></use>
+        </svg>
       </a>
       <span class="episode-no">{{ episode.episode }}</span>
       <span class="episode-title">{{ episode.title }}</span>
