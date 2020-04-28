@@ -8,7 +8,9 @@ addons:
       secure: NyI30lB/YRqn4STth4k/uKdOIeKAC00Y/qHC2XFYxxlCP1JADksiIeLvq4hgYKQLoqcx4PudJ1/+gKX9GMAzhbi84ecDwPXpT1yxB6zi2N5fU8eqdbXQ4rEmt97zh9Bj1a2A01kdfTkeXiQ7CeJkoo0A0anPFkSR44y+z1vh+Qa9tm6SKA0eOzStKd0rYkoAey3sz6yh0OV1teR83tWx3SuWg7cTYU/WUmOjcJwcEyS+nsCXr5bFvwNfF0wcp4PQlfjoqgiXlvTYP4BhoRlwIFUY9TA6rQv26rZ6vNAU+2qWJkbvkGim57wuQT8eljI6n+pYZbe1morZiHbtXQ1MVGyoFd0TghQuoP0AFpH4bLl/+Hv1dvw6EXtciFYcbVRPoNPNZukySfKnVuLJfSz08Q5y2m98fMXrH/WoAmTIfsRuOZqWTgC1udiGSCtqCLIpWxzLh9BdGcF7sR2/nnDRHgPdxk4C+0kDTjHWQb+XpVQFQyZneFjdps9JIkUitW+tq6KSLIHvYXhmuimTIkEXiVuKIE61H3ozKHb6ozouPQ1SV+lrSPf3SaN+UWMpyVYmGr7SmlSE8GhUbEGxrRbcQCXz443ikOk1mt/XvhiXsgfBT2kekH4/o6b16Y3K1mBhLkpEIXdqG+7yEer9JTqof2tGRkC/dQKs1LaI9KpUIeQ=
 dist: trusty
 script:
-- npm test
+- npm install && npm --prefix webui install || travis_terminate 1;
+- npm test || travis_terminate 1;
+- npm run build || travis_terminate 1;
 - sonar-scanner
 deploy:
   provider: npm

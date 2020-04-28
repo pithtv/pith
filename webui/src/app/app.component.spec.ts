@@ -2,6 +2,15 @@ import { TestBed, async } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 
 import { AppComponent } from './app.component';
+import {TimePipe} from "./core/time.pipe";
+import {ScrubberComponent} from "./util/scrubber.component";
+import {VideoPlayerComponent} from "./videoplayer/video-player.component";
+import {PrescalePipe} from "./util/prescale.pipe";
+import {PithClientService} from "./core/pith-client.service";
+import {HttpClient, HttpHandler} from "@angular/common/http";
+import {PithEventsService} from "./core/pith-events.service";
+import {PlayerService} from "./core/player.service";
+import {WebPlayer} from "./videoplayer/web-player";
 
 describe('AppComponent', () => {
   beforeEach(async(() => {
@@ -10,8 +19,20 @@ describe('AppComponent', () => {
         RouterTestingModule
       ],
       declarations: [
-        AppComponent
+        AppComponent,
+        TimePipe,
+        ScrubberComponent,
+        VideoPlayerComponent,
+        PrescalePipe
       ],
+      providers: [
+        HttpHandler,
+        HttpClient,
+        PithClientService,
+        PithEventsService,
+        PlayerService,
+        WebPlayer
+      ]
     }).compileComponents();
   }));
 
@@ -25,12 +46,5 @@ describe('AppComponent', () => {
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.debugElement.componentInstance;
     expect(app.title).toEqual('app');
-  }));
-
-  it('should render title in a h1 tag', async(() => {
-    const fixture = TestBed.createComponent(AppComponent);
-    fixture.detectChanges();
-    const compiled = fixture.debugElement.nativeElement;
-    expect(compiled.querySelector('h1').textContent).toContain('Welcome to app!');
   }));
 });

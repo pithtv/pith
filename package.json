@@ -5,7 +5,8 @@
     "build": "tsc && npm --prefix webui install && npm --prefix webui run build-prod",
     "prepublishOnly": "npm install && npm run build",
     "start": "node $NODE_DEBUG_OPTION built/app",
-    "test": "jest __tests__/*.ts"
+    "test": "jest __tests__/*.ts",
+    "testweb": "npm --prefix webui test"
   },
   "engines": {
     "node": ">=10.0.0"
