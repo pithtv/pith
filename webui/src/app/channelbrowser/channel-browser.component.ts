@@ -1,11 +1,7 @@
-import {switchMap} from 'rxjs/operators';
-import {AfterViewInit, Component, Input, OnInit, ViewChild, ViewChildren} from '@angular/core';
-import {ActivatedRoute, ParamMap} from '@angular/router';
-import {Channel, ChannelItem, PithClientService} from '../core/pith-client.service';
+import {Component, Input} from '@angular/core';
+import {Channel, ChannelItem} from '../core/pith-client.service';
 import 'rxjs/Rx';
-import {animate, state, style, transition, trigger} from '@angular/animations';
-
-const animationTiming = '500ms ease';
+import {Subscription} from "rxjs";
 
 @Component({
   templateUrl: './channel-browser.component.html',
@@ -30,6 +26,7 @@ export class ChannelBrowserComponent {
     runtime: 'Runtime',
     creationTime: 'Date added'
   };
+  private subscription: Subscription;
 
   constructor() {
   }
@@ -42,7 +39,11 @@ export class ChannelBrowserComponent {
   }
 
   fetchContents() {
-    this.channel.listContents(this.item && this.item.id).subscribe(contents => {
+    if(this.subscription) {
+      this.subscription.unsubscribe();
+      this.subscription = null;
+    }
+    this.subscription = this.channel.listContents(this.item && this.item.id).subscribe(contents => {
       this.contents = contents;
       this.search(this.currentSearch, true);
     });

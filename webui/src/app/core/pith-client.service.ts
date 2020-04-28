@@ -1,6 +1,6 @@
 import {Observable, Subject, BehaviorSubject, EMPTY} from 'rxjs';
 
-import {tap, map, catchError} from 'rxjs/operators';
+import {tap, map, catchError, finalize} from 'rxjs/operators';
 import {HttpClient, HttpParams} from '@angular/common/http';
 import 'rxjs/Rx';
 import {Injectable} from '@angular/core';
@@ -255,25 +255,25 @@ export class PithClientService {
     this.reportProgress({
       loading: true
     });
-    return this.httpClient.get(`${this.root}/${url}`, options).pipe(tap(() => this.reportProgress({loading: false})), catchError((e, c) => {
+    return this.httpClient.get(`${this.root}/${url}`, options).pipe(catchError((e, c) => {
       this.throw(new PithError(e.error));
-      this.reportProgress({
-        loading: false,
-        error: true
-      });
       return EMPTY;
-    }), );
+    }), finalize(() => {
+      this.reportProgress({
+        loading: false
+      })
+    }));
   }
 
   put(url: string, body: object) {
-    return this.httpClient.put(`${this.root}/${url}`, body).pipe(tap(() => this.reportProgress({loading: false})), catchError((e, c) => {
+    return this.httpClient.put(`${this.root}/${url}`, body).pipe(catchError((e, c) => {
       this.throw(new PithError(e.error));
-      this.reportProgress({
-        loading: false,
-        error: true
-      });
       return EMPTY;
-    }), );
+    }), finalize(() => {
+      this.reportProgress({
+        loading: false
+      });
+    }));
   }
 
   queryChannels() {
