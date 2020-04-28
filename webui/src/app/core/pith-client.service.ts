@@ -1,6 +1,6 @@
-import {Observable, Subject, BehaviorSubject, EMPTY} from 'rxjs';
+import {BehaviorSubject, EMPTY, Observable, Subject} from 'rxjs';
 
-import {tap, map, catchError, finalize} from 'rxjs/operators';
+import {catchError, finalize, map} from 'rxjs/operators';
 import {HttpClient, HttpParams} from '@angular/common/http';
 import 'rxjs/Rx';
 import {Injectable} from '@angular/core';
@@ -22,6 +22,15 @@ abstract class RestModule {
     return this.pith.get(`${this.root.concat(args).map(encodeURIComponent).join('/')}`, query);
   }
 
+  protected getAndCache(...args: any[]) {
+    let query: object;
+    if (typeof args[args.length - 1] === 'object') {
+      query = args[args.length - 1];
+      args = args.slice(0, -1);
+    }
+    return this.pith.getAndCache(`${this.root.concat(args).map(encodeURIComponent).join('/')}`, query);
+  }
+
   protected put(...args: any[]) {
     const body = args.pop();
     return this.pith.put(`${this.root.concat(args).map(encodeURIComponent).join('/')}`, body);
@@ -34,8 +43,8 @@ abstract class RestModule {
 
 export class PlayerStatus {
   private timestamp: Date;
-  actions: {play: boolean, stop: boolean, pause: boolean};
-  position?: {title?: string, time?: number, duration?: number};
+  actions: { play: boolean, stop: boolean, pause: boolean };
+  position?: { title?: string, time?: number, duration?: number };
 
   constructor(obj: any) {
     Object.assign(this, obj);
@@ -47,10 +56,15 @@ export interface Player {
   readonly icons: object[];
   readonly friendlyName: string;
   readonly status: Observable<PlayerStatus>;
-  load (channel: Channel, item: ChannelItem);
+
+  load(channel: Channel, item: ChannelItem);
+
   play();
+
   pause();
+
   stop();
+
   seek(time: number);
 }
 
@@ -105,8 +119,8 @@ export class RemotePlayer extends RestModule {
 
 export interface ChannelItem {
   id: string;
-  path?: {id: string, title: string}[];
-  preferredView?: 'poster'|'details';
+  path?: { id: string, title: string }[];
+  preferredView?: 'poster' | 'details';
   still: string;
   poster: string;
   backdrop: string;
@@ -158,11 +172,11 @@ export class Channel extends RestModule {
   }
 
   listContents(path): Observable<ChannelItem[]> {
-    return this.get('list', path || '', {includePlayStates: true}) as Observable<ChannelItem[]>;
+    return this.getAndCache('list', path || '', {includePlayStates: true}) as Observable<ChannelItem[]>;
   }
 
   getDetails(path): Observable<ChannelItem> {
-    return this.get('detail', path || '', {includePlayStates: true}) as Observable<ChannelItem>;
+    return this.getAndCache('detail', path || '', {includePlayStates: true}) as Observable<ChannelItem>;
   }
 
   togglePlayState(item) {
@@ -236,8 +250,9 @@ export class PithError {
 export class PithClientService {
   private root: string;
   private _errors: Subject<PithError> = new Subject();
-  private _progress: Subject<{loading: boolean}> = new BehaviorSubject({loading: false});
+  private _progress: Subject<{ loading: boolean }> = new BehaviorSubject({loading: false});
   private loadingCounter = 0;
+  private cache = new Map<string, object>();
 
   constructor(
     private httpClient: HttpClient,
@@ -249,27 +264,45 @@ export class PithClientService {
   get(url, query?: object) {
     const options = {};
     if (query) {
-      const p = Object.keys(query).reduce((pp, k) => pp.append(k, query[k]), new HttpParams());
-      options['params'] = p;
+      options['params'] = Object.keys(query).reduce((pp, k) => pp.append(k, query[k]), new HttpParams());
     }
     this.reportProgress({
       loading: true
     });
+    let finalized = false;
     return this.httpClient.get(`${this.root}/${url}`, options).pipe(catchError((e, c) => {
       this.throw(new PithError(e.error));
       return EMPTY;
     }), finalize(() => {
+      if(finalized) return;
+      finalized = true;
       this.reportProgress({
         loading: false
-      })
+      });
     }));
   }
 
+  getAndCache(url, query?: object) {
+    const cacheKey = JSON.stringify({url, query});
+    let request = this.get(url, query).pipe(o => {
+      o.subscribe(v => this.cache.set(cacheKey, v));
+      return o;
+    });
+    if (this.cache.has(cacheKey)) {
+      return Observable.merge(Observable.of(this.cache.get(cacheKey)), request);
+    } else {
+      return request;
+    }
+  }
+
   put(url: string, body: object) {
+    let finalized = false;
     return this.httpClient.put(`${this.root}/${url}`, body).pipe(catchError((e, c) => {
       this.throw(new PithError(e.error));
       return EMPTY;
     }), finalize(() => {
+      if(finalized) return;
+      finalized = true;
       this.reportProgress({
         loading: false
       });

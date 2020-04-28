@@ -1,4 +1,4 @@
-import {Component, Input} from '@angular/core';
+import {Component, Input, OnDestroy} from '@angular/core';
 import {Channel, ChannelItem} from '../core/pith-client.service';
 import 'rxjs/Rx';
 import {Subscription} from "rxjs";
@@ -7,7 +7,7 @@ import {Subscription} from "rxjs";
   templateUrl: './channel-browser.component.html',
   selector: 'channel-container-browser'
 })
-export class ChannelBrowserComponent {
+export class ChannelBrowserComponent implements OnDestroy {
   item: ChannelItem;
   channel: Channel;
   private contents: ChannelItem[];
@@ -47,6 +47,13 @@ export class ChannelBrowserComponent {
       this.contents = contents;
       this.search(this.currentSearch, true);
     });
+  }
+
+  ngOnDestroy(): void {
+    if(this.subscription) {
+      this.subscription.unsubscribe();
+      this.subscription = null;
+    }
   }
 
   @Input()
