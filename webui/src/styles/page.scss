@@ -72,6 +72,10 @@
     grid-template-rows: min-content min-content;
     grid-template-areas: "menu status expand" "controlsAndSelector controlsAndSelector controlsAndSelector";
 
+    .c-statusBar__playbackArea {
+      padding: 0 15px;
+    }
+
     &.expanded {
       height: auto;
 
