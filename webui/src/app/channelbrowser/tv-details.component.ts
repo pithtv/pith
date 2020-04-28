@@ -9,7 +9,7 @@ import {PlayerService} from '../core/player.service';
 export class TvDetailsComponent {
   _selectedSeason: Season;
   _item: Show;
-  private channel: Channel;
+  channel: Channel;
   episodes: Episode[];
   seasons: Season[];
 
