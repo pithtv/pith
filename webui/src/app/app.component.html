@@ -43,7 +43,7 @@
   </div>
 </div>
 
-<div class="c-navBar" [class.closed]="navbarCollapsed">
+<div class="c-navBar" [class.closed]="!navbarExpanded" #navBar>
   <a class="c-navBar__closeBtn" (click)="toggleNavBar()"><i class="oi oi-chevron-left"></i></a>
   <ul>
     <li class="c-navBar__group">Channels
@@ -71,6 +71,6 @@
 
 <video-player></video-player>
 
-<div class="page-host">
+<div class="page-host" [swipeFromLeft]="navBar" [(targetExpanded)]="navbarExpanded">
   <router-outlet></router-outlet>
 </div>

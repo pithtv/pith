@@ -28,6 +28,7 @@ import { ServiceWorkerModule } from '@angular/service-worker';
 import { environment } from '../environments/environment';
 import {PlaybackModalComponent} from './core/playback-modal';
 import {DetailsComponent} from "./channelbrowser/details.component";
+import {SwipeFromLeftDirective} from "./util/swipe-from-left.directive";
 
 @NgModule({
   declarations: [
@@ -41,7 +42,8 @@ import {DetailsComponent} from "./channelbrowser/details.component";
     PrescalePipe,
     TimePipe,
     ScrubberComponent,
-    VideoPlayerComponent
+    VideoPlayerComponent,
+    SwipeFromLeftDirective
   ],
   exports: [
     TimePipe

@@ -28,11 +28,14 @@ body {
   width: $navbar-width;
   background: $nav-bar-background;
   color: $nav-bar-item-color;
-  transition: left 200ms ease-in-out;
   padding: 15px;
   z-index: 200;
   backdrop-filter: blur(10px);
   box-shadow: -4px 0px 10px 10px rgb(0, 0, 0, 0.5);
+
+  &:not(.dragging) {
+    transition: left 200ms ease-in-out;
+  }
 
   &.closed {
     left: -$navbar-width;
