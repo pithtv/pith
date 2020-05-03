@@ -5,7 +5,7 @@
   </ul>
 
   <div class="c-channelNav__viewSelector" data-toggle="buttons" *ngIf="item?.sortableFields?.length">
-    <div class="dropdown" ngbDropdown>
+    <div class="dropdown" ngbDropdown placement="bottom-right">
       <a class="btn dropdown-toggle" ngbDropdownToggle><i class="oi oi-sort-ascending"></i></a>
       <ul class="dropdown-menu" role="menu" ngbDropdownMenu>
         <li *ngFor="let sortField of item.sortableFields" class="dropdown-item"><a (click)="sort(sortField)">{{fieldDescriptions[sortField]}}</a></li>

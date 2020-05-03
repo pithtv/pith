@@ -19,8 +19,8 @@
   </ul>
   <ul class="seasondetails">
     <li *ngFor="let episode of episodes"
-        [class.watched]="episode.playState && episode.playState.status == 'watched'"
-        [class.inprogress]="episode.playState && episode.playState.status == 'inprogress'"
+        [class.watched]="episode.playState?.status == 'watched'"
+        [class.inprogress]="episode.playState?.status == 'inprogress'"
         [class.unavailable]="episode.unavailable">
       <div [style.background-image]="episode.still && 'url(' + (episode.still | prescale:'266x150')+ ')'"
            [class.still]="true"
@@ -28,7 +28,7 @@
       </div>
       <a (click)="togglePlayState(episode)" class="action-markwatched" title="Mark watched" *ngIf="episode.playable">
         <svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewbox="0 0 100 100" width="24px" height="20px">
-          <use [attr.xlink:href]="'#' + (episode.playState && episode.playState.status || 'none')"
+          <use [attr.xlink:href]="'#' + (episode.playState?.status || 'none')"
                transform="scale(0.17)"></use>
         </svg>
       </a>
