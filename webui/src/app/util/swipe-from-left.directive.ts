@@ -8,11 +8,13 @@ export class SwipeFromLeftDirective {
   dragging: boolean;
   @Input() targetExpanded: boolean;
   @Output() targetExpandedChange = new EventEmitter<boolean>();
+  private previousValue: number;
 
   @HostListener("touchstart", ['$event.touches[0]','$event']) onTouchStart(touch: Touch, event: TouchEvent) {
     if(touch.clientX < 20 && !this.targetExpanded) {
       this.dragging = true;
       this.swipeFromLeft.classList.add('dragging');
+      this.previousValue = 0;
       event.preventDefault();
       event.stopPropagation();
     }
@@ -31,7 +33,6 @@ export class SwipeFromLeftDirective {
       return;
     }
     this.swipeFromLeft.style.left = Math.min(0, event.clientX - this.swipeFromLeft.offsetWidth) + 'px';
-    let targetValue = event.clientX > this.swipeFromLeft.offsetWidth / 2;
-    this.targetExpandedChange.emit(targetValue);
+    this.targetExpandedChange.emit(this.previousValue < (this.previousValue = event.clientX));
   }
 }

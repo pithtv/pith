@@ -29,6 +29,7 @@ import { environment } from '../environments/environment';
 import {PlaybackModalComponent} from './core/playback-modal';
 import {DetailsComponent} from "./channelbrowser/details.component";
 import {SwipeFromLeftDirective} from "./util/swipe-from-left.directive";
+import {SwipeOutDirective} from "./util/swipe-out.directive";
 
 @NgModule({
   declarations: [
@@ -43,7 +44,8 @@ import {SwipeFromLeftDirective} from "./util/swipe-from-left.directive";
     TimePipe,
     ScrubberComponent,
     VideoPlayerComponent,
-    SwipeFromLeftDirective
+    SwipeFromLeftDirective,
+    SwipeOutDirective
   ],
   exports: [
     TimePipe

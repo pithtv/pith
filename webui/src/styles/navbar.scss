@@ -37,9 +37,12 @@ body {
     transition: left 200ms ease-in-out;
   }
 
+  &.closed:not(.dragging) {
+    box-shadow: none;
+  }
+
   &.closed {
     left: -$navbar-width;
-    box-shadow: none;
   }
 
   ul {
