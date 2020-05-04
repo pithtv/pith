@@ -26,11 +26,14 @@
 
   <div class="c-statusBar__castSelector">
     <div ngbDropdown class="dropdown" placement="bottom-right">
-      <a ngbDropdownToggle class="dropdown-toggle"><img *ngIf="activePlayer?.icons"
-                                                        [src]="activePlayer.icons['48x48'].url | prescale:'original'"
-                                                        height="24"/></a>
+      <a ngbDropdownToggle class="dropdown-toggle">
+        <img *ngIf="activePlayer?.icons"
+             [src]="activePlayer.icons['48x48'].local ? activePlayer.icons['48x48'].url : (activePlayer.icons['48x48'].url | prescale:'original')"
+             height="24"/></a>
       <div ngbDropdownMenu class="dropdown-menu-right">
         <a class="dropdown-item" (click)="selectPlayer(webPlayer)">Browser</a>
+        <a class="dropdown-item" (click)="selectPlayer(vlcPlayer)">
+          <img [src]="vlcPlayer.icons['48x48'].url" height="24"/> VLC</a>
         <a *ngFor="let player of players | async" class="dropdown-item" (click)="selectPlayer(player)"><img
           [src]="player.icons['48x48'].url | prescale:'original'" height="24"> {{player.friendlyName}}</a>
       </div>

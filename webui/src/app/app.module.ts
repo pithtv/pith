@@ -24,12 +24,13 @@ import {WebPlayer} from './videoplayer/web-player';
 import {VideoPlayerComponent} from './videoplayer/video-player.component';
 import {CommonModule} from '@angular/common';
 import {InfiniteScrollModule} from 'ngx-infinite-scroll';
-import { ServiceWorkerModule } from '@angular/service-worker';
-import { environment } from '../environments/environment';
+import {ServiceWorkerModule} from '@angular/service-worker';
+import {environment} from '../environments/environment';
 import {PlaybackModalComponent} from './core/playback-modal';
 import {DetailsComponent} from "./channelbrowser/details.component";
 import {SwipeFromLeftDirective} from "./util/swipe-from-left.directive";
 import {SwipeOutDirective} from "./util/swipe-out.directive";
+import {VlcPlayer} from "./videoplayer/vlc-player";
 
 @NgModule({
   declarations: [
@@ -66,7 +67,8 @@ import {SwipeOutDirective} from "./util/swipe-out.directive";
     PithClientService,
     PithEventsService,
     PlayerService,
-    WebPlayer
+    WebPlayer,
+    VlcPlayer
   ],
   bootstrap: [AppComponent],
   entryComponents: [

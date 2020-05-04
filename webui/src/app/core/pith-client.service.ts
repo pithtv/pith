@@ -13,22 +13,22 @@ abstract class RestModule {
 
   abstract root: string[];
 
-  protected get(...args: any[]) {
+  protected get<T=Object>(...args: any[]) {
     let query: object;
     if (typeof args[args.length - 1] === 'object') {
       query = args[args.length - 1];
       args = args.slice(0, -1);
     }
-    return this.pith.get(`${this.root.concat(args).map(encodeURIComponent).join('/')}`, query);
+    return this.pith.get<T>(`${this.root.concat(args).map(encodeURIComponent).join('/')}`, query);
   }
 
-  protected getAndCache(...args: any[]) {
+  protected getAndCache<T=Object>(...args: any[]) {
     let query: object;
     if (typeof args[args.length - 1] === 'object') {
       query = args[args.length - 1];
       args = args.slice(0, -1);
     }
-    return this.pith.getAndCache(`${this.root.concat(args).map(encodeURIComponent).join('/')}`, query);
+    return this.pith.getAndCache<T>(`${this.root.concat(args).map(encodeURIComponent).join('/')}`, query);
   }
 
   protected put(...args: any[]) {
@@ -53,7 +53,7 @@ export class PlayerStatus {
 }
 
 export interface Player {
-  readonly icons: object[];
+  readonly icons: object;
   readonly friendlyName: string;
   readonly status: Observable<PlayerStatus>;
 
@@ -163,6 +163,26 @@ export interface Show extends ChannelItem {
   episodes: Episode[];
 }
 
+export interface Stream {
+  url: string;
+  mimetype: string;
+  seekable: boolean;
+  duration: number;
+  format?: {
+    container: string,
+    streams: {
+      index: number,
+      codec: string,
+      profile: string,
+      pixelFormat: string
+    }[]
+  },
+  streams?: {
+  }[],
+  keyframes?: {
+  }[]
+}
+
 export class Channel extends RestModule {
   id: string;
   title: string;
@@ -192,8 +212,8 @@ export class Channel extends RestModule {
     this.put('playstate', path, playstate).subscribe();
   }
 
-  stream(path, options?: any) {
-    return this.get('stream', path || '', options);
+  stream(path, options: any = {}) : Observable<{item: ChannelItem, stream: Stream}> {
+    return this.get<{item: ChannelItem, stream: Stream}>('stream', path || '', options);
   }
 }
 
@@ -261,7 +281,7 @@ export class PithClientService {
     this.root = '/rest';
   }
 
-  get(url, query?: object) {
+  get<T = object>(url, query?: object) : Observable<T> {
     const options = {};
     if (query) {
       options['params'] = Object.keys(query).reduce((pp, k) => pp.append(k, query[k]), new HttpParams());
@@ -279,17 +299,17 @@ export class PithClientService {
       this.reportProgress({
         loading: false
       });
-    }));
+    })) as Observable<T>;
   }
 
-  getAndCache(url, query?: object) {
+  getAndCache<T=Object>(url, query?: object) : Observable<T> {
     const cacheKey = JSON.stringify({url, query});
-    let request = this.get(url, query).pipe(o => {
-      o.subscribe(v => this.cache.set(cacheKey, v));
+    let request = this.get<T>(url, query).pipe(o => {
+      o.subscribe(v => this.cache.set(cacheKey, v as any));
       return o;
     });
     if (this.cache.has(cacheKey)) {
-      return Observable.merge(Observable.of(this.cache.get(cacheKey)), request);
+      return Observable.merge(Observable.of(this.cache.get(cacheKey)), request) as Observable<T>;
     } else {
       return request;
     }

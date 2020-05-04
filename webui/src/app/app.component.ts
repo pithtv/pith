@@ -5,6 +5,7 @@ import {PlayerService} from './core/player.service';
 import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {WebPlayer} from './videoplayer/web-player';
 import {NavigationStart, Router} from '@angular/router';
+import {VlcPlayer} from "./videoplayer/vlc-player";
 
 @Component({
   selector: 'app-root',
@@ -24,7 +25,7 @@ export class AppComponent {
   public loading: boolean;
 
   constructor(private pithClient: PithClientService, private playerService: PlayerService,
-              private modalService: NgbModal, public webPlayer: WebPlayer, private router: Router) {
+              private modalService: NgbModal, public webPlayer: WebPlayer, public vlcPlayer: VlcPlayer, private router: Router) {
     this.channels = pithClient.queryChannels();
     pithClient.errors.subscribe(error => {
       this.showError(error);
