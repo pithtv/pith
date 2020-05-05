@@ -1,14 +1,8 @@
-import {Channel, ChannelItem, PithClientService, RemotePlayer, PlayerStatus, Player} from './pith-client.service';
-import {Observable, Subject, BehaviorSubject} from 'rxjs';
+import {Channel, ChannelItem, PithClientService, RemotePlayer, Player} from './pith-client.service';
+import {Subject, BehaviorSubject} from 'rxjs';
 import {Injectable} from '@angular/core';
 import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {PlaybackModalComponent} from './playback-modal';
-
-enum Status {
-  PAUSED,
-  PLAYING,
-  STOPPED
-}
 
 const SELECTED_PLAYER_STORAGE_ITEM = 'selectedPlayer';
 
@@ -19,7 +13,6 @@ export class PlayerService {
 
   readonly _activePlayerSubject: Subject<RemotePlayer> = new BehaviorSubject(null);
   readonly _playersSubject: Subject<RemotePlayer[]> = new BehaviorSubject([]);
-  readonly _status: Subject<PlayerStatus> = new BehaviorSubject(null);
 
   constructor(private pith: PithClientService, private ngbModalService: NgbModal) {
     this.pith.queryPlayers().subscribe(p => {

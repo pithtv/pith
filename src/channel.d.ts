@@ -42,7 +42,7 @@ export interface ITvShowEpisode extends IMediaChannelItem {
 
 export interface IPlayState {
     id?: string,
-    runtime?: number,
+    time?: number,
     duration?: number,
     status: "watched"|"inprogress"|"none";
 }

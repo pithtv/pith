@@ -119,7 +119,7 @@ export class RemotePlayer extends RestModule {
 
 export interface PlayState {
   id?: string,
-  runtime?: number,
+  time?: number,
   duration?: number,
   status: "watched"|"inprogress"|"none";
 }

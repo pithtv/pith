@@ -90,7 +90,7 @@ class MediaServerDelegate implements DeviceDelegate {
                         }
                         break;
                     case "upnp:lastPlaybackPosition":
-                        playstate = {...playstate, runtime: parseInt(value as string)};
+                        playstate = {...playstate, time: parseInt(value as string)};
                         break;
                 }
             }
