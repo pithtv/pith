@@ -1,4 +1,4 @@
-import {Channel, ChannelItem, PithClientService, RemotePlayer, PlayerStatus} from './pith-client.service';
+import {Channel, ChannelItem, PithClientService, RemotePlayer, PlayerStatus, Player} from './pith-client.service';
 import {Observable, Subject, BehaviorSubject} from 'rxjs';
 import {Injectable} from '@angular/core';
 import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
@@ -9,6 +9,8 @@ enum Status {
   PLAYING,
   STOPPED
 }
+
+const SELECTED_PLAYER_STORAGE_ITEM = 'selectedPlayer';
 
 @Injectable()
 export class PlayerService {
@@ -24,7 +26,15 @@ export class PlayerService {
       this._players = p;
       this._playersSubject.next(p);
       if (this._activePlayer == null && p.length > 0) {
-        this.selectPlayer(p[0]);
+        let selectedPlayer = localStorage.getItem(SELECTED_PLAYER_STORAGE_ITEM);
+        let player : Player;
+        if(selectedPlayer) {
+          player = p.find(p => p.id === selectedPlayer);
+        }
+        if(!player) {
+          player = p[0];
+        }
+        this.selectPlayer(player);
       }
     });
 
@@ -53,6 +63,7 @@ export class PlayerService {
   }
 
   selectPlayer(player) {
+    localStorage.setItem(SELECTED_PLAYER_STORAGE_ITEM, player.id);
     this._activePlayer = player;
     this._activePlayerSubject.next(player);
   }
