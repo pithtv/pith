@@ -30,7 +30,8 @@ import {PlaybackModalComponent} from './core/playback-modal';
 import {DetailsComponent} from "./channelbrowser/details.component";
 import {SwipeFromLeftDirective} from "./util/swipe-from-left.directive";
 import {SwipeOutDirective} from "./util/swipe-out.directive";
-import {VlcPlayer} from "./videoplayer/vlc-player";
+import {ItemActionsComponent} from "./channelbrowser/item-actions.component";
+import {ItemOtherActionsComponent} from "./channelbrowser/item-other-actions.component";
 
 @NgModule({
   declarations: [
@@ -46,7 +47,9 @@ import {VlcPlayer} from "./videoplayer/vlc-player";
     ScrubberComponent,
     VideoPlayerComponent,
     SwipeFromLeftDirective,
-    SwipeOutDirective
+    SwipeOutDirective,
+    ItemActionsComponent,
+    ItemOtherActionsComponent
   ],
   exports: [
     TimePipe
@@ -67,8 +70,7 @@ import {VlcPlayer} from "./videoplayer/vlc-player";
     PithClientService,
     PithEventsService,
     PlayerService,
-    WebPlayer,
-    VlcPlayer
+    WebPlayer
   ],
   bootstrap: [AppComponent],
   entryComponents: [

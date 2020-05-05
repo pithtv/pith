@@ -117,6 +117,13 @@ export class RemotePlayer extends RestModule {
   }
 }
 
+export interface PlayState {
+  id?: string,
+  runtime?: number,
+  duration?: number,
+  status: "watched"|"inprogress"|"none";
+}
+
 export interface ChannelItem {
   id: string;
   path?: { id: string, title: string }[];
@@ -127,7 +134,7 @@ export interface ChannelItem {
   title: string;
   airDate: string;
   mediatype: string;
-  playState: any;
+  playState: PlayState;
   sortableFields: string[];
   tagline: string;
   rating: string;

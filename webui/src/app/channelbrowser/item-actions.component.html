@@ -1,0 +1,5 @@
+<div class="btn-group" ngbDropdown placement="bottom-right">
+  <button class="btn btn-primary" (click)="load()"><i class="oi oi-media-play"></i> Play on {{(playerService.activePlayer | async).friendlyName}}</button>
+  <button class="btn btn-primary" ngbDropdownToggle></button>
+  <item-other-actions [channel]="channel" [item]="item"></item-other-actions>
+</div>

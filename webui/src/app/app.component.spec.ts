@@ -11,7 +11,6 @@ import {HttpClient, HttpHandler} from "@angular/common/http";
 import {PithEventsService} from "./core/pith-events.service";
 import {PlayerService} from "./core/player.service";
 import {WebPlayer} from "./videoplayer/web-player";
-import {VlcPlayer} from "./videoplayer/vlc-player";
 
 describe('AppComponent', () => {
   beforeEach(async(() => {
@@ -32,8 +31,7 @@ describe('AppComponent', () => {
         PithClientService,
         PithEventsService,
         PlayerService,
-        WebPlayer,
-        VlcPlayer
+        WebPlayer
       ]
     }).compileComponents();
   }));

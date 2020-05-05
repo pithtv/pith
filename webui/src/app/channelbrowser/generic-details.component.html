@@ -10,7 +10,9 @@
      class="c-itemDetails__thumbnail"/>
 
 <div class="details">
-    <span class="c-contentBrowser__itemInfo"><span class="itemshowname">{{item.showname}}</span><span
+  <item-actions class="c-itemDetails__actions" [channel]="channel" [item]="item"></item-actions>
+
+  <span class="c-contentBrowser__itemInfo"><span class="itemshowname">{{item.showname}}</span><span
       class="itemseason">{{item.season}}</span><span class="itemepisode"
                                                      *ngIf="item.episode">{{item.episode}}</span></span>
   <span class="c-itemDetails__title">
@@ -27,7 +29,5 @@
   <span class="c-itemDetails__genres" *ngIf="item.genres?.length">{{item.genres.join(", ")}}</span>
   <span class="c-itemDetails__plot" *ngIf="item.plot">{{item.plot}}</span>
   <span class="c-itemDetails__overview" *ngIf="item.overview">{{item.overview}}</span>
-  <span class="c-itemDetails__actions actions"><a (click)="load()" class="action-play" title="Play"
-                                                  *ngIf="item.playable"></a><a
-    href="http://www.imdb.com/title/{{item.imdbId}}" *ngIf="item.imdbId" class="link-imdb" target="_blank"></a></span>
+  <a href="http://www.imdb.com/title/{{item.imdbId}}" *ngIf="item.imdbId" class="link-imdb" target="_blank"></a>
 </div>

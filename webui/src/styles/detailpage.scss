@@ -29,10 +29,10 @@ channel-tv-details, channel-details {
     }
 
     .seasondetails {
-      padding: 0 30px;
+      padding: 0 20px;
 
       > li {
-        padding: 5px 0;
+        padding: 10px 0;
       }
     }
   }
@@ -99,6 +99,16 @@ channel-tv-details, channel-details {
     bottom: 5px;
     right: 5px;
     @extend %playstatus_watched;
+  }
+
+  .c-itemDetails__actions {
+  }
+}
+
+.details {
+  .c-itemDetails__actions {
+    display: block;
+    margin-bottom: 15px;
   }
 }
 
@@ -181,6 +191,10 @@ ul.detailtabs {
 
     .details {
       padding: 10px;
+
+      .c-itemDetails__actions {
+        text-align: center;
+      }
     }
   }
 }

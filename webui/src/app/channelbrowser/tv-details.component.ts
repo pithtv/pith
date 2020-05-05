@@ -16,14 +16,6 @@ export class TvDetailsComponent {
   constructor(private playerService: PlayerService) {
   }
 
-  load(item) {
-    this.playerService.load(this.channel, item);
-  }
-
-  togglePlayState(item) {
-    this.channel.togglePlayState(item);
-  }
-
   @Input()
   set channelAndItem({channel, item}: {channel: Channel, item: ChannelItem}) {
     this._item = item as Show;
