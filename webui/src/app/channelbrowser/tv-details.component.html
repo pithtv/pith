@@ -22,7 +22,7 @@
         [class.watched]="episode.playState?.status == 'watched'"
         [class.inprogress]="episode.playState?.status == 'inprogress'"
         [class.unavailable]="episode.unavailable">
-      <div class="seasondetails__thumb">
+      <div class="seasondetails__thumb" *ngIf="episode.playable">
         <i class="oi oi-play-circle" (click)="load(episode)"></i>
       </div>
       <span class="seasondetails__title">
