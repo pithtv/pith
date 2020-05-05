@@ -43,50 +43,71 @@ channel-tv-details, channel-details {
 }
 
 .seasondetails > li {
-  display: inline-block;
+  display: inline-grid;
   min-height: 80px;
   width: 100%;
   padding: 5px;
+  grid-template-areas: "thumbnail title otherActions" "thumbnail info otherActions" "plot plot plot";
+  grid-template-columns: min-content 1fr min-content;
 
   &.unavailable {
     opacity: 0.5;
   }
 
-  > {
-    .still {
-      float: left;
-      margin: 3px 15px 3px 0;
-    }
+  .seasondetails__thumb {
+    grid-area: thumbnail;
+    justify-self: center;
+    align-self: center;
+    padding: 0 10px;
+    font-size: 25px;
+  }
 
-    .episode-no {
+  .seasondetails__title {
+    grid-area: title;
+  }
+
+  .seasondetails__otheractions {
+    grid-area: otherActions;
+    justify-self: center;
+    align-self: center;
+    position: relative;
+  }
+
+  .seasondetails__info {
+    grid-area: info;
+  }
+
+  .seasondetails__plot {
+    grid-area: plot;
+  }
+
+  .still {
+    grid-area: thumbnail;
+    float: left;
+    margin: 3px 15px 3px 0;
+  }
+
+  .episode-no {
+    font-weight: bold;
+
+    &:after {
       font-weight: bold;
-
-      &:after {
-        font-weight: bold;
-        content: '. ';
-      }
+      content: '. ';
     }
+  }
 
-    .episode-title {
-      font-weight: bold;
-    }
+  .episode-title {
+    font-weight: bold;
+  }
 
-    .episode-airdate {
-      font-style: italic;
+  .episode-airdate {
+    font-style: italic;
+    font-size: 80%;
+  }
 
-      &:before {
-        content: ' (';
-      }
-
-      &:after {
-        content: ') ';
-      }
-    }
-
-    .episode-synopsis {
-      display: block;
-      font-size: 90%;
-    }
+  .episode-synopsis {
+    display: block;
+    font-size: 90%;
   }
 
   &.inprogress > .still:after {
@@ -179,6 +200,7 @@ ul.detailtabs {
 
     .c-itemDetails__episodeGuide {
       overflow-y: visible;
+
       .detailtabs, .seasondetails {
         left: 0;
         right: 0;

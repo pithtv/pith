@@ -23,6 +23,14 @@ export class TvDetailsComponent {
     this.fetchDetails();
   }
 
+  load(item) {
+    this.playerService.load(this.channel, item);
+  }
+
+  togglePlayState(item) {
+    this.channel.togglePlayState(item);
+  }
+
   get item() {
     return this._item;
   }
