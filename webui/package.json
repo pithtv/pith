@@ -43,7 +43,7 @@
     "@types/jasmine": "^3.3.0",
     "@types/jasminewd2": "^2.0.6",
     "@types/node": "^10.12.11",
-    "codelyzer": "~3.1.1",
+    "codelyzer": "^5.2.2",
     "jasmine-core": "^3.3.0",
     "jasmine-spec-reporter": "^4.2.1",
     "karma": "^4.4.1",
@@ -55,7 +55,7 @@
     "protractor": "^5.4.1",
     "rxjs-tslint": "^0.1.6",
     "ts-node": "~3.2.0",
-    "tslint": "~5.3.2",
+    "tslint": "^6.1.2",
     "typescript": "^3.5.3",
     "webpack": "^4.41.5"
   }
