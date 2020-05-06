@@ -12,7 +12,6 @@ export class ChannelBrowserComponent implements OnDestroy {
   channel: Channel;
   private contents: ChannelItem[];
   filteredContents: ChannelItem[];
-  currentPath: ChannelItem[] = [];
 
   private currentSearch: string;
 

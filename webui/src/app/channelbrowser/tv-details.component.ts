@@ -37,22 +37,19 @@ export class TvDetailsComponent {
 
   fetchDetails() {
     if (this._item) {
-      this.channel.getDetails(this._item.id).subscribe((details: Show) => {
-        this._item = details;
-        this.seasons = details.seasons.sort((a, b) =>
-          a.season === b.season ? 0 : a.season === 0 ? 1 : b.season === 0 ? -1 : a.season - b.season);
-        if (!this.selectedSeason || this.seasons.indexOf(this.selectedSeason) === -1) {
-          let selectedSeason = this.seasons[0];
-          for (let x = 1, l = this.seasons.length; x < l; x++) {
-            const season = this.seasons[x];
-            if ((season.playState && season.playState.status === 'inprogress')
-              || (this.seasons[x - 1].playState && this.seasons[x - 1].playState.status === 'watched')) {
-              selectedSeason = season;
-            }
+      this.seasons = this._item.seasons.sort((a, b) =>
+        a.season === b.season ? 0 : a.season === 0 ? 1 : b.season === 0 ? -1 : a.season - b.season);
+      if (!this.selectedSeason || this.seasons.indexOf(this.selectedSeason) === -1) {
+        let selectedSeason = this.seasons[0];
+        for (let x = 1, l = this.seasons.length; x < l; x++) {
+          const season = this.seasons[x];
+          if ((season.playState && season.playState.status === 'inprogress')
+            || (this.seasons[x - 1].playState && this.seasons[x - 1].playState.status === 'watched')) {
+            selectedSeason = season;
           }
-          this.selectSeason(selectedSeason);
         }
-      });
+        this.selectSeason(selectedSeason);
+      }
     }
   }
 
