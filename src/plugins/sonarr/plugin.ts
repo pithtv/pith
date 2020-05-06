@@ -213,8 +213,7 @@ class SonarrChannel extends Channel {
         return this.getLastPlayStateFromItem(episode).then(playState => {
             if(playState === undefined) {
                 return {
-                    ...episode,
-                    playable: false
+                    ...episode
                 };
             }
             return {playState, ...episode};
