@@ -11,6 +11,8 @@ import {HttpClient, HttpHandler} from "@angular/common/http";
 import {PithEventsService} from "./core/pith-events.service";
 import {PlayerService} from "./core/player.service";
 import {WebPlayer} from "./videoplayer/web-player";
+import {SwipeOutDirective} from "./util/swipe-out.directive";
+import {SwipeFromLeftDirective} from "./util/swipe-from-left.directive";
 
 describe('AppComponent', () => {
   beforeEach(async(() => {
@@ -23,7 +25,9 @@ describe('AppComponent', () => {
         TimePipe,
         ScrubberComponent,
         VideoPlayerComponent,
-        PrescalePipe
+        PrescalePipe,
+        SwipeOutDirective,
+        SwipeFromLeftDirective
       ],
       providers: [
         HttpHandler,
