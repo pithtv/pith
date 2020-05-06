@@ -1,7 +1,9 @@
 import {map} from 'rxjs/operators';
 import {Channel, ChannelItem, Player, PlayerStatus} from "../core/pith-client.service";
 import {BehaviorSubject} from "rxjs";
+import { Injectable } from "@angular/core";
 
+@Injectable()
 export class WebPlayer implements Player {
   icons: object[];
   friendlyName: string;

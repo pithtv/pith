@@ -1,7 +1,9 @@
 import {Observable, Subject} from "rxjs";
+import { Injectable } from "@angular/core";
 
 var retryInterval = 3000;
 
+@Injectable()
 export class PithEventsService {
   private ws: WebSocket;
   private url: string;
