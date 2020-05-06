@@ -1,14 +1,14 @@
 <div class="c-channelNav u-hideOnMobile">
   <ul class="c-channelNav__breadcrumb">
-    <li><a (click)="goToChannelRoot()" tabindex="0">{{channel?.title}}</a></li>
-    <li *ngFor="let pathItem of currentPath"><a (click)="goBack(pathItem)" tabindex="1">{{pathItem.title}}</a></li>
+    <li><a [routerLink]="['/channel', channel.id]" tabindex="0">{{channel?.title}}</a></li>
+    <li *ngFor="let pathItem of item?.path"><a [routerLink]="['/channel', channel.id, pathItem.id]" tabindex="1">{{pathItem.title}}</a></li>
   </ul>
 
-  <div class="c-channelNav__viewSelector" data-toggle="buttons" *ngIf="itemDetails?.sortableFields?.length">
-    <div class="dropdown" ngbDropdown>
+  <div class="c-channelNav__viewSelector" data-toggle="buttons" *ngIf="item?.sortableFields?.length">
+    <div class="dropdown" ngbDropdown placement="bottom-right">
       <a class="btn dropdown-toggle" ngbDropdownToggle><i class="oi oi-sort-ascending"></i></a>
       <ul class="dropdown-menu" role="menu" ngbDropdownMenu>
-        <li *ngFor="let sortField of itemDetails.sortableFields" class="dropdown-item"><a (click)="sort(sortField)">{{fieldDescriptions[sortField]}}</a></li>
+        <li *ngFor="let sortField of item.sortableFields" class="dropdown-item"><a (click)="sort(sortField)">{{fieldDescriptions[sortField]}}</a></li>
       </ul>
     </div>
   </div>
@@ -18,10 +18,9 @@
   </div>
 </div>
 
-<ul class="c-contentBrowser c-contentBrowser--poster" #container infiniteScroll [infiniteScrollDistance]="2" [infiniteScrollThrottle]="50" (scrolled)="loadMore()">
+<ul class="c-contentBrowser" [class.c-contentBrowser--poster]="item?.preferredView !== 'details'" [class.c-contentBrowser--details]="item?.preferredView === 'details'" #container infiniteScroll [infiniteScrollDistance]="2" [infiniteScrollThrottle]="50" (scrolled)="loadMore()">
   <li class="c-contentBrowser__item"
       *ngFor="let item of filteredContents | slice:0:limit; index as idx"
-      [class.withthumb]="item.poster || item.still"
       [class.withposter]="item.poster"
       [class.withstill]="item.still"
       [class.withinfo]="item.tagline || item.rating || (item.genres?.length) || item.plot || item.overview"
@@ -29,23 +28,20 @@
       [class.inprogress]="item.playState?.status == 'inprogress'"
       [class.hasnew]="item.hasNew"
       [class.unavailable]="item.unavailable"
-      [class.showdetails]="showDetailsId == item.id"
       [id]="item.id"
   >
-
-    <a class="c-contentBrowser__itemPresentation" (click)="(item.type == 'container' && item.mediatype!='show') ? open(item) : toggle(item, idx)">
-      <div *ngIf="item.poster || item.still" class="th"
-           [style.background-image]="'url(' + ((item.poster | prescale:(showDetailsId == item.id ? '300x450' : '130x195')) || (item.still | prescale:'266x150'))+ ')'">
+    <a class="c-contentBrowser__itemPresentation" [routerLink]="['/channel', channel.id, item.id]">
+      <div *ngIf="item.poster" class="c-contentBrowser__poster"
+           [style.background-image]="'url(' + (item.poster | prescale:'130x195') + ')'">
       </div>
-      <span class="contextinfo"><span class="title" *ngIf="item.title">{{item.title}}</span><span
-        class="itemshowname" *ngIf="item.showname && item.showname != itemDetails.showname">{{item.showname}}</span><span
-        class="itemseason"   *ngIf="item.season && (item.showname !== itemDetails.showname || item.season !== itemDetails.season)">{{item.season}}</span><span
-        class="itemepisode"  *ngIf="item.episode">{{item.episode}}</span></span>
+      <img *ngIf="item.still && !item.poster" class="c-contentBrowser__still"
+           [src]="item.still | prescale:'266x150'" />
+      <span class="c-contentBrowser__itemInfo">
+        <span class="r-title" *ngIf="item.title">{{item.title}}</span>
+        <span class="r-year" *ngIf="item.year">{{item.year}}</span>
+        <span class="r-rating"><span class="stars" [attr.data-starrating]="item.rating" *ngIf="item.rating"></span></span>
+        <span class="r-duration" *ngIf="item.duration">{{item.duration | time}}</span>
+      </span>
     </a>
-    <div class="c-itemDetails" [class.c-itemDetails--show]="item.mediatype=='show'" *ngIf="showDetailsId == item.id" @enterAnimation>
-      <a class="closebtn" (click)="toggle(null)"><svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewbox="0 0 150 150" width="30px" height="30px"><use xlink:href="#close"></use></svg></a>
-      <channel-details *ngIf="item.type != 'container'" [item]="item" [channel]="channel"></channel-details>
-      <channel-tv-details *ngIf="item.mediatype == 'show'" [item]="item" [channel]="channel"></channel-tv-details>
-    </div>
   </li>
 </ul>

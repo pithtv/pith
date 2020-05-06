@@ -31,18 +31,27 @@ test('Movie file metadata', async () => {
 
     const rootContents = await channel.listContents();
 
-    expect(rootContents).toEqual([{'id': 'movies', 'title': 'movies', 'type': 'container'}]);
+    expect(rootContents).toEqual([{
+        id: 'movies',
+        title: 'movies',
+        type: 'container',
+        path: [{id: 'movies', title: 'movies'}],
+        preferredView: 'details'}]);
 
     const movieContents = await channel.listContents('movies');
 
     expect(movieContents).toEqual([{
         id: 'movies/Angels In Antwerp (2020)',
         title: 'Angels In Antwerp (2020)',
-        type: 'container'
+        type: 'container',
+        path: [{id: 'movies', title:'movies'}, {id: 'movies/Angels In Antwerp (2020)', title: 'Angels In Antwerp (2020)'}],
+        preferredView: 'details'
     },{
         id: 'movies/The Beckoning (1971)',
         title: 'The Beckoning (1971)',
-        type: 'container'
+        type: 'container',
+        path: [{id: 'movies', title:'movies'}, {id: 'movies/The Beckoning (1971)', title: 'The Beckoning (1971)'}],
+        preferredView: 'details'
     }]);
 
     const movieOneContents = await channel.listContents('movies/Angels In Antwerp (2020)');
@@ -52,6 +61,7 @@ test('Movie file metadata', async () => {
         title: 'Angels In Antwerp',
         year: 2020,
         type: 'file',
+        path: [{id: 'movies', title:'movies'}, {id: 'movies/Angels In Antwerp (2020)', title: 'Angels In Antwerp (2020)'}, {id: 'movies/Angels In Antwerp (2020)/moviefile.mkv', title: 'moviefile.mkv'}],
         mediatype: 'movie',
         mimetype: 'video/x-matroska'
     }]);
@@ -63,6 +73,7 @@ test('Movie file metadata', async () => {
         title: 'Angels In Antwerp',
         year: 2020,
         type: 'file',
+        path: [{id: 'movies', title:'movies'}, {id: 'movies/Angels In Antwerp (2020)', title: 'Angels In Antwerp (2020)'}, {id: 'movies/Angels In Antwerp (2020)/moviefile.mkv', title: 'moviefile.mkv'}],
         mediatype: 'movie',
         mimetype: 'video/x-matroska'
     });
@@ -74,6 +85,7 @@ test('Movie file metadata', async () => {
         title: 'The Beckoning',
         year: 1971,
         type: 'file',
+        path: [{id: 'movies', title:'movies'}, {id: 'movies/The Beckoning (1971)', title: 'The Beckoning (1971)'}, {id: 'movies/The Beckoning (1971)/VIDEO_TS', title: 'VIDEO_TS'}, {id: 'movies/The Beckoning (1971)/VIDEO_TS/VTS_03_01.VOB', title: 'VTS_03_01.VOB'}],
         mediatype: 'movie',
         mimetype: 'video/dvd'
     }]);
@@ -84,6 +96,7 @@ test('Movie file metadata', async () => {
         title: 'The Beckoning',
         year: 1971,
         type: 'file',
+        path: [{id: 'movies', title:'movies'}, {id: 'movies/The Beckoning (1971)', title: 'The Beckoning (1971)'}, {id: 'movies/The Beckoning (1971)/VIDEO_TS', title: 'VIDEO_TS'}, {id: 'movies/The Beckoning (1971)/VIDEO_TS/VTS_03_01.VOB', title: 'VTS_03_01.VOB'}],
         mediatype: 'movie',
         mimetype: 'video/dvd'
     });

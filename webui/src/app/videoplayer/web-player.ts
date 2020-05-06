@@ -1,4 +1,3 @@
-
 import {map} from 'rxjs/operators';
 import {Channel, ChannelItem, Player, PlayerStatus} from "../core/pith-client.service";
 import {BehaviorSubject} from "rxjs";

@@ -1,0 +1,54 @@
+<div class="c-channelNav u-hideOnMobile">
+  <ul class="c-channelNav__breadcrumb">
+    <li><a [routerLink]="['/channel', channel.id]" tabindex="0">{{channel?.title}}</a></li>
+    <li *ngFor="let pathItem of item?.path"><a [routerLink]="['/channel', channel.id, pathItem.id]"
+                                               tabindex="1">{{pathItem.title}}</a></li>
+  </ul>
+</div>
+
+<img class="c-itemDetails__thumbnail"
+     *ngIf="item.poster || item.still"
+     [src]="((item.poster || item.still) | prescale:'680x1000')" class="c-itemDetails__thumbnail"/>
+
+<div class="c-itemDetails__episodeGuide">
+  <ul class="detailtabs seasons">
+    <li *ngFor="let season of item.seasons" (click)="selectSeason(season)"
+        [class.selected]="selectedSeason == season"
+        [class.inprogress]="season.playState.status == 'inprogress'"
+        [class.watched]="season.playState.status == 'watched'">{{ season.season == 0 ? 'Specials' : season.season }}</li>
+  </ul>
+  <ul class="seasondetails">
+    <li *ngFor="let episode of episodes"
+        [class.watched]="episode.playState?.status == 'watched'"
+        [class.inprogress]="episode.playState?.status == 'inprogress'"
+        [class.unavailable]="episode.unavailable">
+      <div class="seasondetails__thumb" *ngIf="episode.playable">
+        <i class="oi oi-play-circle" (click)="load(episode)"></i>
+      </div>
+      <span class="seasondetails__title">
+        <a (click)="togglePlayState(episode)" class="action-markwatched" title="Mark watched" *ngIf="episode.playable">
+          <svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewbox="0 0 100 100" width="24px" height="20px">
+            <use [attr.xlink:href]="'#' + (episode.playState?.status || 'none')"
+                 transform="scale(0.17)"></use>
+          </svg>
+        </a>
+        <span class="episode-no">{{ episode.episode }}</span>
+        <span class="episode-title">{{ episode.title }}</span>
+      </span>
+      <span class="seasondetails__info">
+        <span class="episode-airdate">{{ episode.airDate | date }}</span>
+      </span>
+      <span class="seasondetails__plot">
+        <span class="episode-synopsis">{{ episode.overview }}</span>
+      </span>
+      <span class="seasondetails__otheractions">
+        <div ngbDropdown placement="bottom-right" class="dropdown">
+          <a ngbDropdownToggle *ngIf="episode.playable"></a>
+          <div class="dropdown-menu dropdown-menu-right" ngbDropdownMenu>
+            <item-other-actions [item]="episode" [channel]="channel"></item-other-actions>
+          </div>
+        </div>
+      </span>
+    </li>
+  </ul>
+</div>

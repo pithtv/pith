@@ -1,0 +1,33 @@
+<div class="c-channelNav u-hideOnMobile">
+  <ul class="c-channelNav__breadcrumb">
+    <li><a [routerLink]="['/channel', channel.id]" tabindex="0">{{channel?.title}}</a></li>
+    <li *ngFor="let pathItem of item?.path"><a [routerLink]="['/channel', channel.id, pathItem.id]"
+                                               tabindex="1">{{pathItem.title}}</a></li>
+  </ul>
+</div>
+
+<img *ngIf="item.poster || item.still" [src]="((item.poster || item.still) | prescale:'680x1000')"
+     class="c-itemDetails__thumbnail"/>
+
+<div class="details">
+  <item-actions class="c-itemDetails__actions" [channel]="channel" [item]="item"></item-actions>
+
+  <span class="c-contentBrowser__itemInfo"><span class="itemshowname">{{item.showname}}</span><span
+      class="itemseason">{{item.season}}</span><span class="itemepisode"
+                                                     *ngIf="item.episode">{{item.episode}}</span></span>
+  <span class="c-itemDetails__title">
+    <a (click)="togglePlayState()" class="action-markwatched" title="Mark watched" *ngIf="item.playable">
+      <svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewbox="0 0 100 100" width="24px" height="20px"><use
+        [attr.xlink:href]="'#' + (item.playState?.status || 'none')"
+        transform="scale(0.17)"></use></svg>
+    </a>
+    {{item.title}} <span *ngIf="item.year" class="c-itemDetails__year">{{item.year}}</span>
+  </span>
+  <span class="c-itemDetails__tagline" *ngIf="item.tagline">{{item.tagline}}</span>
+  <span class="c-itemDetails__rating"><span class="stars" [attr.data-starrating]="item.rating"
+                                            *ngIf="item.rating"></span>{{item.rating}}</span>
+  <span class="c-itemDetails__genres" *ngIf="item.genres?.length">{{item.genres.join(", ")}}</span>
+  <span class="c-itemDetails__plot" *ngIf="item.plot">{{item.plot}}</span>
+  <span class="c-itemDetails__overview" *ngIf="item.overview">{{item.overview}}</span>
+  <a href="http://www.imdb.com/title/{{item.imdbId}}" *ngIf="item.imdbId" class="link-imdb" target="_blank"></a>
+</div>

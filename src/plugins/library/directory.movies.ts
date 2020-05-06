@@ -1,7 +1,10 @@
 function mapMovie(e) {
-    e.movieId = e.id;
-    e.id = 'movies/' + e.id;
-    return e;
+    return {
+        ...e,
+        movieId: e.id,
+        id: 'movies/' + e.id,
+        duration: e.runtime * 60
+    };
 }
 
 export default function (plugin) {

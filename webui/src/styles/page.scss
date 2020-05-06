@@ -3,6 +3,14 @@
   to { background-position: 0 -84.85px; }
 }
 
+.page-host {
+  position: absolute;
+  top: 60px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
 .c-statusBar {
   position: fixed;
   top: 0;
@@ -31,13 +39,7 @@
 
   .c-statusBar__playbackArea {
     grid-area: status;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-
-    .c-statusBar__playerBox {
-      flex: 1;
-    }
+    padding: 0 35px;
   }
 
   .c-statusBar__playbackControls {
@@ -66,9 +68,13 @@
 
 @media only screen and (max-width: 600px) {
   .c-statusBar {
-    grid-template-columns: min-content 1fr min-content;
+    grid-template-columns: min-content minmax(100px, 1fr) min-content;
     grid-template-rows: min-content min-content;
     grid-template-areas: "menu status expand" "controlsAndSelector controlsAndSelector controlsAndSelector";
+
+    .c-statusBar__playbackArea {
+      padding: 0 15px;
+    }
 
     &.expanded {
       height: auto;

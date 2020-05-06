@@ -19,9 +19,9 @@ export class AppComponent {
   @ViewChild('errorModal', { static: true }) errorModal;
   private errorMessage: string;
   public status: PlayerStatus;
-  public navbarCollapsed = true;
+  public navbarExpanded = false;
   public statusbarExpanded = false;
-  private loading: boolean;
+  public loading: boolean;
 
   constructor(private pithClient: PithClientService, private playerService: PlayerService,
               private modalService: NgbModal, public webPlayer: WebPlayer, private router: Router) {
@@ -47,7 +47,7 @@ export class AppComponent {
     });
     router.events.subscribe(event => {
       if (event instanceof NavigationStart) {
-        this.navbarCollapsed = true;
+        this.navbarExpanded = false;
       }
     });
   }
@@ -83,7 +83,7 @@ export class AppComponent {
   }
 
   toggleNavBar() {
-    this.navbarCollapsed = !this.navbarCollapsed;
+    this.navbarExpanded = !this.navbarExpanded;
   }
 
   toggleStatusBar() {

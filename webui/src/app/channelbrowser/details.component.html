@@ -1,0 +1,11 @@
+<ng-template [ngIf]="channelAndItem">
+  <channel-details *ngIf="item?.type == 'file'"
+                   [channelAndItem]="channelAndItem">
+  </channel-details>
+  <channel-tv-details *ngIf="item?.mediatype == 'show'"
+                      [channelAndItem]="channelAndItem">
+  </channel-tv-details>
+  <channel-container-browser *ngIf="item == null || (item.type != 'file' && item.mediatype != 'show')"
+                             [channelAndItem]="channelAndItem">
+  </channel-container-browser>
+</ng-template>

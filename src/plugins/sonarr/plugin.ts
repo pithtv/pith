@@ -211,6 +211,12 @@ class SonarrChannel extends Channel {
             _episodeFile: sonarrEpisode.episodeFile
         };
         return this.getLastPlayStateFromItem(episode).then(playState => {
+            if(playState === undefined) {
+                return {
+                    ...episode,
+                    playable: false
+                };
+            }
             return {playState, ...episode};
         });
     }
@@ -303,7 +309,7 @@ class SonarrChannel extends Channel {
                 return Promise.resolve();
             } else {
                 let filesChannel = this.pith.getChannelInstance('files');
-                return this.getFile(item).then(file => filesChannel.getLastPlayStateFromItem(file));
+                return this.getFile(item).then(file => filesChannel.getLastPlayStateFromItem(file)).catch(() => undefined);
             }
         } else {
             return Promise.resolve(undefined);

@@ -1,6 +1,6 @@
-import {empty as observableEmpty, Observable, Subject, BehaviorSubject, EMPTY} from 'rxjs';
+import {BehaviorSubject, EMPTY, Observable, Subject} from 'rxjs';
 
-import {tap, map, catchError} from 'rxjs/operators';
+import {catchError, finalize, map} from 'rxjs/operators';
 import {HttpClient, HttpParams} from '@angular/common/http';
 import 'rxjs/Rx';
 import {Injectable} from '@angular/core';
@@ -13,13 +13,22 @@ abstract class RestModule {
 
   abstract root: string[];
 
-  protected get(...args: any[]) {
+  protected get<T=Object>(...args: any[]) {
     let query: object;
     if (typeof args[args.length - 1] === 'object') {
       query = args[args.length - 1];
       args = args.slice(0, -1);
     }
-    return this.pith.get(`${this.root.concat(args).map(encodeURIComponent).join('/')}`, query);
+    return this.pith.get<T>(`${this.root.concat(args).map(encodeURIComponent).join('/')}`, query);
+  }
+
+  protected getAndCache<T=Object>(...args: any[]) {
+    let query: object;
+    if (typeof args[args.length - 1] === 'object') {
+      query = args[args.length - 1];
+      args = args.slice(0, -1);
+    }
+    return this.pith.getAndCache<T>(`${this.root.concat(args).map(encodeURIComponent).join('/')}`, query);
   }
 
   protected put(...args: any[]) {
@@ -34,8 +43,8 @@ abstract class RestModule {
 
 export class PlayerStatus {
   private timestamp: Date;
-  actions: {play: boolean, stop: boolean, pause: boolean};
-  position?: {title?: string, time?: number, duration?: number};
+  actions: { play: boolean, stop: boolean, pause: boolean };
+  position?: { title?: string, time?: number, duration?: number };
 
   constructor(obj: any) {
     Object.assign(this, obj);
@@ -44,13 +53,18 @@ export class PlayerStatus {
 }
 
 export interface Player {
-  readonly icons: object[];
+  readonly icons: object;
   readonly friendlyName: string;
   readonly status: Observable<PlayerStatus>;
-  load (channel: Channel, item: ChannelItem);
+
+  load(channel: Channel, item: ChannelItem);
+
   play();
+
   pause();
+
   stop();
+
   seek(time: number);
 }
 
@@ -58,7 +72,7 @@ export class RemotePlayer extends RestModule {
   readonly id: string;
   readonly icons: object[];
   readonly friendlyName: string;
-  private _statusSubject: Subject<PlayerStatus> = new BehaviorSubject(null);
+  private statusSubject: Subject<PlayerStatus> = new BehaviorSubject(null);
 
   constructor(pith, properties) {
     super(pith);
@@ -69,7 +83,7 @@ export class RemotePlayer extends RestModule {
 
     this.on('playerstatechange', event => {
       if (event.player.id === this.id) {
-        this._statusSubject.next(new PlayerStatus(event.status));
+        this.statusSubject.next(new PlayerStatus(event.status));
       }
     });
   }
@@ -99,19 +113,28 @@ export class RemotePlayer extends RestModule {
   }
 
   get status() {
-    return this._statusSubject.asObservable();
+    return this.statusSubject.asObservable();
   }
 }
 
-export class ChannelItem {
+export interface PlayState {
+  id?: string,
+  time?: number,
+  duration?: number,
+  status: "watched"|"inprogress"|"none";
+}
+
+export interface ChannelItem {
   id: string;
+  path?: { id: string, title: string }[];
+  preferredView?: 'poster' | 'details';
   still: string;
   poster: string;
   backdrop: string;
   title: string;
   airDate: string;
   mediatype: string;
-  playState: any;
+  playState: PlayState;
   sortableFields: string[];
   tagline: string;
   rating: string;
@@ -129,25 +152,42 @@ export class ChannelItem {
   showname: string;
   episode: number;
   season: number;
-
-  constructor(p: Object) {
-    Object.assign(this, p);
-  }
+  duration?: number;
 }
 
-export class Episode extends ChannelItem {
+export interface Episode extends ChannelItem {
   season: number;
   episode: number;
   showname: string;
 }
 
-export class Season extends ChannelItem {
+export interface Season extends ChannelItem {
   season: number;
 }
 
-export class Show extends ChannelItem {
+export interface Show extends ChannelItem {
   seasons: Season[];
   episodes: Episode[];
+}
+
+export interface Stream {
+  url: string;
+  mimetype: string;
+  seekable: boolean;
+  duration: number;
+  format?: {
+    container: string,
+    streams: {
+      index: number,
+      codec: string,
+      profile: string,
+      pixelFormat: string
+    }[]
+  },
+  streams?: {
+  }[],
+  keyframes?: {
+  }[]
 }
 
 export class Channel extends RestModule {
@@ -159,11 +199,11 @@ export class Channel extends RestModule {
   }
 
   listContents(path): Observable<ChannelItem[]> {
-    return this.get('list', path || '', {includePlayStates: true}).pipe(map((results: object[]) => results.map(r => new ChannelItem(r))));
+    return this.getAndCache('list', path || '', {includePlayStates: true}) as Observable<ChannelItem[]>;
   }
 
-  getDetails(path) {
-    return this.get('detail', path || '', {includePlayStates: true}).pipe(map(result => new ChannelItem(result)));
+  getDetails(path): Observable<ChannelItem> {
+    return this.getAndCache('detail', path || '', {includePlayStates: true}) as Observable<ChannelItem>;
   }
 
   togglePlayState(item) {
@@ -179,8 +219,8 @@ export class Channel extends RestModule {
     this.put('playstate', path, playstate).subscribe();
   }
 
-  stream(path, options?: any) {
-    return this.get('stream', path || '', options);
+  stream(path, options: any = {}) : Observable<{item: ChannelItem, stream: Stream}> {
+    return this.get<{item: ChannelItem, stream: Stream}>('stream', path || '', options);
   }
 }
 
@@ -237,8 +277,9 @@ export class PithError {
 export class PithClientService {
   private root: string;
   private _errors: Subject<PithError> = new Subject();
-  private _progress: Subject<{loading: boolean}> = new BehaviorSubject({loading: false});
+  private _progress: Subject<{ loading: boolean }> = new BehaviorSubject({loading: false});
   private loadingCounter = 0;
+  private cache = new Map<string, object>();
 
   constructor(
     private httpClient: HttpClient,
@@ -247,34 +288,52 @@ export class PithClientService {
     this.root = '/rest';
   }
 
-  get(url, query?: object) {
+  get<T = object>(url, query?: object) : Observable<T> {
     const options = {};
     if (query) {
-      const p = Object.keys(query).reduce((pp, k) => pp.append(k, query[k]), new HttpParams());
-      options['params'] = p;
+      options['params'] = Object.keys(query).reduce((pp, k) => pp.append(k, query[k]), new HttpParams());
     }
     this.reportProgress({
       loading: true
     });
-    return this.httpClient.get(`${this.root}/${url}`, options).pipe(tap(() => this.reportProgress({loading: false})), catchError((e, c) => {
+    let finalized = false;
+    return this.httpClient.get(`${this.root}/${url}`, options).pipe(catchError((e, c) => {
       this.throw(new PithError(e.error));
+      return EMPTY;
+    }), finalize(() => {
+      if(finalized) return;
+      finalized = true;
       this.reportProgress({
-        loading: false,
-        error: true
+        loading: false
       });
-      return observableEmpty();
-    }), );
+    })) as Observable<T>;
+  }
+
+  getAndCache<T=Object>(url, query?: object) : Observable<T> {
+    const cacheKey = JSON.stringify({url, query});
+    let request = this.get<T>(url, query).pipe(o => {
+      o.subscribe(v => this.cache.set(cacheKey, v as any));
+      return o;
+    });
+    if (this.cache.has(cacheKey)) {
+      return Observable.merge(Observable.of(this.cache.get(cacheKey)), request) as Observable<T>;
+    } else {
+      return request;
+    }
   }
 
   put(url: string, body: object) {
-    return this.httpClient.put(`${this.root}/${url}`, body).pipe(tap(() => this.reportProgress({loading: false})), catchError((e, c) => {
+    let finalized = false;
+    return this.httpClient.put(`${this.root}/${url}`, body).pipe(catchError((e, c) => {
       this.throw(new PithError(e.error));
-      this.reportProgress({
-        loading: false,
-        error: true
-      });
       return EMPTY;
-    }), );
+    }), finalize(() => {
+      if(finalized) return;
+      finalized = true;
+      this.reportProgress({
+        loading: false
+      });
+    }));
   }
 
   queryChannels() {

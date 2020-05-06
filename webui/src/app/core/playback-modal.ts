@@ -1,5 +1,4 @@
 import {Component, Input} from '@angular/core';
-import {Time} from '@angular/common';
 import {NgbActiveModal} from '@ng-bootstrap/ng-bootstrap';
 import {ChannelItem} from './pith-client.service';
 

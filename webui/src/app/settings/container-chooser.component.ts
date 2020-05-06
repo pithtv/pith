@@ -25,7 +25,7 @@ export class ContainerChooserComponent {
     this.history.push(this.state);
     if (target instanceof Channel) {
       state = new State(target, null);
-    } else if (target instanceof ChannelItem) {
+    } else {
       state = new State(this.state.channel, target);
     }
     this.state = state;

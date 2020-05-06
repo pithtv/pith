@@ -3,33 +3,33 @@
   <a class="c-statusBar__sidebarToggle u-borderlessButton" (click)="toggleNavBar()"><span class="oi oi-menu"></span></a>
 
   <div class="c-statusBar__playbackControls">
-    <a class="u-borderlessButton" [hidden]="!(status?.actions?.pause)" (click)="pause()"><span class="oi oi-media-pause"></span></a>
-    <a class="u-borderlessButton" [hidden]="!(status?.actions?.play)" (click)="play()"><span class="oi oi-media-play"></span></a>
-    <a class="u-borderlessButton" [hidden]="!(status?.actions?.stop)" (click)="stop()"><span class="oi oi-media-stop"></span></a>
+    <a class="u-borderlessButton" [hidden]="!(status?.actions?.pause)" (click)="pause()"><span
+      class="oi oi-media-pause"></span></a>
+    <a class="u-borderlessButton" [hidden]="!(status?.actions?.play)" (click)="play()"><span
+      class="oi oi-media-play"></span></a>
+    <a class="u-borderlessButton" [hidden]="!(status?.actions?.stop)" (click)="stop()"><span
+      class="oi oi-media-stop"></span></a>
   </div>
 
-  <div class="c-statusBar__playbackArea">
-    <div class="c-statusBar__playerBox player-box">
-      <div class="playback-info" *ngIf="activePlayer">
-        <span class="playback-title">{{ status?.position?.title || "Unknown"}}</span>
-        <div class="playback-bar">
-          <span class="playback-time">{{ status?.position?.time | time }}</span>
-          <scrubber [value]="status?.position?.time" (valueChanged)="seekTo($event)"
-                    [max]="status?.position?.duration"></scrubber>
-          <span class="playback-runtime">{{ status?.position?.duration | time }}</span>
-        </div>
-      </div>
-      <div class="noplayer" *ngIf="!activePlayer">
-        No player selected
-      </div>
+  <div class="c-statusBar__playbackArea" *ngIf="activePlayer">
+    <span class="playback-title">{{ status?.position?.title || "Unknown"}}</span>
+    <span class="playback-time">{{ status?.position?.time | time }}</span>
+    <div class="playback-bar">
+      <scrubber [value]="status?.position?.time" (valueChanged)="seekTo($event)"
+                [max]="status?.position?.duration"></scrubber>
     </div>
+    <span class="playback-runtime">{{ status?.position?.duration | time }}</span>
+  </div>
+  <div class="c-statusBar__playbackArea c-statusBar__playbackArea--noplayer" *ngIf="!activePlayer">
+    No player selected
   </div>
 
   <div class="c-statusBar__castSelector">
     <div ngbDropdown class="dropdown" placement="bottom-right">
-      <a ngbDropdownToggle class="dropdown-toggle"><img *ngIf="activePlayer?.icons"
-                                                                 [src]="activePlayer.icons['48x48'].url | prescale:'original'"
-                                                                 height="24"/></a>
+      <a ngbDropdownToggle class="dropdown-toggle">
+        <img *ngIf="activePlayer?.icons"
+             [src]="activePlayer.icons['48x48'].local ? activePlayer.icons['48x48'].url : (activePlayer.icons['48x48'].url | prescale:'original')"
+             height="24"/></a>
       <div ngbDropdownMenu class="dropdown-menu-right">
         <a class="dropdown-item" (click)="selectPlayer(webPlayer)">Browser</a>
         <a *ngFor="let player of players | async" class="dropdown-item" (click)="selectPlayer(player)"><img
@@ -38,10 +38,13 @@
     </div>
   </div>
 
-  <div class="c-statusBar__expandButton u-borderlessButton" (click)="toggleStatusBar()"><i class="oi" [class.oi-chevron-bottom]="!statusbarExpanded" [class.oi-chevron-top]="statusbarExpanded"></i></div>
+  <div class="c-statusBar__expandButton u-borderlessButton" (click)="toggleStatusBar()"><i class="oi"
+                                                                                           [class.oi-chevron-bottom]="!statusbarExpanded"
+                                                                                           [class.oi-chevron-top]="statusbarExpanded"></i>
+  </div>
 </div>
 
-<div class="c-navBar" [class.closed]="navbarCollapsed">
+<div class="c-navBar" [class.closed]="!navbarExpanded" #navBar [(swipeOut)]="navbarExpanded">
   <a class="c-navBar__closeBtn" (click)="toggleNavBar()"><i class="oi oi-chevron-left"></i></a>
   <ul>
     <li class="c-navBar__group">Channels
@@ -69,4 +72,6 @@
 
 <video-player></video-player>
 
-<router-outlet></router-outlet>
+<div class="page-host" [swipeFromLeft]="navBar" [(targetExpanded)]="navbarExpanded">
+  <router-outlet></router-outlet>
+</div>
