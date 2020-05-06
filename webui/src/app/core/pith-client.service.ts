@@ -1,6 +1,6 @@
 import {BehaviorSubject, EMPTY, Observable, Subject} from 'rxjs';
 
-import {catchError, finalize, map} from 'rxjs/operators';
+import {catchError, finalize, map, tap} from 'rxjs/operators';
 import {HttpClient, HttpParams} from '@angular/common/http';
 import 'rxjs/Rx';
 import {Injectable} from '@angular/core';
@@ -311,10 +311,9 @@ export class PithClientService {
 
   getAndCache<T=Object>(url, query?: object) : Observable<T> {
     const cacheKey = JSON.stringify({url, query});
-    let request = this.get<T>(url, query).pipe(o => {
-      o.subscribe(v => this.cache.set(cacheKey, v as any));
-      return o;
-    });
+    let request = this.get<T>(url, query).pipe(tap(v => {
+      this.cache.set(cacheKey, v as any);
+    }));
     if (this.cache.has(cacheKey)) {
       return Observable.merge(Observable.of(this.cache.get(cacheKey)), request) as Observable<T>;
     } else {
