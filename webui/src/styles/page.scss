@@ -40,6 +40,10 @@
   .c-statusBar__playbackArea {
     grid-area: status;
     padding: 0 35px;
+
+    &--noplayer {
+      white-space: nowrap;
+    }
   }
 
   .c-statusBar__playbackControls {
