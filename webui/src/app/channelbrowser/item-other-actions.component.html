@@ -1,10 +1,10 @@
-<button class="dropdown-item" *ngIf="item.playable" (click)="vlc('stream')">
+<button class="dropdown-item" *ngIf="showVlc && item.playable" (click)="vlc('stream')">
   Stream in VLC
 </button>
-<button class="dropdown-item" *ngIf="item.playable" (click)="vlc('download')">
+<button class="dropdown-item" *ngIf="showVlc && item.playable" (click)="vlc('download')">
   Download in VLC
 </button>
-<div class="dropdown-divider" *ngIf="item.playable"></div>
+<div class="dropdown-divider" *ngIf="showVlc && item.playable"></div>
 <button class="dropdown-item" (click)="togglePlayState()" *ngIf="item.playable && item.playState?.status==='watched'">
   Mark unwatched
 </button>

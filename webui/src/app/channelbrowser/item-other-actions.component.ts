@@ -8,6 +8,13 @@ import {Channel, ChannelItem} from "../core/pith-client.service";
 export class ItemOtherActionsComponent {
   @Input() channel: Channel;
   @Input() item: ChannelItem;
+  showVlc: boolean = false;
+  
+  constructor() {
+    if (/android/i.test(navigator.userAgent) || (/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream)) {
+      this.showVlc = true;
+    }
+  }
 
   togglePlayState() {
     this.channel.togglePlayState(this.item);
