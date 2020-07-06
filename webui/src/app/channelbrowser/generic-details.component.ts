@@ -18,7 +18,7 @@ export class GenericDetailsComponent {
   set channelAndItem({channel, item, path}: {channel: Channel, item: ChannelItem, path: Path}) {
     this.channel = channel;
     this.item = item;
-    this.path = path;
+    this.path = [...path, item];
   }
 
   load() {

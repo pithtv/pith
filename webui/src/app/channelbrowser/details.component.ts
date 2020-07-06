@@ -1,6 +1,6 @@
-import {Component, Input, OnInit} from "@angular/core";
+import {Component, OnInit} from "@angular/core";
 import {switchMap} from "rxjs/operators";
-import {ActivatedRoute, ParamMap} from "@angular/router";
+import {ActivatedRoute} from "@angular/router";
 import {Channel, ChannelItem, PithClientService} from "../core/pith-client.service";
 import {forkJoin, Observable, of} from "rxjs";
 
@@ -38,6 +38,7 @@ export class DetailsComponent implements OnInit {
       return of([]);
     }
     const path = id.split('/').map((a, i, r) => r.slice(0, i + 1).join('/'));
-    return forkJoin(path.map(p => channel.getDetails(p)));
+    path.pop();
+    return forkJoin(path.map(p => channel.getDetails(p, {noRefresh: true})));
   }
 }

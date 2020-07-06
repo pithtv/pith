@@ -22,7 +22,7 @@ export class TvDetailsComponent {
   set channelAndItem({channel, item, path}: {channel: Channel, item: ChannelItem, path: Path}) {
     this._item = item as Show;
     this.channel = channel;
-    this.path = path;
+    this.path = [...path, item];
     this.fetchDetails();
   }
 

@@ -1,10 +1,14 @@
-import {BehaviorSubject, EMPTY, Observable, Subject} from 'rxjs';
+import {BehaviorSubject, EMPTY, Observable, of, Subject} from 'rxjs';
 
 import {catchError, finalize, map, tap} from 'rxjs/operators';
 import {HttpClient, HttpParams} from '@angular/common/http';
 import 'rxjs/Rx';
 import {Injectable} from '@angular/core';
 import {PithEventsService} from './pith-events.service';
+
+export interface CacheOptions {
+  noRefresh?: boolean
+}
 
 abstract class RestModule {
   constructor(private pith: PithClientService, properties?: object) {
@@ -22,13 +26,13 @@ abstract class RestModule {
     return this.pith.get<T>(`${this.root.concat(args).map(encodeURIComponent).join('/')}`, query);
   }
 
-  protected getAndCache<T=Object>(...args: any[]) {
+  protected getAndCache<T = Object>(cacheOptions: CacheOptions = null, ...args: any[]) {
     let query: object;
     if (typeof args[args.length - 1] === 'object') {
       query = args[args.length - 1];
       args = args.slice(0, -1);
     }
-    return this.pith.getAndCache<T>(`${this.root.concat(args).map(encodeURIComponent).join('/')}`, query);
+    return this.pith.getAndCache<T>(`${this.root.concat(args).map(encodeURIComponent).join('/')}`, query, cacheOptions);
   }
 
   protected put(...args: any[]) {
@@ -198,12 +202,12 @@ export class Channel extends RestModule {
     return ['channel', this.id];
   }
 
-  listContents(path): Observable<ChannelItem[]> {
-    return this.getAndCache('list', path || '', {includePlayStates: true}) as Observable<ChannelItem[]>;
+  listContents(path, cacheOptions?: CacheOptions): Observable<ChannelItem[]> {
+    return this.getAndCache(null,'list', path || '', {includePlayStates: true}) as Observable<ChannelItem[]>;
   }
 
-  getDetails(path): Observable<ChannelItem> {
-    return this.getAndCache('detail', path || '', {includePlayStates: true}) as Observable<ChannelItem>;
+  getDetails(path, cacheOptions?: CacheOptions): Observable<ChannelItem> {
+    return this.getAndCache(cacheOptions,'detail', path || '') as Observable<ChannelItem>;
   }
 
   togglePlayState(item) {
@@ -309,15 +313,19 @@ export class PithClientService {
     })) as Observable<T>;
   }
 
-  getAndCache<T=Object>(url, query?: object) : Observable<T> {
+  getAndCache<T=Object>(url, query?: object, cacheOptions?: CacheOptions) : Observable<T> {
     const cacheKey = JSON.stringify({url, query});
-    let request = this.get<T>(url, query).pipe(tap(v => {
+    let requestFactory = () => this.get<T>(url, query).pipe(tap(v => {
       this.cache.set(cacheKey, v as any);
     }));
     if (this.cache.has(cacheKey)) {
-      return Observable.merge(Observable.of(this.cache.get(cacheKey)), request) as Observable<T>;
+      if(cacheOptions?.noRefresh) {
+        return Observable.of(this.cache.get(cacheKey) as unknown as T);
+      } else {
+        return Observable.merge(Observable.of(this.cache.get(cacheKey)), requestFactory()) as Observable<T>;
+      }
     } else {
-      return request;
+      return requestFactory();
     }
   }
 
