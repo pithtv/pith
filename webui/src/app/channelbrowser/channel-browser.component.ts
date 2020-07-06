@@ -2,6 +2,7 @@ import {Component, Input, OnDestroy} from '@angular/core';
 import {Channel, ChannelItem} from '../core/pith-client.service';
 import 'rxjs/Rx';
 import {Subscription} from "rxjs";
+import {Path} from "./details.component";
 
 @Component({
   templateUrl: './channel-browser.component.html',
@@ -10,6 +11,7 @@ import {Subscription} from "rxjs";
 export class ChannelBrowserComponent implements OnDestroy {
   item: ChannelItem;
   channel: Channel;
+  path: Path;
   private contents: ChannelItem[];
   filteredContents: ChannelItem[];
 
@@ -31,9 +33,10 @@ export class ChannelBrowserComponent implements OnDestroy {
   }
 
   @Input()
-  set channelAndItem({channel, item}: {channel: Channel, item: ChannelItem}) {
+  set channelAndItem({channel, item, path}: {channel: Channel, item: ChannelItem, path: Path}) {
     this.channel = channel;
     this.item = item;
+    this.path = path;
     this.fetchContents();
   }
 

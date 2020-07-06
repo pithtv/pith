@@ -24,17 +24,6 @@ import {MetaDataProvider} from './MetaDataProvider';
 
 export const metaDataProviders : MetaDataProvider[] = [new movie_nfo(), new tvshow_nfo(), new thumbnails(), new fanart()];
 
-function buildPath(itemId) {
-    if(!itemId) {
-        return null;
-    }
-    const parts = itemId.split($path.sep);
-    return parts.map((p, i) => ({
-        id: parts.slice(0, i + 1).join($path.sep),
-        title: p
-    }));
-}
-
 export class FilesChannel extends Channel {
     private rootDir: string;
 
@@ -92,7 +81,6 @@ export class FilesChannel extends Channel {
         const item: IChannelItem = {
             title: $path.basename(itemId),
             id: itemId,
-            path: buildPath(itemId),
             ...(stats && stats.isDirectory() ? {
                 type: 'container',
                 preferredView: 'details'

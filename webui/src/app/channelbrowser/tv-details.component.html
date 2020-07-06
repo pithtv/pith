@@ -1,7 +1,7 @@
 <div class="c-channelNav u-hideOnMobile">
   <ul class="c-channelNav__breadcrumb">
     <li><a [routerLink]="['/channel', channel.id]" tabindex="0">{{channel?.title}}</a></li>
-    <li *ngFor="let pathItem of item?.path"><a [routerLink]="['/channel', channel.id, pathItem.id]"
+    <li *ngFor="let pathItem of path"><a [routerLink]="['/channel', channel.id, pathItem.id]"
                                                tabindex="1">{{pathItem.title}}</a></li>
   </ul>
 </div>
