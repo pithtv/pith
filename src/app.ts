@@ -84,7 +84,8 @@ class Bootstrap {
 
         app.use(pithPath, pithApp.handle);
         app.use(this.settingsStore.settings.apiContext, rest(pithApp));
-        app.use('/webui', express.static(path.resolve(__dirname, '..', 'webui', 'dist')));
+        app.use('/webui', express.static(path.resolve(__dirname, '..', 'webui', 'dist'), {fallthrough: true}));
+        app.all('/webui/*', (req, res, next) => res.sendFile('index.html', { root: path.resolve(__dirname, '..', 'webui', 'dist') }))
         app.use('/icons', express.static(path.resolve(__dirname, '..', 'icons')));
         app.use('/scale', this.imageScaler.router);
 
