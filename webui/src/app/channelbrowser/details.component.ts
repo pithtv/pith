@@ -39,6 +39,9 @@ export class DetailsComponent implements OnInit {
     }
     const path = id.split('/').map((a, i, r) => r.slice(0, i + 1).join('/'));
     path.pop();
+    if(!path.length) {
+      return of([]);
+    }
     return forkJoin(path.map(p => channel.getDetails(p, {noRefresh: true})));
   }
 }
