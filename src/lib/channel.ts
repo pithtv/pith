@@ -26,13 +26,15 @@ export abstract class Channel extends RestComponent implements IChannel {
         }).get(/stream\/(.*)$/, (req, res, next) => {
             const path = req.params[0];
             this.getItem(path).then((item) => {
-                this.getStream(item, req.query).then((stream) => {
+                return this.getStream(item, req.query).then((stream) => {
                     res.json({
                         item,
                         stream,
                     });
                 });
-            }).catch(next);
+            }).catch(err => {
+                next(err)
+            });
         }).get(/redirect\/(.*)$/, async (req, res, next) => {
             const path = req.params[0];
             const item = await this.getItem(path);
