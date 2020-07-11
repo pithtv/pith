@@ -4,7 +4,7 @@ import mimetypes from '../../lib/mimetypes';
 import vidstreamer from '../../lib/vidstreamer';
 import $path from 'path';
 import {StateStore} from './playstate';
-import ff from 'fluent-ffmpeg';
+import ff, {FfprobeData} from 'fluent-ffmpeg';
 import {Channel} from '../../lib/channel';
 import profiles from '../../lib/profiles';
 import {keyframes} from '../../lib/keyframes';
@@ -21,8 +21,9 @@ import {inject, injectable} from 'tsyringe';
 import {DBDriver, DBDriverSymbol} from '../../persistence/DBDriver';
 import {PithPlugin, plugin} from '../plugins';
 import {MetaDataProvider} from './MetaDataProvider';
+import {wrap} from "../../lib/async";
 
-export const metaDataProviders : MetaDataProvider[] = [new movie_nfo(), new tvshow_nfo(), new thumbnails(), new fanart()];
+export const metaDataProviders: MetaDataProvider[] = [new movie_nfo(), new tvshow_nfo(), new thumbnails(), new fanart()];
 
 export class FilesChannel extends Channel {
     private rootDir: string;
@@ -41,7 +42,7 @@ export class FilesChannel extends Channel {
             }
         });
 
-        if(pith.handle) {
+        if (pith.handle) {
             pith.handle.use('/stream/:fingerprint', vidstreamer);
             pith.handle.use('/preview', preview(path => this.getFile(path)));
         }
@@ -84,7 +85,7 @@ export class FilesChannel extends Channel {
             ...(stats && stats.isDirectory() ? {
                 type: 'container',
                 preferredView: 'details'
-            }: {
+            } : {
                 type: 'file',
                 mimetype: mimetypes.fromFilePath(itemId),
                 playable: mimetypes.fromFilePath(itemId) && true,
@@ -103,67 +104,66 @@ export class FilesChannel extends Channel {
         return item;
     }
 
-    getStream(item, options?) {
-        return new Promise<IStream>((resolve, reject) => {
-            const channel = this;
-            const itemId = item.id;
-            const itemPath = itemId.split($path.sep).map(encodeURIComponent).join('/');
-            ff.ffprobe(this.getFile(item.id), (err, metadata) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    let duration = parseFloat(metadata.format.duration) * 1000;
+    async getStream(item, options?): Promise<IStream> {
+        const channel = this;
+        const itemId = item.id;
+        const itemPath = itemId.split($path.sep).map(encodeURIComponent).join('/');
+        const metadata = await wrap<FfprobeData>(cb => ff.ffprobe(this.getFile(item.id), cb));
+        let duration = metadata.format.duration * 1000;
 
-                    const baseUrl = `${channel.pith.rootUrl}stream/${encodeURIComponent(options && options.fingerprint) || '0'}/${itemPath}`;
+        const baseUrl = `${channel.pith.rootUrl}stream/${encodeURIComponent(options && options.fingerprint) || '0'}/${itemPath}`;
 
-                    const desc : IStream = {
-                        url: baseUrl,
-                        mimetype: item.mimetype || 'application/octet-stream',
-                        seekable: true,
-                        format: {
-                            container: metadata.format.tags ? metadata.format.tags.major_brand : 'unknown',
-                            streams: metadata.streams.map(stream => ({
-                                index: stream.index,
-                                codec: stream.codec_name,
-                                profile: stream.profile,
-                                pixelFormat: stream.pix_fmt
-                            }))
-                        },
-                        duration: duration,
-                        streams: [],
-                        keyframes: []
-                    };
+        const desc: IStream = {
+            url: baseUrl,
+            mimetype: item.mimetype || 'application/octet-stream',
+            seekable: true,
+            format: {
+                container: metadata.format.tags ? (metadata.format.tags as any).major_brand : 'unknown',
+                streams: metadata.streams.filter(stream => stream.disposition.attached_pic === 0 && stream.disposition.timed_thumbnails === 0).map(stream => ({
+                    index: stream.index,
+                    type: stream.codec_type,
+                    codec: stream.codec_name,
+                    profile: stream.profile as unknown as string,
+                    pixelFormat: stream.pix_fmt,
+                    channels: stream.channels as unknown as string,
+                    layout: stream.channel_layout,
+                    language: stream.tags?.language,
+                    resolution: stream.codec_type === 'video' ? { width: stream.width, height: stream.height }: undefined
+                }))
+            },
+            duration: duration,
+            streams: [],
+            keyframes: []
+        };
 
-                    if (options && options.target) {
-                        desc.streams = options.target.split(',').map((profileName) => {
-                            let profile = profiles[profileName];
-                            let url = `${baseUrl}?transcode=${profileName}`;
-                            if (profile.requiresPlaylist) {
-                                url += `&playlist=${profile.requiresPlaylist}`;
-                            }
-
-                            return {
-                                url: url,
-                                mimetype: profile.mimetype,
-                                seekable: profile.seekable,
-                                duration: duration
-                            };
-                        });
-                    }
-
-                    if (options && options.includeKeyFrames) {
-                        keyframes(this.getFile(item.id), metadata).then(frames => {
-                            desc.keyframes = frames;
-                            resolve(desc);
-                        }).catch(() => {
-                            resolve(desc);
-                        });
-                    } else {
-                        resolve(desc);
-                    }
+        if (options && options.target) {
+            desc.streams = options.target.split(',').map((profileName) => {
+                let profile = profiles[profileName];
+                let url = `${baseUrl}?transcode=${profileName}`;
+                if (profile.requiresPlaylist) {
+                    url += `&playlist=${profile.requiresPlaylist}`;
                 }
+
+                return {
+                    url: url,
+                    mimetype: profile.mimetype,
+                    seekable: profile.seekable,
+                    duration: duration
+                };
             });
-        });
+        }
+
+        if (options && options.includeKeyFrames) {
+            try {
+                const frames = await keyframes(this.getFile(item.id), metadata);
+                desc.keyframes = frames;
+                return desc;
+            } catch (e) {
+                return desc;
+            }
+        } else {
+            return desc;
+        }
     }
 
     getLastPlayState(itemId) {

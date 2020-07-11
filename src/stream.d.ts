@@ -6,14 +6,15 @@ export interface IStream {
     format?: {
         container: string,
         streams: {
-           index: number,
-           codec: string,
-           profile: string,
-           pixelFormat: string
+            index: number,
+            type: string,
+            codec: string,
+            profile: string,
+            pixelFormat: string,
+            channels: string,
+            layout: string
         }[]
     },
-    streams?: {
-    }[],
-    keyframes?: {
-    }[]
+    streams?: {}[],
+    keyframes?: {}[]
 }

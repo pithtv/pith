@@ -17,7 +17,7 @@ abstract class RestModule {
 
   abstract root: string[];
 
-  protected get<T=Object>(...args: any[]) {
+  protected get<T = Object>(...args: any[]) {
     let query: object;
     if (typeof args[args.length - 1] === 'object') {
       query = args[args.length - 1];
@@ -125,7 +125,7 @@ export interface PlayState {
   id?: string,
   time?: number,
   duration?: number,
-  status: "watched"|"inprogress"|"none";
+  status: "watched" | "inprogress" | "none";
 }
 
 export interface ChannelItem {
@@ -182,16 +182,19 @@ export interface Stream {
   format?: {
     container: string,
     streams: {
+      resolution?: { width: number, height: number };
+      language: string;
       index: number,
+      type: 'video'|'audio'|'subtitle'
       codec: string,
-      profile: string,
-      pixelFormat: string
+      profile: number,
+      pixelFormat: string,
+      channels: string,
+      layout: string
     }[]
   },
-  streams?: {
-  }[],
-  keyframes?: {
-  }[]
+  streams?: {}[],
+  keyframes?: {}[]
 }
 
 export class Channel extends RestModule {
@@ -203,11 +206,11 @@ export class Channel extends RestModule {
   }
 
   listContents(path, cacheOptions?: CacheOptions): Observable<ChannelItem[]> {
-    return this.getAndCache(null,'list', path || '', {includePlayStates: true}) as Observable<ChannelItem[]>;
+    return this.getAndCache(null, 'list', path || '', {includePlayStates: true}) as Observable<ChannelItem[]>;
   }
 
   getDetails(path, cacheOptions?: CacheOptions): Observable<ChannelItem> {
-    return this.getAndCache(cacheOptions,'detail', path || '') as Observable<ChannelItem>;
+    return this.getAndCache(cacheOptions, 'detail', path || '') as Observable<ChannelItem>;
   }
 
   togglePlayState(item) {
@@ -223,8 +226,8 @@ export class Channel extends RestModule {
     this.put('playstate', path, playstate).subscribe();
   }
 
-  stream(path, options: any = {}) : Observable<{item: ChannelItem, stream: Stream}> {
-    return this.get<{item: ChannelItem, stream: Stream}>('stream', path || '', options);
+  stream(path, options: any = {}): Observable<{ item: ChannelItem, stream: Stream }> {
+    return this.get<{ item: ChannelItem, stream: Stream }>('stream', path || '', options);
   }
 }
 
@@ -292,7 +295,7 @@ export class PithClientService {
     this.root = '/rest';
   }
 
-  get<T = object>(url, query?: object) : Observable<T> {
+  get<T = object>(url, query?: object): Observable<T> {
     const options = {};
     if (query) {
       options['params'] = Object.keys(query).reduce((pp, k) => pp.append(k, query[k]), new HttpParams());
@@ -305,7 +308,9 @@ export class PithClientService {
       this.throw(new PithError(e.error));
       return EMPTY;
     }), finalize(() => {
-      if(finalized) return;
+      if (finalized) {
+        return;
+      }
       finalized = true;
       this.reportProgress({
         loading: false
@@ -313,13 +318,13 @@ export class PithClientService {
     })) as Observable<T>;
   }
 
-  getAndCache<T=Object>(url, query?: object, cacheOptions?: CacheOptions) : Observable<T> {
+  getAndCache<T = Object>(url, query?: object, cacheOptions?: CacheOptions): Observable<T> {
     const cacheKey = JSON.stringify({url, query});
     let requestFactory = () => this.get<T>(url, query).pipe(tap(v => {
       this.cache.set(cacheKey, v as any);
     }));
     if (this.cache.has(cacheKey)) {
-      if(cacheOptions?.noRefresh) {
+      if (cacheOptions?.noRefresh) {
         return Observable.of(this.cache.get(cacheKey) as unknown as T);
       } else {
         return Observable.merge(Observable.of(this.cache.get(cacheKey)), requestFactory()) as Observable<T>;
@@ -335,7 +340,9 @@ export class PithClientService {
       this.throw(new PithError(e.error));
       return EMPTY;
     }), finalize(() => {
-      if(finalized) return;
+      if (finalized) {
+        return;
+      }
       finalized = true;
       this.reportProgress({
         loading: false
