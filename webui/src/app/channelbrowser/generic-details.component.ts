@@ -20,8 +20,7 @@ export class GenericDetailsComponent {
   item: ChannelItem;
   channel: Channel;
   path: Path;
-  private stream: Stream;
-  private flags: { domain: string, subdomain: string, value: string }[];
+  flags: { domain: string, subdomain: string, value: string }[];
 
   constructor(private playerService: PlayerService) {
   }
@@ -32,7 +31,6 @@ export class GenericDetailsComponent {
     this.item = item;
     this.path = [...path, item];
     this.channel.stream(item.id).subscribe(({stream}) => {
-      this.stream = stream;
       const flags = {};
       const tag = (...args: string[]) => {
         if (args.findIndex(f => !f) === -1) {
