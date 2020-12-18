@@ -61,7 +61,14 @@ interface SonarrSeries {
     id: number
 }
 
+interface SonarrEpisodeFile {
+    path: string
+    relativePath: string
+    dateAdded: string
+}
+
 interface SonarrEpisode {
+    episodeFile: SonarrEpisodeFile;
     seriesId: number,
     episodeFileId: number,
     seasonNumber: number,
@@ -89,6 +96,12 @@ interface SonarrSeason {
         totalEpisodeCount: number,
         sizeOnDisk: number,
         percentOfEpisodes: number
+    }
+}
+
+interface SonarrEpisodeItem extends ITvShowEpisode {
+    _episodeFile: {
+        path: string;
     }
 }
 
@@ -120,7 +133,7 @@ class SonarrChannel extends Channel {
         this.apikey = apikey;
     }
 
-    _get(url) {
+    private _get(url) {
         let u = this.url.resolve(url);
         if (u.indexOf('?') > 0) {
             u += '&';
@@ -129,18 +142,19 @@ class SonarrChannel extends Channel {
         }
         u += `apiKey=${this.apikey}`;
 
+        logger.trace("Querying sonarr", url);
         return fetch(u).then(res => {
             return res.json();
         });
     }
 
-    img(show, type) {
+    private img(show, type) {
         let img = show.images.find(img => img.coverType === type),
             imgUrl = img && img.url && img.url.replace(/(sonarr\/)(.*)/, '$1api/$2&apiKey=' + this.apikey);
         return imgUrl && this.url.resolve(imgUrl);
     }
 
-    convertSeries(show, episodes): Promise<ITvShow> {
+    private convertSeries(show, episodes: SonarrEpisode[]): Promise<ITvShow> {
         let pithShow: ITvShow = {
             creationTime: show.added && new Date(show.added),
             genres: show.genres,
@@ -183,7 +197,7 @@ class SonarrChannel extends Channel {
         }
     }
 
-    convertSeason(show, sonarrSeason): ITvShowSeason {
+    private convertSeason(show, sonarrSeason): ITvShowSeason {
         return ({
             id: `sonarr.show.${show.id}.season.${sonarrSeason.seasonNumber}`,
             title: sonarrSeason.seasonNumber === 0 ? 'Specials' : `Season ${sonarrSeason.seasonNumber}`,
@@ -198,8 +212,8 @@ class SonarrChannel extends Channel {
         });
     }
 
-    async convertEpisode(sonarrEpisode): Promise<ITvShowEpisode> {
-        let episode: ITvShowEpisode = {
+    private async convertEpisode(sonarrEpisode: SonarrEpisode): Promise<SonarrEpisodeItem> {
+        let episode: SonarrEpisodeItem = {
             id: `sonarr.episode.${sonarrEpisode.id}`,
             type: 'file',
             mediatype: 'episode',
@@ -252,8 +266,7 @@ class SonarrChannel extends Channel {
         }
     }
 
-
-    getItem(itemId, detailed = false) {
+    getItem(itemId, detailed = false) : Promise<IChannelItem | SonarrEpisodeItem> {
         let parsed = parseItemId(itemId);
         let sonarrId = parsed.id;
         switch (parsed.mediatype) {
@@ -283,7 +296,7 @@ class SonarrChannel extends Channel {
         if(cacheKey !== undefined) {
             let cacheEntry = this.episodeCache.get(sonarrId);
             if (!cacheEntry || cacheEntry.cacheKey !== cacheKey) {
-                logger.info(`Cache miss; wanted {}, got {}`, cacheKey, cacheEntry?.cacheKey);
+                logger.debug(`Cache miss; wanted {}, got {}`, cacheKey, cacheEntry?.cacheKey);
                 cacheEntry = {cacheKey, content: await this.queryEpisodes(sonarrId)};
                 this.episodeCache.set(sonarrId, cacheEntry);
             }
@@ -292,7 +305,7 @@ class SonarrChannel extends Channel {
         return this._get(`api/episode?seriesId=${sonarrId}`);
     }
 
-    private async getFile(item) {
+    private async getFile(item) : Promise<IChannelItem> {
         let filesChannel = this.pith.getChannelInstance('files') as FilesChannel;
         let sonarrFile;
 
@@ -302,6 +315,12 @@ class SonarrChannel extends Channel {
             sonarrFile = await this._get(`api/episodeFile/${item.sonarrEpisodeFileId}`);
         }
         return await filesChannel.resolveFile(sonarrFile.path);
+    }
+
+    private async getFileId(item : SonarrEpisodeItem) : Promise<string> {
+        let filesChannel = this.pith.getChannelInstance('files') as FilesChannel;
+        let sonarrFile = item._episodeFile;
+        return filesChannel.resolveFileId(sonarrFile.path);
     }
 
     getStream(item, options) {
@@ -325,17 +344,19 @@ class SonarrChannel extends Channel {
             if (item.unavailable) {
                 return Promise.resolve();
             } else {
-                let filesChannel = this.pith.getChannelInstance('files');
-                return this.getFile(item).then(file => filesChannel.getLastPlayStateFromItem(file)).catch(() => undefined);
+                let filesChannel = this.pith.getChannelInstance('files') as FilesChannel;
+                return this.getFileId(item).then(fileId => filesChannel.getLastPlayState(fileId)).catch(() => undefined);
             }
         } else {
             return Promise.resolve(undefined);
         }
     }
 
-    putPlayState(itemId, state) {
+    async putPlayState(itemId, state) {
         let filesChannel = this.pith.getChannelInstance('files');
-        return this.getItem(itemId).then(item => this.getFile(item)).then(file => filesChannel.putPlayState(file.id, state));
+        const item = await this.getItem(itemId);
+        const fileId = await this.getFileId(item as SonarrEpisodeItem);
+        await filesChannel.putPlayState(fileId, state);
     }
 }
 

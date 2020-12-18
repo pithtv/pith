@@ -185,16 +185,20 @@ export class FilesChannel extends Channel {
         }
     }
 
-    resolveFile(file) {
+    resolveFileId(file: string) {
         if (file.startsWith(this.rootDir)) {
             let relative = file.substring(this.rootDir.length);
             if (relative.startsWith('/')) {
                 relative = relative.substring(1);
             }
-            return this.getItem(relative);
+            return relative;
         } else {
             return Promise.reject('File not contained within media root');
         }
+    }
+
+    resolveFile(file: string) {
+        return this.getItem(this.resolveFileId(file));
     }
 }
 
