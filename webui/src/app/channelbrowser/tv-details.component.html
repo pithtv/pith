@@ -6,6 +6,9 @@
   </ul>
 </div>
 
+<img class="c-itemDetails__banner"
+     *ngIf="item.banner"
+     [src]="item.banner | prescale:'original'" class="c-itemDetails__banner"/>
 <img class="c-itemDetails__thumbnail"
      *ngIf="item.poster || item.still"
      [src]="((item.poster || item.still) | prescale:'680x1000')" class="c-itemDetails__thumbnail"/>

@@ -132,9 +132,10 @@ export interface ChannelItem {
   id: string;
   path?: { id: string, title: string }[];
   preferredView?: 'poster' | 'details';
-  still: string;
-  poster: string;
-  backdrop: string;
+  still?: string;
+  poster?: string;
+  backdrop?: string;
+  banner?: string;
   title: string;
   airDate: string;
   mediatype: string;

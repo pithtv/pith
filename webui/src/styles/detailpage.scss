@@ -18,6 +18,10 @@ channel-tv-details, channel-details {
     height: 100%;
   }
 
+  .c-itemDetails__banner {
+    display: none;
+  }
+
   .c-itemDetails__episodeGuide {
     grid-area: details;
     height: 100%;
@@ -192,10 +196,19 @@ ul.detailtabs {
     grid-template-rows: min-content;
     grid-template-areas: "navbar" "thumb" "details";
 
-    .c-itemDetails__thumbnail {
+    .c-itemDetails__thumbnail, .c-itemDetails__banner {
+      grid-area: thumb;
       height: unset;
       width: 100%;
       margin: 0 0 15px 0;
+    }
+
+    /* If banner is available, display it and hide thumbnail */
+    .c-itemDetails__banner {
+      display: unset;
+      + .c-itemDetails__thumbnail {
+        display: none;
+      }
     }
 
     .c-itemDetails__episodeGuide {
