@@ -73,3 +73,7 @@ $white_50: rgba(255,255,255,0.5);
 .btn-group > .btn:not(:first-child) {
   border-left: 1px solid rgba(255,255,255,0.3);
 }
+
+.u-cursor__pointer {
+  cursor: pointer;
+}
