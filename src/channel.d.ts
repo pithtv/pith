@@ -14,6 +14,9 @@ export interface IChannelItem {
     fileSize?: number;
     dateScanned?: Date;
     unavailable?: boolean;
+    backdrop?: string;
+    poster?: string;
+    banner?: string;
     [key: string]: any;
 }
 
