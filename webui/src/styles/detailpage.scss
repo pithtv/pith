@@ -1,3 +1,15 @@
+.c-backdrop {
+  $blur: 15px;
+  position: fixed;
+  top: -$blur;
+  left: -$blur;
+  right: -$blur;
+  bottom: -$blur;
+  filter: blur($blur) brightness(0.30);
+  background-size: cover;
+  background-position: bottom right;
+}
+
 channel-tv-details, channel-details {
   position: absolute;
   top: 0;
