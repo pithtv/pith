@@ -11,7 +11,10 @@ import {mapSeries} from '../../lib/async';
 import {SettingsStoreSymbol} from '../../settings/SettingsStore';
 import {container} from 'tsyringe';
 import {PithPlugin, plugin} from '../plugins';
+import md5 from 'MD5';
+import {getLogger} from "log4js";
 
+const logger = getLogger('pith.plugin.sonarr');
 const settingsStore = container.resolve(SettingsStoreSymbol);
 
 interface SonarrSeries {
@@ -107,6 +110,8 @@ class SonarrChannel extends Channel {
     private url;
     private pith: Pith;
     private apikey: any;
+
+    private episodeCache : Map<number, {cacheKey: string, content: SonarrEpisode[]}> = new Map();
 
     constructor(pith, url, apikey) {
         super();
@@ -237,7 +242,11 @@ class SonarrChannel extends Channel {
             let series = await this.queryAllSeries();
             series.sort((a, b) => a.title.localeCompare(b.title));
             return await mapSeries(series, (async show => {
-                let episodes = await this.queryEpisodes(show.id);
+                const cacheKey = md5(JSON.stringify([
+                    show.sizeOnDisk,
+                    show.lastInfoSync
+                ]));
+                let episodes = await this.queryEpisodes(show.id, cacheKey);
                 return await this.convertSeries(show, episodes);
             }));
         }
@@ -270,7 +279,16 @@ class SonarrChannel extends Channel {
         return this._get(`api/series/${sonarrId}`);
     }
 
-    private queryEpisodes(sonarrId): Promise<SonarrEpisode[]> {
+    private async queryEpisodes(sonarrId: number, cacheKey?: string): Promise<SonarrEpisode[]> {
+        if(cacheKey !== undefined) {
+            let cacheEntry = this.episodeCache.get(sonarrId);
+            if (!cacheEntry || cacheEntry.cacheKey !== cacheKey) {
+                logger.info(`Cache miss; wanted {}, got {}`, cacheKey, cacheEntry?.cacheKey);
+                cacheEntry = {cacheKey, content: await this.queryEpisodes(sonarrId)};
+                this.episodeCache.set(sonarrId, cacheEntry);
+            }
+            return cacheEntry.content;
+        }
         return this._get(`api/episode?seriesId=${sonarrId}`);
     }
 
