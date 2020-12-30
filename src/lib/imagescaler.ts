@@ -46,7 +46,7 @@ export class ImageScaler {
                         response.body.pipe(stream);
                         stream.on('finish', function () {
                             stream.close();
-                            resolve();
+                            resolve(undefined);
                         });
                     });
                     return file;
