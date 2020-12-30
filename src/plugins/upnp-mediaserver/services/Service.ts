@@ -231,7 +231,7 @@ export abstract class Service extends DeviceControlProtocol {
         }
     }
 
-    abstract async actionHandler(action: any, parsedDatumElementElementElementElement: any);
+    abstract actionHandler(action: any, parsedDatumElementElementElementElement: any) : Promise<any>;
 }
 
 class Subscription {
