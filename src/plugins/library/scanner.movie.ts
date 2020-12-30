@@ -14,7 +14,7 @@ export default opts => {
                         for(let item of contents) {
                             if (item.type === 'container') {
                                 await listContents(item);
-                            } else if (item.playable && item.mimetype.match(/^video\//)) {
+                            } else if (item.playable && item.mimetype?.match(/^video\//)) {
                                 let result = await db.findMovieByOriginalId(dir.channelId, item.id);
                                 if (!result) {
                                     logger.info("Found new item " + item.id);
