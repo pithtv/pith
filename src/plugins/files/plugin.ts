@@ -22,8 +22,10 @@ import {DBDriver, DBDriverSymbol} from '../../persistence/DBDriver';
 import {PithPlugin, plugin} from '../plugins';
 import {MetaDataProvider} from './MetaDataProvider';
 import {wrap} from "../../lib/async";
+import {Subtitles} from "./subtitles";
+import * as path from "path";
 
-export const metaDataProviders: MetaDataProvider[] = [new movie_nfo(), new tvshow_nfo(), new thumbnails(), new fanart()];
+export const metaDataProviders: MetaDataProvider[] = [new movie_nfo(), new tvshow_nfo(), new thumbnails(), new fanart(), new Subtitles()];
 
 export class FilesChannel extends Channel {
     private rootDir: string;
@@ -88,7 +90,7 @@ export class FilesChannel extends Channel {
             } : {
                 type: 'file',
                 mimetype: mimetypes.fromFilePath(itemId),
-                playable: mimetypes.fromFilePath(itemId) && true,
+                playable: mimetypes.fromFilePath(itemId)?.match(/^(video|audio|image)\//) !== null ?? false,
 
                 fileSize: stats && stats.size,
                 modificationTime: stats && stats.mtime,
@@ -164,6 +166,10 @@ export class FilesChannel extends Channel {
         } else {
             return desc;
         }
+    }
+
+    makeUrlForFile(file: string, options?) {
+        return `${this.pith.rootUrl}stream/${encodeURIComponent(options?.fingerprint ?? '0')}/${encodeURI(path.relative(this.rootDir, file))}`;
     }
 
     getLastPlayState(itemId) {

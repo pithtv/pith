@@ -52,6 +52,7 @@ export default {
     ".ogg": "video/ogg",
     ".mkv": "video/x-matroska",
     ".wmv": "video/x-ms-wmv",
+    ".srt": "text/srt",
     fromFilePath(filePath) : string {
         return this[filePath.substring(filePath.lastIndexOf('.')).toLowerCase()];
     }

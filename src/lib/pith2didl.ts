@@ -76,7 +76,15 @@ export function convertToDidl(channel, item, parentId, channelId): didl.Item {
             ...(item.backdrop ? [{
                 uri: entities.encodeXML(cache(item.backdrop)),
                 protocolInfo: 'xbmc.org:*:fanart:*'
-            }] : [])
+            }] : []),
+            ...(item.subtitles ? item.subtitles.map(subtitle => ({
+                uri: subtitle.uri,
+                protocolInfo: `http-get:*:${subtitle.mimetype}:*`
+            })) : []),
+            ...(item.subtitles ? item.subtitles.map(subtitle => ({
+                uri: subtitle.uri,
+                protocolInfo: `http-get:*:smi/caption:*`
+            })) : [])
         ]
     });
 }

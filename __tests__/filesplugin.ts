@@ -9,7 +9,8 @@ test('Movie file metadata', async () => {
     mock({
         '/data/movies/': {
             'Angels In Antwerp (2020)': {
-                'moviefile.mkv': 'notempty'
+                'moviefile.mkv': 'notempty',
+                'moviefile.en.srt': 'notempty'
             },
             'The Beckoning (1971)': {
                 'VIDEO_TS': {
@@ -19,7 +20,9 @@ test('Movie file metadata', async () => {
         }
     });
 
-    const channel = new FilesChannel({} as Pith, {} as StateStore, {
+    const channel = new FilesChannel({
+        rootUrl: "http://localhost:3333/"
+    } as Pith, {} as StateStore, {
         settings: {
             files: {
                 rootDir: '/data',
@@ -35,7 +38,8 @@ test('Movie file metadata', async () => {
         id: 'movies',
         title: 'movies',
         type: 'container',
-        preferredView: 'details'}]);
+        preferredView: 'details'
+    }]);
 
     const movieContents = await channel.listContents('movies');
 
@@ -44,7 +48,7 @@ test('Movie file metadata', async () => {
         title: 'Angels In Antwerp (2020)',
         type: 'container',
         preferredView: 'details'
-    },{
+    }, {
         id: 'movies/The Beckoning (1971)',
         title: 'The Beckoning (1971)',
         type: 'container',
@@ -54,6 +58,11 @@ test('Movie file metadata', async () => {
     const movieOneContents = await channel.listContents('movies/Angels In Antwerp (2020)');
 
     expect(movieOneContents).toMatchObject([{
+        id: 'movies/Angels In Antwerp (2020)/moviefile.en.srt',
+        mimetype: 'text/srt',
+        playable: false,
+        type: 'file'
+    }, {
         id: 'movies/Angels In Antwerp (2020)/moviefile.mkv',
         title: 'Angels In Antwerp',
         year: 2020,
@@ -70,7 +79,14 @@ test('Movie file metadata', async () => {
         year: 2020,
         type: 'file',
         mediatype: 'movie',
-        mimetype: 'video/x-matroska'
+        mimetype: 'video/x-matroska',
+        subtitles: [
+            {
+                language: 'en',
+                uri: 'http://localhost:3333/stream/0/movies/Angels%20In%20Antwerp%20(2020)/moviefile.en.srt',
+                mimetype: 'text/srt'
+            }
+        ]
     });
 
     const movieTwoContents = await channel.listContents('movies/The Beckoning (1971)/VIDEO_TS');

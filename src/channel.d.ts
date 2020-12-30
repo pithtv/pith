@@ -18,6 +18,13 @@ export interface IChannelItem {
     poster?: string;
     banner?: string;
     [key: string]: any;
+    subtitles?: Subtitle[]
+}
+
+export interface Subtitle {
+    uri: string,
+    mimetype: string,
+    language?: string
 }
 
 export interface IMediaChannelItem extends IChannelItem {
