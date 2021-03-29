@@ -15,21 +15,7 @@ export class PlayerService {
   readonly _playersSubject: Subject<RemotePlayer[]> = new BehaviorSubject([]);
 
   constructor(private pith: PithClientService, private ngbModalService: NgbModal) {
-    this.pith.queryPlayers().subscribe(p => {
-      this._players = p;
-      this._playersSubject.next(p);
-      if (this._activePlayer == null && p.length > 0) {
-        let selectedPlayer = localStorage.getItem(SELECTED_PLAYER_STORAGE_ITEM);
-        let player : Player;
-        if(selectedPlayer) {
-          player = p.find(p => p.id === selectedPlayer);
-        }
-        if(!player) {
-          player = p[0];
-        }
-        this.selectPlayer(player);
-      }
-    });
+    this.refreshPlayerList();
 
     this.pith.on('playerregistered').subscribe(([event]) => {
       const player = new RemotePlayer(this.pith, event.player);
@@ -51,6 +37,30 @@ export class PlayerService {
         } else {
           this.selectPlayer(null);
         }
+      }
+    });
+
+    this.pith.on('connectionChanged').subscribe(({connected}) => {
+      if(connected) {
+        this.refreshPlayerList();
+      }
+    });
+  }
+
+  private refreshPlayerList() {
+    this.pith.queryPlayers().subscribe(p => {
+      this._players = p;
+      this._playersSubject.next(p);
+      if (this._activePlayer == null && p.length > 0) {
+        let selectedPlayer = localStorage.getItem(SELECTED_PLAYER_STORAGE_ITEM);
+        let player: Player;
+        if (selectedPlayer) {
+          player = p.find(p => p.id === selectedPlayer);
+        }
+        if (!player) {
+          player = p[0];
+        }
+        this.selectPlayer(player);
       }
     });
   }
