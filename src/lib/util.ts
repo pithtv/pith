@@ -59,6 +59,11 @@ export async function parseXmlProperties(input: string) : Promise<{[key: string]
     return output;
 }
 
+/**
+ * @deprecated Use Object.assign intead
+ * @param target
+ * @param sources
+ */
 export function assign(target, ...sources) {
     for (let x = 0; x < sources.length; x++) {
         const source = sources[x];
