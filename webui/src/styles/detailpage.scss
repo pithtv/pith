@@ -200,7 +200,7 @@ ul.detailtabs {
   display: block;
 }
 
-@media(max-width: $minLargeScreenWidth) {
+@media(max-aspect-ratio: 7/6) {
   channel-tv-details, channel-details {
     display: grid;
     flex-direction: column;
