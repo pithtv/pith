@@ -12,6 +12,9 @@ test('Movie file metadata', async () => {
                 'moviefile.mkv': 'notempty',
                 'moviefile.en.srt': 'notempty'
             },
+            'Demons In Dendermonde (2021)': {
+                'moviefile.mkv': 'notempty'
+            },
             'The Beckoning (1971)': {
                 'VIDEO_TS': {
                     'VTS_03_01.VOB': 'notempty'
@@ -46,6 +49,11 @@ test('Movie file metadata', async () => {
     expect(movieContents).toEqual([{
         id: 'movies/Angels In Antwerp (2020)',
         title: 'Angels In Antwerp (2020)',
+        type: 'container',
+        preferredView: 'details'
+    }, {
+        id: 'movies/Demons In Dendermonde (2021)',
+        title: 'Demons In Dendermonde (2021)',
         type: 'container',
         preferredView: 'details'
     }, {
@@ -108,6 +116,17 @@ test('Movie file metadata', async () => {
         type: 'file',
         mediatype: 'movie',
         mimetype: 'video/dvd'
+    });
+
+    const movieThreeItem = await channel.getItem('movies/Demons In Dendermonde (2021)/moviefile.mkv');
+
+    expect(movieThreeItem).toMatchObject({
+        id: 'movies/Demons In Dendermonde (2021)/moviefile.mkv',
+        title: 'Demons In Dendermonde',
+        year: 2021,
+        type: 'file',
+        mediatype: 'movie',
+        mimetype: 'video/x-matroska'
     });
 
     mock.restore();

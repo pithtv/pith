@@ -5,7 +5,8 @@ import {promises as fs} from "fs";
 import {FilesChannel} from "./plugin";
 
 const extensionMap = {
-    srt: "text/srt"
+    srt: "text/srt",
+    sub: "text/sub"
 }
 
 function extension(filepath: string): string {

@@ -53,6 +53,7 @@ export default {
     ".mkv": "video/x-matroska",
     ".wmv": "video/x-ms-wmv",
     ".srt": "text/srt",
+    ".sub": "text/sub",
     fromFilePath(filePath) : string {
         return this[filePath.substring(filePath.lastIndexOf('.')).toLowerCase()];
     }
