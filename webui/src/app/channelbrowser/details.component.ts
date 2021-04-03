@@ -38,7 +38,6 @@ export class DetailsComponent implements OnInit {
       return of([]);
     }
     const path = id.split('/').map((a, i, r) => r.slice(0, i + 1).join('/'));
-    path.pop();
     if(!path.length) {
       return of([]);
     }

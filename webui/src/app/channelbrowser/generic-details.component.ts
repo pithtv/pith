@@ -29,7 +29,7 @@ export class GenericDetailsComponent {
   set channelAndItem({channel, item, path}: { channel: Channel, item: ChannelItem, path: Path }) {
     this.channel = channel;
     this.item = item;
-    this.path = [...path, item];
+    this.path = [...path];
     this.channel.stream(item.id).subscribe(({stream}) => {
       const flags = {};
       const tag = (...args: string[]) => {

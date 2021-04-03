@@ -36,7 +36,7 @@ export class ChannelBrowserComponent implements OnDestroy {
   set channelAndItem({channel, item, path}: {channel: Channel, item: ChannelItem, path: Path}) {
     this.channel = channel;
     this.item = item;
-    this.path = [...path, item];
+    this.path = [...path];
     this.fetchContents();
   }
 
