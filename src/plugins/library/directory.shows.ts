@@ -2,10 +2,13 @@ import * as async from '../../lib/async';
 import * as TvShowUtils from '../../lib/tvshowutils';
 import {container} from 'tsyringe';
 import {SettingsStore} from '../../settings/SettingsStore';
+import {LibraryRoot} from "./types";
+import {Episode, Season, Show} from "../../persistence/Schema";
+import {IChannelItem} from "../../channel";
 
 const settingsStore = container.resolve<SettingsStore>('SettingsStore');
 
-export default function(plugin) {
+export default function(plugin) : LibraryRoot[] {
 
     const db = plugin.db;
 
@@ -19,50 +22,47 @@ export default function(plugin) {
         }
     }
 
-    async function mapShow(m) {
-        const episodes = await async.mapSeries( (m.episodes || []).sort(byEpisode), mapEpisode);
-        const seasons = m.seasons && m.seasons.map(mapSeason).map(season => {
-            const seasonEps = episodes.filter(function(ep) {
-                return ep.season === season.season;
-            });
-            season.playState = TvShowUtils.aggregatePlayState(seasonEps);
-            return season;
-        });
+    async function mapShow(m: Show) : Promise<IChannelItem> {
+        const seasons = await async.mapSeries(m.seasons, season => mapSeason(season));
         const playState = seasons && TvShowUtils.aggregatePlayState(seasons);
-        const lastPlayable = findLastPlayable(episodes);
-        return Object.assign({}, m, {
+        let allEpisodes = seasons.map(season => season.episodes).reduce((a, b) => a.concat(b), []);
+        const lastPlayable = findLastPlayable(allEpisodes);
+        return {...m,
             id: 'shows/' + m.id,
             showId: m.id,
             type: 'container',
             mediatype: 'show',
             showname: m.title,
-            episodes: episodes,
             seasons: seasons,
+            episodes: allEpisodes,
             playState: playState,
             hasNew: lastPlayable && (!lastPlayable.playState || lastPlayable.playState.status !== 'watched') && lastPlayable.dateScanned > (new Date(new Date().getTime() - 1000 * 60 * 60 * 24 * settingsStore.settings.maxAgeForNew))
-        });
+        };
     }
 
-    function mapSeason(m) {
-        return Object.assign({}, m, {
-            id: 'shows/' + m.showId + '/' + m.season,
-            seasonId: m.id,
+    async function mapSeason(season: Season) : Promise<IChannelItem> {
+        let mappedEpisodes = await async.mapSeries(season.episodes, episode => mapEpisode(episode));
+        return {
+            ...season,
             type: 'container',
-            mediatype: 'season'
-        });
+            id: `shows/${season.showId}/${season.season}`,
+            mediatype: 'season',
+            episodes: mappedEpisodes,
+            playState: TvShowUtils.aggregatePlayState(mappedEpisodes)
+        };
     }
 
-    async function mapEpisode(m) {
-        let playState = plugin.getLastPlayStateFromItem(m);
-        return Object.assign({}, m, {
-            id: 'shows/' + m.showId + '/' + m.season + '/' + m.episode,
-            episodeId: m.id,
+    async function mapEpisode(episode: Episode) : Promise<IChannelItem> {
+        let playState = await plugin.getLastPlayStateFromItem(episode);
+        return {
+            ...episode,
+            id: `shows/${episode.showId}/${episode.season}/${episode.episode}`,
             type: 'file',
-            mediatype: 'season',
-            playState: playState,
-            playable: m.originalId != null,
-            unavailable: m.originalId == null
-        });
+            mediatype: 'episode',
+            playState: playState || {},
+            playable: episode.originalId != null,
+            unavailable: episode.originalId == null
+        };
     }
 
     return [
@@ -77,17 +77,17 @@ export default function(plugin) {
             } else {
                 const p = containerId.split('/');
                 if(p.length === 1) {
-                    let result = await db.findSeasons({showId: containerId}, {season: 1});
-                    return result.map(mapSeason);
+                    let result : Season[] = await db.findSeasons({showId: containerId}, {season: 1});
+                    return async.mapSeries(result, season => mapSeason(season));
                 } else if(p.length === 2) {
-                    let result = await db.findEpisodes({showId: p[0], season: parseInt(p[1])}, {episode: 1});
-                    return async.mapSeries(result, mapEpisode);
+                    let result : Episode[] = await db.findEpisodes({showId: p[0], season: parseInt(p[1])}, {episode: 1});
+                    return async.mapSeries(result, episode => mapEpisode(episode));
                 }
             }
         },
         async _getItem(itemId) {
             if(itemId === null) {
-                return {id: 'shows', title: 'All Shows'};
+                return {id: 'shows', title: 'All Shows', type: 'container'};
             } else {
                 const p = itemId.split('/');
                 if(p.length === 1) {
@@ -97,7 +97,7 @@ export default function(plugin) {
                     }
                 } else if(p.length === 2) {
                     let result = await db.findSeason({showId: p[0], season: p[1]});
-                    return mapSeason(result);
+                    return await mapSeason(result);
                 } else if(p.length === 3) {
                     let result = await db.findEpisode({showId: p[0], season: parseInt(p[1]), episode: parseInt(p[2])});
                     if (result) {
@@ -115,8 +115,8 @@ export default function(plugin) {
         visible: true,
         type: "container",
         async _getContents() {
-            let result = await db.findEpisodes({dateScanned: {$gt: new Date(new Date().getTime() - 7*24*60*60*1000)}}, {dateScanned: -1});
-            return await async.mapSeries(result, mapEpisode);
+            let result : Episode[] = await db.findEpisodes({dateScanned: {$gt: new Date(new Date().getTime() - 7*24*60*60*1000)}}, {dateScanned: -1});
+            return await async.mapSeries(result, episode => mapEpisode(episode));
         }
     },
 
@@ -127,8 +127,8 @@ export default function(plugin) {
         visible: true,
         type: "container",
         async _getContents() {
-            let result = await db.findEpisodes({airDate: {$gt: new Date(new Date().getTime() - 7*24*60*60*1000), $lt:new Date()}}, {airDate: -1});
-            return await async.mapSeries(result, mapEpisode);
+            let result : Episode[] = await db.findEpisodes({airDate: {$gt: new Date(new Date().getTime() - 7*24*60*60*1000), $lt:new Date()}}, {airDate: -1});
+            return await async.mapSeries(result, episode => mapEpisode(episode));
         }
     }
 ]}

@@ -1,8 +1,7 @@
 import {IPlayState} from '../../channel';
 import {inject, injectable, singleton} from 'tsyringe';
-import {DBDriver, DBDriverSymbol} from '../../persistence/DBDriver';
+import {Collection, DBDriver, DBDriverSymbol} from '../../persistence/DBDriver';
 import {initialiser} from '../../lib/AsyncInitialisation';
-import {Collection} from 'mongodb';
 
 interface PersistedPlayState extends IPlayState {
     _id;
@@ -13,7 +12,7 @@ interface PersistedPlayState extends IPlayState {
 export class StateStore {
     private cache: { [key: string]: PersistedPlayState } = {};
     private queue: PersistedPlayState[] = [];
-    private collection: Collection;
+    private collection: Collection<object>;
 
     constructor(@inject(DBDriverSymbol) db: DBDriver) {
         this.collection = db.collection('playstates');
@@ -51,7 +50,7 @@ export class StateStore {
             while (this.queue.length) {
                 const state = this.queue.pop();
                 if (state._id) {
-                    await this.collection.update({_id: state._id}, state);
+                    await this.collection.updateOne({_id: state._id}, state);
                 } else {
                     await this.collection.insertOne(state);
                 }

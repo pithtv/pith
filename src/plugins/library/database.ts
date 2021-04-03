@@ -1,29 +1,52 @@
-import {Collection} from 'mongodb';
 import {getLogger} from 'log4js';
 import {v1 as uuid} from 'node-uuid';
 import {mapSeries} from '../../lib/async';
+import {Collection, DBDriver} from "../../persistence/DBDriver";
+import {Episode, Season} from "../../persistence/Schema";
 
 const logger = getLogger('pith.plugins.library.database');
 
-export class Repository {
-    private readonly movies: Collection;
-    private readonly people: Collection;
-    private readonly keywords: Collection;
-    private readonly genres: Collection;
-    private readonly series: Collection;
+interface Document {
+    _id?: string | { toHexString(): string }
+}
 
-    constructor(db) {
+export interface MovieDocument extends Document {
+}
+
+export interface PersonDocument extends Document {
+    name?: string
+}
+
+export interface KeywordDocument extends Document {
+}
+
+export interface GenreDocument extends Document {
+}
+
+export interface ShowDocument extends Document {
+    seasons: any[]
+    episodes: any[]
+}
+
+export class Repository {
+    private readonly movies: Collection<MovieDocument>;
+    private readonly people: Collection<PersonDocument>;
+    private readonly keywords: Collection<KeywordDocument>;
+    private readonly genres: Collection<GenreDocument>;
+    private readonly series: Collection<ShowDocument>;
+
+    constructor(db: DBDriver) {
         this.movies = db.collection('movies');
         this.people = db.collection('people');
         this.keywords = db.collection('keywords');
         this.genres = db.collection('genres');
-        this.series = db.collection('series');
+        this.series = db.collection('series') as Collection<ShowDocument>;
     }
 
-    insertOrUpdate(collection, entity): Promise<any> {
+    insertOrUpdate(collection: Collection<any>, entity): Promise<any> {
         entity.modificationTime = new Date();
         if (entity._id) {
-            return collection.update({_id: entity._id}, {$set: entity});
+            return collection.updateOne({_id: entity._id}, {$set: entity});
         } else {
             if (!entity.id) {
                 entity.id = uuid();
@@ -46,7 +69,7 @@ export class Repository {
     }
 
     async getCreateOrUpdatePersonWithJob(name, job) {
-        let result = await this.people.findOne({name: name});
+        let result: PersonDocument = await this.people.findOne({name: name});
         if (!result) {
             result = {name: name};
             result[job] = true;
@@ -72,7 +95,14 @@ export class Repository {
     }
 
     private _id(result) {
-        return result && result._id.toHexString();
+        if (!result || !result._id) {
+            return undefined;
+        }
+        if (result._id.toHexString) {
+            return result._id.toHexString();
+        } else {
+            return result._id;
+        }
     }
 
     async getActorId(name) {
@@ -108,31 +138,46 @@ export class Repository {
         return result[0] && result[0].seasons[0];
     }
 
-    findSeasons(item, sorting) {
+    findSeasons(item, sorting): Promise<Season[]> {
         return this.series.find({id: item.showId}, {sort: {seasons: 1}}).sort(sorting).toArray().catch(err => {
             logger.error(err);
         }).then(e => e[0].seasons);
     }
 
     async storeSeason(item) {
-        const results = await this.series.updateOne({id: item.showId, seasons: {$elemMatch: item}}, {$set: {'seasons.$': item}});
-        if (results.matchedCount) {
-            return results;
-        } else {
-            return await this.series.updateOne({id: item.showId}, {$push: {seasons: item}});
+        const show = await this.series.findOne({id: item.showId});
+        if (!show) {
+            throw new Error("Can't store season because show can not be found");
         }
+        const seasons = show.seasons ?? [];
+        const season = seasons.find(s => s.season = item.season);
+        if (season) {
+            Object.assign(season, item);
+        } else {
+            seasons.push(season);
+        }
+        return await this.series.updateOne({id: item.showId}, {$set: {seasons: seasons}});
     }
 
     async findEpisode(item) {
-        const show = await this.series.find(
-            {episodes: {$elemMatch: item}},
-            {projection: {episodes: {$elemMatch: item}}}
+        const episode = await this.series.aggregate(
+            [
+                {$match: {seasons: {$elemMatch: {episodes: {$elemMatch: item}}}}},
+                {$unwind: '$seasons'},
+                {$replaceRoot: {newRoot: '$seasons'}},
+                {$unwind: '$episodes'},
+                {$replaceRoot: {newRoot: '$episodes'}},
+                {$match: item}
+            ]
         ).toArray();
-        return show[0] && show[0].episodes && show[0].episodes[0];
+        return episode[0];
     }
 
-    findEpisodes(item, sort) {
+    findEpisodes(item, sort) : Promise<Episode[]> {
         return this.series.aggregate([
+                {$match: {seasons: {$elemMatch: {episodes: {$elemMatch: item}}}}},
+                {$unwind: '$seasons'},
+                {$replaceRoot: {newRoot: '$seasons'}},
                 {$unwind: '$episodes'},
                 {$replaceRoot: {newRoot: '$episodes'}},
                 {$match: item},
@@ -141,18 +186,23 @@ export class Repository {
         ).toArray();
     }
 
-    async storeEpisode(item) {
-        const result = await this.series.updateOne({
-            id: item.showId,
-            episodes: {$elemMatch: {season: item.season, episode: item.episode}}
-        }, {$set: {'episodes.$': item}});
-        if (result.matchedCount) {
-            return result;
-        } else {
-            return await this.series.updateOne({
-                id: item.showId
-            }, {$push: {'episodes': item}});
+    async storeEpisode(item): Promise<void> {
+        const show = await this.series.findOne({
+            id: item.showId
+        });
+        if (!show) {
+            throw new Error(`Can't store episode because show ${item.showId} can't be found`);
         }
+        const episodes = show.episodes ?? [];
+        const episode = episodes.find(e => e.season === item.season && e.episode === item.episode);
+        if (episode) {
+            Object.assign(episode, item);
+        } else {
+            episodes.push(item);
+        }
+        await this.series.updateOne({
+            id: item.showId
+        }, {set: {episodes: episodes}});
     }
 
     findShow(query) {

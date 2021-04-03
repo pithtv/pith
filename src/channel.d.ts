@@ -18,7 +18,8 @@ export interface IChannelItem {
     poster?: string;
     banner?: string;
     [key: string]: any;
-    subtitles?: Subtitle[]
+    subtitles?: Subtitle[];
+    playState?: IPlayState;
 }
 
 export interface Subtitle {

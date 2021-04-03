@@ -5,7 +5,7 @@ import {DBDriver, DBDriverSymbol} from './persistence/DBDriver';
 import {FileSettingsStore} from './settings/FileSettingsStore';
 import {container, inject, injectable} from 'tsyringe';
 import {SettingsStore, SettingsStoreSymbol} from './settings/SettingsStore';
-import {MongoDBDriver} from './persistence/MongoDBDriver';
+import {SwitchingDBDriver} from "./persistence/SwitchingDBDriver";
 import {Global} from './lib/global';
 import {Pith} from './pith';
 import {handle as rest} from './lib/pithrest';
@@ -48,7 +48,7 @@ Object.defineProperty(http.IncomingMessage.prototype, 'upgrade', {
 
 const fileSettingsStore = new FileSettingsStore();
 container.registerInstance(SettingsStoreSymbol, fileSettingsStore);
-container.registerInstance(DBDriverSymbol, container.resolve(MongoDBDriver));
+container.registerInstance(DBDriverSymbol, container.resolve(SwitchingDBDriver));
 container.registerSingleton(ImageScaler);
 
 @injectable()
@@ -71,12 +71,13 @@ class Bootstrap {
 
         logger.info('Listening on http://' + serverAddress + ':' + port);
 
+        const app = express();
+
         const pithApp = new Pith({
             rootUrl: this.global.rootUrl + '/pith/',
-            rootPath: pithPath
+            rootPath: pithPath,
+            express: app
         });
-
-        const app = express();
 
         app.use(bodyparser.json());
 
@@ -84,8 +85,6 @@ class Bootstrap {
 
         app.use(pithPath, pithApp.handle);
         app.use(this.settingsStore.settings.apiContext, rest(pithApp));
-        app.use('/webui', express.static(path.resolve(__dirname, '..', 'webui', 'dist'), {fallthrough: true}));
-        app.all('/webui/*', (req, res, next) => res.sendFile('index.html', { root: path.resolve(__dirname, '..', 'webui', 'dist') }))
         app.use('/icons', express.static(path.resolve(__dirname, '..', 'icons')));
         app.use('/scale', this.imageScaler.router);
 
@@ -138,10 +137,6 @@ class Bootstrap {
                     pithApp.removeListener(e.event, e.listener);
                 });
             });
-        });
-
-        app.use((req, res, next) => {
-            res.redirect('/webui/');
         });
     }
 }

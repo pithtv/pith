@@ -1,5 +1,5 @@
 export interface Settings {
-    dbEngine: string
+    dbEngine: "mongodb"|"nestdb"
     mongoUrl: string
 
     httpPort: number

@@ -1,6 +1,7 @@
 import moviedb from 'moviedb';
 import {getLogger} from 'log4js';
 import {wrap} from '../../lib/async';
+import {Episode, Season, Show} from "../../persistence/Schema";
 
 const tmdb = moviedb('a08cfd3b50689d40b46a078ecc7390bb');
 const dateParser = /(\d{4})-(\d{2})-(\d{2})/;
@@ -26,10 +27,6 @@ function parseDate(d) {
     return new Date(parseInt(p[1]), parseInt(p[2]) - 1, parseInt(p[3]));
 }
 
-function get(property) {
-    return e => e[property];
-}
-
 async function parseMovie(movie) {
     const result = await wrap<any>(cb => tmdb.movieInfo({
         id: movie.id,
@@ -37,7 +34,7 @@ async function parseMovie(movie) {
     }, cb));
 
     return {
-        genres: result.genres.map(get('name')),
+        genres: result.genres.map(e => e['name']),
         title: result.title,
         imdbId: result.imdb_id,
         poster: createUrl(result.poster_path),
@@ -48,19 +45,19 @@ async function parseMovie(movie) {
         plot: result.overview,
         tmdbRating: result.vote_average,
         tmdbVoteCount: result.vote_count,
-        keywords: result.keywords.keywords.map(get('name')),
-        actors: result.credits.cast.map(get('name')),
+        keywords: result.keywords.keywords.map(e => e['name']),
+        actors: result.credits.cast.map(e => e['name']),
 
-        directors: result.credits.crew.filter(e => e.job === 'Director').map(get('name')),
+        directors: result.credits.crew.filter(e => e.job === 'Director').map(e => e['name']),
 
-        writers: result.credits.crew.filter(e => e.job === 'Screenplay').map(get('name'))
+        writers: result.credits.crew.filter(e => e.job === 'Screenplay').map(e => e['name'])
     };
 }
 
-async function parseShow(result) {
+function parseShow(result): Omit<Show, 'id'> {
     return {
         backdrop: createUrl(result.backdrop_path),
-        genres: result.genres.map(get('name')),
+        genres: result.genres.map(e => e.name),
         homepage: result.homepage,
         tmdbId: result.id,
         status: result.status,
@@ -71,15 +68,16 @@ async function parseShow(result) {
         poster: createUrl(result.poster_path),
         tmdbRating: result.vote_average,
         tmdbVoteCount: result.vote_count,
+        seasons: []
     };
 }
 
-async function parseEpisode(ep) {
+function parseEpisode(ep) : Omit<Episode, 'showId'> {
     return {
-        mediatype: 'episode',
+        // mediatype: 'episode',
         tmdbId: ep.id,
-        episode: ep.episode_number,
         season: ep.season_number,
+        episode: ep.episode_number,
         title: ep.name,
         overview: ep.overview,
         still: createUrl(ep.still_path),
@@ -89,10 +87,9 @@ async function parseEpisode(ep) {
     };
 }
 
-async function parseSeason(result) {
+function parseSeason(result): Omit<Season, 'showId'> {
     return {
-        _children: result.episodes.map(parseEpisode),
-
+        episodes: result.episodes.map(parseEpisode),
         title: result.name,
         overview: result.overview,
         tmdbId: result.id,
@@ -132,16 +129,16 @@ export async function queryMovie(item) {
     return await parseMovie(searchResult);
 }
 
-export async function queryShow(item) {
+export async function queryShow(item) : Promise<Omit<Show, 'id'>> {
     if (item.tmdbId) {
         const show = await wrap(cb => tmdb.tvInfo({id: item.tmdbId}, cb));
-        return await parseShow(show);
+        return parseShow(show);
     } else if (item.tvdbId) {
         const show = await wrap(cb => tmdb.find({
             id: item.tvdbId,
             external_source: 'tvdb_id'
         }, cb));
-        return await parseShow(show);
+        return parseShow(show);
     } else {
         const query = {query: item.showname || item.title};
         const result = await wrap<any>(cb => tmdb.searchTv(query, cb));
@@ -149,28 +146,28 @@ export async function queryShow(item) {
             throw new Error(`No result found for show ${item} using query ${query.query}`);
         } else {
             const tv = await wrap(cb => tmdb.tvInfo({id: result.results[0].id}, cb));
-            return await parseShow(tv);
+            return parseShow(tv);
         }
     }
 }
 
-export async function querySeason(item) {
+export async function querySeason(item : {showTmdbId: string, season: number}) : Promise<Omit<Season, 'showId'>> {
     if (item.showTmdbId) {
-        const season = await wrap(cb => tmdb.tvSeasonInfo({id: item.showTmdbId, season_number: item.season}));
-        return await parseSeason(season);
+        const season = await wrap(cb => tmdb.tvSeasonInfo({id: item.showTmdbId, season_number: item.season}, cb));
+        return parseSeason(season);
     } else {
         throw new Error('Need show tmdb id');
     }
 }
 
-export async function queryEpisode(item) {
+export async function queryEpisode(item : {showTmdbId: string, season: number, episode: number}) : Promise<Omit<Episode, 'showId'>> {
     if (item.showTmdbId) {
         const episode = await wrap(cb => tmdb.tvEpisodeInfo({
             id: item.showTmdbId,
             season_number: item.season,
             episode_number: item.episode
         }, cb));
-        return await parseEpisode(episode);
+        return parseEpisode(episode);
     } else {
         throw new Error('Need show tmdb id');
     }

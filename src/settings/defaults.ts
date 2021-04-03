@@ -1,7 +1,7 @@
 import {Settings} from './Settings';
 
 const defaults : Settings = {
-  dbEngine: "mongodb",
+  dbEngine: "nestdb",
   mongoUrl: "mongodb://localhost:27017/pith",
   httpPort: 3333,
   bindAddress: null,

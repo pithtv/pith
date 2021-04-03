@@ -6,6 +6,7 @@
     <div class="form-group">
       <label for="dbEngine">Database engine</label>
       <select [(ngModel)]="settings.dbEngine" id="dbEngine" class="form-control">
+        <option value="nestdb">Embedded (NestDB)</option>
         <option value="mongodb">MongoDB</option>
       </select>
     </div>

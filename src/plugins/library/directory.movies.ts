@@ -1,3 +1,5 @@
+import {LibraryRoot} from "./types";
+
 function mapMovie(e) {
     return {
         ...e,
@@ -7,7 +9,7 @@ function mapMovie(e) {
     };
 }
 
-export default function (plugin) {
+export default function (plugin) : LibraryRoot[] {
     const db = plugin.db;
     return [
         {

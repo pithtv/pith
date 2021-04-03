@@ -10,15 +10,16 @@ import {inject, injectable} from 'tsyringe';
 import {SettingsStore, SettingsStoreSymbol} from '../../settings/SettingsStore';
 import {DBDriver, DBDriverSymbol} from '../../persistence/DBDriver';
 import {PithPlugin, plugin} from '../plugins';
+import {DirectoryFactory, LibraryRoot} from "./types";
+import {IChannelItem} from "../../channel";
 
 const logger = getLogger("pith.plugin.library");
 
 class LibraryChannel extends Channel {
-    private pithApp: Pith;
     private db: Repository;
-    private directory: any;
+    private directory: LibraryRoot[];
 
-    constructor(pithApp, dbDriver, directoryFactory) {
+    constructor(private pithApp: Pith, dbDriver: DBDriver, directoryFactory: DirectoryFactory) {
         super();
 
         this.pithApp = pithApp;
@@ -27,7 +28,7 @@ class LibraryChannel extends Channel {
         this.directory = directoryFactory(this);
     }
 
-    listContents(containerId) {
+    listContents(containerId) : Promise<IChannelItem[]> {
         if(!containerId) {
             return Promise.resolve(this.directory.filter(function(d) {
                 return d.visible !== false;
@@ -60,9 +61,9 @@ class LibraryChannel extends Channel {
         );
     }
 
-    getItem(itemId) {
+    async getItem(itemId) : Promise<IChannelItem> {
         if(!itemId) {
-            return Promise.resolve({ title: "Movies" });
+            return { title: "Movies", id: null, type: "container" };
         } else {
             const i = itemId.indexOf('/');
 
@@ -73,13 +74,13 @@ class LibraryChannel extends Channel {
             })[0];
 
             if(!directory) {
-                return Promise.reject(Error("Not found"));
+                throw Error("Not found");
             }
 
             if(directory._getItem) {
                 return directory._getItem(i > -1 ? itemId.substring(i+1).replace(/\/$/,'') : null);
             } else {
-                return Promise.resolve({id: itemId, sortableFields: directory.sortableFields});
+                return {id: itemId, sortableFields: directory.sortableFields, type: directory.type, title: directory.title, description: directory.description};
             }
         }
     }
