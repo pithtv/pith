@@ -1,4 +1,4 @@
-import {Router} from "express";
+import {Express, Router} from "express";
 import {IChannel, IChannelInitialiser} from "./channel";
 import {EventEmitter} from "./lib/events";
 import {IPlayer} from "./player";
@@ -23,6 +23,7 @@ export class Pith extends EventEmitter implements Pith {
     private channelInstances: {};
     private players: IPlayer[];
     private playerMap: {[key: string]: IPlayer};
+    readonly express: Express;
     public readonly rootUrl: string;
 
     constructor(opts) {
@@ -163,6 +164,7 @@ export class Pith extends EventEmitter implements Pith {
         require("./plugins/sonarr/plugin");
         require("./plugins/couchpotato/plugin");
         require("./plugins/upnp-mediaserver/plugin");
+        require("./plugins/webui/plugin");
 
         container.resolveAll(PluginSymbol).forEach(plugin => plugin.init({pith: this}));
     }
