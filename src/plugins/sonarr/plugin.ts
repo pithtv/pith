@@ -6,100 +6,19 @@ import {parse as parseUrl} from 'url';
 import fetch from 'node-fetch';
 import {Pith} from '../../pith';
 import {FilesChannel} from '../files/plugin';
-import {IChannelItem, ITvShow, ITvShowEpisode, ITvShowSeason} from '../../channel';
+import {IChannelItem, IPlayState, ITvShow, ITvShowEpisode, ITvShowSeason} from '../../channel';
 import {mapSeries} from '../../lib/async';
 import {SettingsStoreSymbol} from '../../settings/SettingsStore';
 import {container} from 'tsyringe';
 import {PithPlugin, plugin} from '../plugins';
 import md5 from 'MD5';
 import {getLogger} from "log4js";
+import {SonarrEpisode, SonarrSeries} from "./sonarr";
 
 const logger = getLogger('pith.plugin.sonarr');
 const settingsStore = container.resolve(SettingsStoreSymbol);
 
-interface SonarrSeries {
-    title: string,
-    alternateTitles: { title: string, seasonNumber: number }[],
-    sortTitle: string,
-    seasonCount: number,
-    totalEpisodeCount: number,
-    episodeCount: number,
-    episodeFileCount: number,
-    sizeOnDisk: number,
-    status: string,
-    overview: string,
-    previousAiring: string,
-    network: string,
-    airTime: string,
-    images: { coverType: string, url: string }[],
-    seasons: SonarrSeason[],
-    year: number,
-    path: string,
-    profileId: number,
-    seasonFolder: boolean,
-    monitored: boolean,
-    useSceneNumber: boolean,
-    runtime: number,
-    tvdbId: number,
-    tvRageId: number,
-    tvMazeId: number,
-    firstAired: string,
-    lastInfoSync: string,
-    seriesType: string,
-    cleanTitle: string,
-    imdbId: string,
-    titleSlug: string,
-    certification: string,
-    genres: string[],
-    tags: string[],
-    added: string,
-    ratings: {
-        votes: number,
-        value: number
-    },
-    qualityProfileId: number,
-    id: number
-}
-
-interface SonarrEpisodeFile {
-    path: string
-    relativePath: string
-    dateAdded: string
-}
-
-interface SonarrEpisode {
-    episodeFile: SonarrEpisodeFile;
-    seriesId: number,
-    episodeFileId: number,
-    seasonNumber: number,
-    episodeNumber: number,
-    title: string,
-    airDate: string,
-    airDateUtc: string,
-    overview: string,
-    hasFile: boolean,
-    monitored: boolean,
-    sceneEpisodeNumber: number,
-    sceneSeasonNumber: number,
-    tvDbEpisodeId: number,
-    absoluteEpisodeNumber: number,
-    id: number
-}
-
-interface SonarrSeason {
-    seasonNumber: number,
-    monitored: boolean,
-    statistics: {
-        previousAiring: string,
-        episodeFileCount: number,
-        episodeCount: number,
-        totalEpisodeCount: number,
-        sizeOnDisk: number,
-        percentOfEpisodes: number
-    }
-}
-
-interface SonarrEpisodeItem extends ITvShowEpisode {
+export interface SonarrEpisodeItem extends ITvShowEpisode {
     _episodeFile: {
         path: string;
     }
@@ -124,7 +43,7 @@ class SonarrChannel extends Channel {
     private pith: Pith;
     private apikey: any;
 
-    private episodeCache : Map<number, {cacheKey: string, content: SonarrEpisode[]}> = new Map();
+    private episodeCache: Map<number, { cacheKey: string, content: SonarrEpisode[] }> = new Map();
 
     constructor(pith, url, apikey) {
         super();
@@ -133,7 +52,7 @@ class SonarrChannel extends Channel {
         this.apikey = apikey;
     }
 
-    private _get(url) {
+    private _get(url): Promise<any> {
         let u = this.url.resolve(url);
         if (u.indexOf('?') > 0) {
             u += '&';
@@ -154,7 +73,7 @@ class SonarrChannel extends Channel {
         return imgUrl && this.url.resolve(imgUrl);
     }
 
-    private convertSeries(show, episodes: SonarrEpisode[]): Promise<ITvShow> {
+    private async convertSeries(show, episodes: SonarrEpisode[]): Promise<ITvShow> {
         let pithShow: ITvShow = {
             creationTime: show.added && new Date(show.added),
             genres: show.genres,
@@ -172,29 +91,34 @@ class SonarrChannel extends Channel {
         };
 
         if (episodes) {
-            return mapSeries(episodes, sonarrEpisode => this.convertEpisode(sonarrEpisode)).then(mappedEpisodes => {
-                let lastPlayable;
-                for (let x = mappedEpisodes.length; x && !lastPlayable; x--) {
-                    if (mappedEpisodes[x - 1].playable) {
-                        lastPlayable = mappedEpisodes[x - 1];
-                    }
-                }
+            const mappedEpisodes = await mapSeries(episodes, sonarrEpisode => this.convertEpisode(sonarrEpisode));
 
-                pithShow.seasons.forEach(season => {
-                    let seasonEps = mappedEpisodes.filter(ep => ep.season === season.season);
-                    season.playState = TvShowUtils.aggregatePlayState(seasonEps);
-                });
+            let lastPlayable = this.findLastPlayable(mappedEpisodes);
 
-                return {
-                    episodes: mappedEpisodes,
-                    hasNew: lastPlayable && (!lastPlayable.playState || lastPlayable.playState.status !== 'watched') && lastPlayable.dateScanned > (new Date(new Date().getTime() - 1000 * 60 * 60 * 24 * settingsStore.settings.maxAgeForNew)),
-                    playState: TvShowUtils.aggregatePlayState(pithShow.seasons),
-                    ...pithShow
-                };
+            pithShow.seasons.forEach(season => {
+                let seasonEps = mappedEpisodes.filter(ep => ep.season === season.season);
+                season.playState = TvShowUtils.aggregatePlayState(seasonEps);
             });
+
+            return {
+                episodes: mappedEpisodes,
+                hasNew: lastPlayable && (!lastPlayable.playState || lastPlayable.playState.status !== 'watched') && lastPlayable.dateScanned > (new Date(new Date().getTime() - 1000 * 60 * 60 * 24 * settingsStore.settings.maxAgeForNew)),
+                playState: TvShowUtils.aggregatePlayState(pithShow.seasons),
+                ...pithShow
+            };
         } else {
-            return Promise.resolve(pithShow);
+            return pithShow;
         }
+    }
+
+    private findLastPlayable(mappedEpisodes: SonarrEpisodeItem[]) {
+        let lastPlayable;
+        for (let x = mappedEpisodes.length; x && !lastPlayable; x--) {
+            if (mappedEpisodes[x - 1].playable) {
+                lastPlayable = mappedEpisodes[x - 1];
+            }
+        }
+        return lastPlayable;
     }
 
     private convertSeason(show, sonarrSeason): ITvShowSeason {
@@ -229,14 +153,13 @@ class SonarrChannel extends Channel {
             sonarrEpisodeFileId: sonarrEpisode.episodeFileId,
             _episodeFile: sonarrEpisode.episodeFile
         };
-        return this.getLastPlayStateFromItem(episode).then(playState => {
-            if(playState === undefined) {
-                return {
-                    ...episode
-                };
-            }
-            return {playState, ...episode};
-        });
+        const playState = await this.getLastPlayStateFromItem(episode);
+        if (playState === undefined) {
+            return {
+                ...episode
+            };
+        }
+        return {playState, ...episode};
     }
 
     async listContents(containerId) {
@@ -266,7 +189,7 @@ class SonarrChannel extends Channel {
         }
     }
 
-    getItem(itemId, detailed = false) : Promise<IChannelItem | SonarrEpisodeItem> {
+    getItem(itemId, detailed = false): Promise<IChannelItem | SonarrEpisodeItem> {
         let parsed = parseItemId(itemId);
         let sonarrId = parsed.id;
         switch (parsed.mediatype) {
@@ -293,7 +216,7 @@ class SonarrChannel extends Channel {
     }
 
     private async queryEpisodes(sonarrId: number, cacheKey?: string): Promise<SonarrEpisode[]> {
-        if(cacheKey !== undefined) {
+        if (cacheKey !== undefined) {
             let cacheEntry = this.episodeCache.get(sonarrId);
             if (!cacheEntry || cacheEntry.cacheKey !== cacheKey) {
                 logger.debug(`Cache miss; wanted {}, got {}`, cacheKey, cacheEntry?.cacheKey);
@@ -305,7 +228,7 @@ class SonarrChannel extends Channel {
         return this._get(`api/episode?seriesId=${sonarrId}`);
     }
 
-    private async getFile(item) : Promise<IChannelItem> {
+    private async getFile(item): Promise<IChannelItem> {
         let filesChannel = this.pith.getChannelInstance('files') as FilesChannel;
         let sonarrFile;
 
@@ -317,7 +240,7 @@ class SonarrChannel extends Channel {
         return await filesChannel.resolveFile(sonarrFile.path);
     }
 
-    private async getFileId(item : SonarrEpisodeItem) : Promise<string> {
+    private async getFileId(item: SonarrEpisodeItem): Promise<string> {
         let filesChannel = this.pith.getChannelInstance('files') as FilesChannel;
         let sonarrFile = item._episodeFile;
         return filesChannel.resolveFileId(sonarrFile.path);
@@ -330,25 +253,26 @@ class SonarrChannel extends Channel {
         });
     }
 
-    getLastPlayState(itemId) {
+    async getLastPlayState(itemId): Promise<IPlayState | undefined> {
         let parsed = parseItemId(itemId);
         if (parsed.mediatype === 'episode') {
-            return this.getItem(itemId).then(item => this.getLastPlayStateFromItem(item));
-        } else {
-            return Promise.resolve();
+            const item = this.getItem(itemId);
+            return this.getLastPlayStateFromItem(item);
         }
+        return undefined;
     }
 
-    getLastPlayStateFromItem(item) {
-        if (item.mediatype === 'episode') {
-            if (item.unavailable) {
-                return Promise.resolve();
-            } else {
-                let filesChannel = this.pith.getChannelInstance('files') as FilesChannel;
-                return this.getFileId(item).then(fileId => filesChannel.getLastPlayState(fileId)).catch(() => undefined);
+    async getLastPlayStateFromItem(item): Promise<IPlayState | undefined> {
+        if (item.mediatype === 'episode' && !item.unavailable) {
+            let filesChannel = this.pith.getChannelInstance('files') as FilesChannel;
+            const fileId = this.getFileId(item);
+            try {
+                return filesChannel.getLastPlayState(fileId);
+            } catch (e) {
+                return undefined;
             }
         } else {
-            return Promise.resolve(undefined);
+            return undefined;
         }
     }
 
@@ -371,7 +295,7 @@ export default class SonarrPlugin implements PithPlugin {
                 init(opts) {
                     return new SonarrChannel(opts.pith, pluginSettings.url, pluginSettings.apikey);
                 }
-            })
+            });
         }
     };
 }
