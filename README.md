@@ -21,7 +21,7 @@ playing on one device, you can easily resume playback on another from the same p
 
 Install prerequisites
 
-    $ sudo apt-get install mongodb-server nodejs ffmpeg
+    $ sudo apt-get install nodejs ffmpeg
 
 If you just want to run the latest release, you can do so using just:
 
