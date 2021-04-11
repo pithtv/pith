@@ -69,6 +69,11 @@
   display: inline-block;
 }
 
+button.u-borderlessButton {
+  border: none;
+  background: transparent;
+  color: inherit;
+}
 
 @media only screen and (max-width: 600px) {
   .c-statusBar {

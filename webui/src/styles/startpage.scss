@@ -1,0 +1,73 @@
+.c-startPage {
+  width: 100%;
+  min-height: 100%;
+  overflow: hidden;
+
+  mask-image: linear-gradient(90deg,
+    transparent,
+    black 80px,
+    black calc(100% - 80px),
+    transparent
+  );
+}
+
+.c-ribbon {
+  padding: 30px 80px;
+
+  &__title {
+    font-size: 150%;
+    font-weight: bold;
+  }
+
+  &__content {
+    width: 100%;
+
+    white-space: nowrap;
+
+    .c-ribbonItem {
+      display: inline-block;
+      width: 130px;
+      vertical-align: top;
+      border-radius: 3px;
+      cursor: pointer;
+
+      .c-ribbonItem__details {
+        width: 130px;
+        height: 195px;
+        & > * {
+          display: none;
+        }
+        background-repeat: no-repeat;
+        background-size: contain;
+        background-position: 0 0;
+        background-color: rgba(0,0,0,0.5);
+
+        transition: 100ms ease-in-out;
+        transition-property: width, height, margin-left, margin-top;
+        font-size: 200%;
+        overflow: hidden;
+      }
+
+      &-selected {
+        z-index: 2;
+        position: relative;
+
+        .c-ribbonItem__details {
+          z-index: 1;
+          position: absolute;
+          box-shadow: 0 5px 15px 5px rgb(0 0 0 / 40%);
+          width: 200px;
+          height: 355px;
+
+          margin-left: -20px;
+          margin-top: -10px;
+
+          & > .u-borderlessButton {
+            margin-top: 305px;
+            display: unset;
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,5 +1,6 @@
 import {Pith} from "./pith";
 import {IStream} from './stream';
+import {Ribbon} from "./ribbon";
 
 export interface IChannelItem {
     creationTime?: Date;
@@ -80,4 +81,9 @@ export interface IChannel {
     getLastPlayState(itemId: string): Promise<IPlayState>;
 
     getLastPlayStateFromItem(item: IChannelItem): Promise<IPlayState>;
+
+    getRibbons?(): Promise<Ribbon[]>;
+
+    listRibbonContents?(ribbonId: string) : Promise<IMediaChannelItem[]>
 }
+

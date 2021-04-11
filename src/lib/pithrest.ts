@@ -40,6 +40,10 @@ export function handle(pith) {
         let settingsStore = container.resolve(SettingsStoreSymbol);
         settingsStore.storeSettings(req.body);
         res.end();
+    }).get("/ribbons", (req, res) => {
+        pith.listRibbons().then(ribbons => res.json(ribbons));
+    }).get("/ribbons/:ribbonId", (req, res) => {
+        pith.listRibbonContents(req.params.ribbonId).then(contents => res.json(contents));
     });
 
     return router;

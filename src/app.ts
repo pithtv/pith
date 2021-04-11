@@ -79,6 +79,8 @@ class Bootstrap {
             express: app
         });
 
+        pithApp.load();
+
         app.use(bodyparser.json());
 
         app.set('x-powered-by', false);

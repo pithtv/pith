@@ -11,11 +11,12 @@ import {SettingsStore, SettingsStoreSymbol} from '../../settings/SettingsStore';
 import {DBDriver, DBDriverSymbol} from '../../persistence/DBDriver';
 import {PithPlugin, plugin} from '../plugins';
 import {DirectoryFactory, LibraryRoot} from "./types";
-import {IChannelItem, IPlayState} from "../../channel";
+import {IChannel, IChannelItem, IMediaChannelItem, IPlayState} from "../../channel";
+import {Ribbon, SharedRibbons} from "../../ribbon";
 
 const logger = getLogger("pith.plugin.library");
 
-class LibraryChannel extends Channel {
+class LibraryChannel extends Channel implements IChannel {
     private db: Repository;
     private directory: LibraryRoot[];
 
@@ -109,6 +110,19 @@ class LibraryChannel extends Channel {
         const item = await this.getItem(itemId);
         const targetChannel = this.pithApp.getChannelInstance(item.channelId);
         return targetChannel.putPlayState(item.originalId, state);
+    }
+
+    async getRibbons(): Promise<Ribbon[]> {
+        return [SharedRibbons.recentlyReleased];
+    }
+
+    async listRibbonContents(ribbonId: string): Promise<IMediaChannelItem[]> {
+        switch(ribbonId) {
+            case SharedRibbons.recentlyReleased.id:
+                return await this.listContents("recentlyadded") as IMediaChannelItem[];
+            default:
+                return [];
+        }
     }
 }
 

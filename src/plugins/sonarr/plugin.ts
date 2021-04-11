@@ -14,6 +14,7 @@ import {PithPlugin, plugin} from '../plugins';
 import md5 from 'MD5';
 import {getLogger} from "log4js";
 import {SonarrEpisode, SonarrSeries} from "./sonarr";
+import {IStream} from "../../stream";
 
 const logger = getLogger('pith.plugin.sonarr');
 const settingsStore = container.resolve(SettingsStoreSymbol);
@@ -111,7 +112,7 @@ class SonarrChannel extends Channel {
         }
     }
 
-    private findLastPlayable(mappedEpisodes: SonarrEpisodeItem[]) {
+    private findLastPlayable(mappedEpisodes: SonarrEpisodeItem[]) : SonarrEpisodeItem {
         let lastPlayable;
         for (let x = mappedEpisodes.length; x && !lastPlayable; x--) {
             if (mappedEpisodes[x - 1].playable) {
@@ -246,11 +247,10 @@ class SonarrChannel extends Channel {
         return filesChannel.resolveFileId(sonarrFile.path);
     }
 
-    getStream(item, options) {
+    async getStream(item, options): Promise<IStream> {
         let filesChannel = this.pith.getChannelInstance('files');
-        return this.getFile(item).then(file => {
-            return filesChannel.getStream(file, options);
-        });
+        const file = await this.getFile(item);
+        return filesChannel.getStream(file, options);
     }
 
     async getLastPlayState(itemId): Promise<IPlayState | undefined> {

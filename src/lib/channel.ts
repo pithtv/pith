@@ -1,6 +1,7 @@
-import {IChannel, IChannelItem, IPlayState} from "../channel";
+import {IChannel, IChannelItem, IMediaChannelItem, IPlayState} from "../channel";
 import {IStream} from "../stream";
 import {RestComponent} from "./restcomponent";
+import {Ribbon} from "../ribbon";
 
 export abstract class Channel extends RestComponent implements IChannel {
     public id: string;
