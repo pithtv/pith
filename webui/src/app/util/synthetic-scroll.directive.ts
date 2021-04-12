@@ -1,4 +1,6 @@
 import {Directive, ElementRef, HostListener} from "@angular/core";
+import {TimeSeries} from "./timeseries";
+import {Momentum} from "./momentum";
 
 @Directive({
   selector: "[syntheticScroll]"
@@ -6,6 +8,9 @@ import {Directive, ElementRef, HostListener} from "@angular/core";
 export class SyntheticScrollDirective {
   private lastX: number;
   private mouseIsDown: boolean = false;
+  private timeSeries: TimeSeries = new TimeSeries(100);
+  private value: number = 0;
+  private animation: Momentum;
 
   constructor(private element: ElementRef) {
   }
@@ -13,12 +18,31 @@ export class SyntheticScrollDirective {
   @HostListener("touchstart", ['$event'])
   touchStart(event: TouchEvent) {
     this.lastX = event.touches[0].pageX;
+    this.timeSeries.clear();
+    if(this.animation && this.animation.going) {
+      event.stopPropagation();
+      event.preventDefault();
+      this.animation.stop();
+    }
   }
 
   @HostListener("touchmove", ['$event'])
   touchMove(event: TouchEvent) {
     this.moveScroll(this.lastX - event.touches[0].pageX);
     this.lastX = event.touches[0].pageX;
+    this.timeSeries.add(event.timeStamp, event.touches[0].pageX);
+  }
+
+  @HostListener("touchend", ['$event'])
+  touchEnd(event: TouchEvent) {
+    let speed = -this.timeSeries.derive();
+    if(speed === undefined) {
+      return;
+    }
+    this.animation = new Momentum(speed, 0.995, distance => {
+      this.moveScroll(distance);
+      return distance > 1;
+    });
   }
 
   @HostListener("mousedown", ['$event'])
@@ -46,12 +70,13 @@ export class SyntheticScrollDirective {
     this.moveScroll(event.deltaX);
   }
 
+  private getMax() : number {
+    return this.element.nativeElement.scrollWidth - this.element.nativeElement.offsetWidth;
+  }
+
   private moveScroll(delta: number) {
-    let currentScroll = parseInt(this.element.nativeElement.style.marginLeft);
-    if(isNaN(currentScroll)) {
-      currentScroll = 0;
-    }
-    this.element.nativeElement.style.marginLeft = Math.max(-(this.element.nativeElement.scrollWidth - this.element.nativeElement.offsetWidth), Math.min(0,currentScroll - delta)) + "px";
+    this.value = Math.min(this.getMax(), Math.max(this.value + delta, 0));
+    this.element.nativeElement.style.transform = `translateX(${-this.value}px)`;
   }
 }
 
