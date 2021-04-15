@@ -36,7 +36,7 @@ export class SyntheticScrollDirective {
   @HostListener("touchend", ['$event'])
   touchEnd(event: TouchEvent) {
     let speed = -this.timeSeries.derive();
-    if(speed === undefined) {
+    if(speed === undefined || isNaN(speed)) {
       return;
     }
     this.animation = new Momentum(speed, 0.995, distance => {
