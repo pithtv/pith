@@ -36,20 +36,30 @@ $selected-ribbon-height: 355px;
       vertical-align: top;
       border-radius: 3px;
       cursor: pointer;
+      position: relative;
+
+      &:last-child .c-ribbonItem__details {
+        left: auto;
+        right: 0;
+      }
 
       .c-ribbonItem__details {
+        position: absolute;
+        left: 0;
+        top: 0;
         width: $ribbon-width;
         height: $ribbon-height;
         & > * {
           display: none;
         }
+
         background-repeat: no-repeat;
         background-size: contain;
         background-position: 0 0;
         background-color: rgba(0,0,0,0.5);
 
         transition: 100ms ease-in-out;
-        transition-property: width, height, margin-left, margin-top;
+        transition-property: width, height, left, top;
         font-size: 200%;
         overflow: hidden;
       }
@@ -58,15 +68,22 @@ $selected-ribbon-height: 355px;
         z-index: 2;
         position: relative;
 
+        &:first-child .c-ribbonItem__details {
+          left: 0;
+        }
+
+        &:last-child .c-ribbonItem__details {
+          right: 0
+        }
+
         .c-ribbonItem__details {
           z-index: 1;
-          position: absolute;
           box-shadow: 0 5px 15px 5px rgb(0 0 0 / 40%);
           width: $selected-ribbon-width;
           height: $selected-ribbon-height;
 
-          margin-left: -20px;
-          margin-top: -10px;
+          left: -20px;
+          top: -10px;
 
           & > .u-borderlessButton {
             margin-top: 305px;
