@@ -13,7 +13,6 @@ export class RibbonComponent {
   private contents: RibbonItem[];
   private susbcription: Subscription;
   private selectedItem: RibbonItem | undefined;
-  private selectedChannel: Channel;
 
   constructor(private pithClient: PithClientService, private playerService: PlayerService, private router: Router) {
 
@@ -29,10 +28,7 @@ export class RibbonComponent {
   }
 
   select(ribbonItem: RibbonItem) {
-    this.pithClient.getChannel(ribbonItem.channelId).first().subscribe(channel => {
-      this.selectedItem = ribbonItem;
-      this.selectedChannel = channel
-    });
+    this.selectedItem = ribbonItem;
   }
 
   open(ribbonItem: RibbonItem) {
