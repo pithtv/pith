@@ -4,6 +4,8 @@
       <div class="c-ribbonItem" *ngFor="let ribbonItem of contents"
            [class.c-ribbonItem-selected]="ribbonItem === selectedItem"
            (click)="ribbonItem === selectedItem ? open(ribbonItem) : select(ribbonItem)"
+           tabindex="0"
+           (blur)="select(null)"
       >
         <div class="c-ribbonItem__details"
              [style.background-image]="'url(' + (ribbonItem.item.poster | prescale:'260x390') + ')'">
