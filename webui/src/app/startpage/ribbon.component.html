@@ -1,15 +1,16 @@
 <section class="c-ribbon">
   <span class="c-ribbon__title">{{ _ribbon.name }}</span>
   <div class="c-ribbon__content" syntheticScroll>
-      <div class="c-ribbonItem" *ngFor="let ribbonItem of contents"
+      <div class="c-ribbonItem" *ngFor="let ribbonItem of contents, index as itemIndex"
            [class.c-ribbonItem-selected]="ribbonItem === selectedItem"
-           (click)="ribbonItem === selectedItem ? open(ribbonItem) : select(ribbonItem)"
-           tabindex="0"
+           [tabindex]="1000 + itemIndex"
+           (focus)="select(ribbonItem)"
            (blur)="select(null)"
       >
         <div class="c-ribbonItem__details"
-             [style.background-image]="'url(' + (ribbonItem.item.poster | prescale:'260x390') + ')'">
-          <button *ngIf="ribbonItem === selectedItem" (click)="play(ribbonItem)" class="u-borderlessButton oi oi-play-circle"></button>
+             [style.background-image]="ribbonItem.item.poster && 'url(' + (ribbonItem.item.poster | prescale:'260x390') + ')'">
+          <button (click)="play(ribbonItem)" class="u-borderlessButton oi oi-play-circle"></button>
+          <button (click)="open(ribbonItem)" class="u-borderlessButton oi oi-info"></button>
         </div>
       </div>
   </div>

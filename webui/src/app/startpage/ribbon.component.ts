@@ -28,7 +28,9 @@ export class RibbonComponent {
   }
 
   select(ribbonItem: RibbonItem) {
-    this.selectedItem = ribbonItem;
+    setTimeout(() => {
+      this.selectedItem = ribbonItem;
+    }, 100);
   }
 
   open(ribbonItem: RibbonItem) {
@@ -36,7 +38,7 @@ export class RibbonComponent {
   }
 
   async play(ribbonItem: RibbonItem) {
-    const player = await this.playerService.activePlayer.toPromise();
-    player.loadById(ribbonItem.channelId, ribbonItem.item.id);
+    const channel = await this.pithClient.getChannel(ribbonItem.channelId).toPromise();
+    return this.playerService.load(channel, ribbonItem.item);
   }
 }

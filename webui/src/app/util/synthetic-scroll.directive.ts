@@ -9,7 +9,6 @@ export class SyntheticScrollDirective {
   private lastX: number;
   private mouseIsDown: boolean = false;
   private timeSeries: TimeSeries = new TimeSeries(100);
-  private value: number = 0;
   private animation: Momentum;
 
   constructor(private element: ElementRef) {
@@ -75,8 +74,8 @@ export class SyntheticScrollDirective {
   }
 
   private moveScroll(delta: number) {
-    this.value = Math.min(this.getMax(), Math.max(this.value + delta, 0));
-    this.element.nativeElement.style.transform = `translateX(${-this.value}px)`;
+    const newValue = Math.min(this.getMax(), Math.max(this.element.nativeElement.scrollLeft + delta, 0));
+    this.element.nativeElement.scrollLeft = newValue;
   }
 }
 
