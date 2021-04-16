@@ -92,7 +92,7 @@ export class Pith extends EventEmitter implements Pith {
     public updatePlayerStates() {
         const newTs = new Date().getTime();
         this.players.forEach((e) => {
-            if (e.status.state && e.status.state.playing) {
+            if (e.status.state && e.status.state.playing && e.status.position) {
                 const delta = (newTs - e.status.serverTimestamp) / 1000;
                 e.status.position.time += delta;
                 e.status.serverTimestamp = newTs;
