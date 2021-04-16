@@ -102,15 +102,25 @@ class MediaRenderer extends EventEmitter implements IPlayer {
             await this.stop();
         }
 
-        await wrap(cb => {
-            this._avTransport.SetAVTransportURI({
-                InstanceID: 0,
-                CurrentURI: mediaUrl,
-                CurrentURIMetaData:
-                    entities.encodeXML(
-                        this.toDidl(item, channel, `channel:${channel.id}`))
-            }, cb);
-        });
+        try {
+            await wrap(cb => {
+                this._avTransport.SetAVTransportURI({
+                    InstanceID: 0,
+                    CurrentURI: mediaUrl,
+                    CurrentURIMetaData:
+                        entities.encodeXML(
+                            this.toDidl(item, channel, `channel:${channel.id}`))
+                }, cb);
+            });
+        } catch(e) {
+            await wrap(cb => {
+                this._avTransport.SetAVTransportURI({
+                    InstanceID: 0,
+                    CurrentURI: mediaUrl,
+                    CurrentURIMetaData: this.toDidl(item, channel, `channel:${channel.id}`)
+                }, cb);
+            });
+        }
     }
 
     private toDidl(item, channel, parentId) {
