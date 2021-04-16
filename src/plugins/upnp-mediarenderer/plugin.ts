@@ -229,15 +229,15 @@ class MediaRenderer extends EventEmitter implements IPlayer {
                         break;
                 }
             }
-            return pos;
         }
+        return pos;
     }
 
     async updatePositionInfo() {
         const positionInfo = await this.getPositionInfo();
         if (positionInfo) {
             let channelId = positionInfo.channelId, itemId = positionInfo.itemId;
-            if (!channelId || !itemId) {
+            if ((!channelId || !itemId) && positionInfo.fingerprint) {
                 const fingerprint = positionInfo.fingerprint;
                 const parts = fingerprint.match(/^[^:]*:([^:]*):(.*)$/);
                 if (parts) {
