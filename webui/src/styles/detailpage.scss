@@ -1,4 +1,5 @@
 .c-backdrop {
+  z-index: -1;
   $blur: 15px;
   position: fixed;
   top: -$blur;
