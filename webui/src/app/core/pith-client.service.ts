@@ -168,11 +168,11 @@ export interface Episode extends ChannelItem {
 
 export interface Season extends ChannelItem {
   season: number;
+  episodes: Episode[];
 }
 
 export interface Show extends ChannelItem {
   seasons: Season[];
-  episodes: Episode[];
 }
 
 export interface Stream {

@@ -34,7 +34,6 @@ export default function(plugin) : LibraryRoot[] {
             mediatype: 'show',
             showname: m.title,
             seasons: seasons,
-            episodes: allEpisodes,
             playState: playState,
             hasNew: lastPlayable && (!lastPlayable.playState || lastPlayable.playState.status !== 'watched') && lastPlayable.dateScanned > (new Date(new Date().getTime() - 1000 * 60 * 60 * 24 * settingsStore.settings.maxAgeForNew))
         };

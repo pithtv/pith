@@ -62,7 +62,7 @@ export class TvDetailsComponent {
 
   set selectedSeason(season: Season) {
     this._selectedSeason = season;
-    this.episodes = this.item.episodes.filter(ep => ep.season == season.season).sort((a, b) => a.episode - b.episode);
+    this.episodes = season.episodes.sort((a, b) => a.episode - b.episode);
   }
 
   get selectedSeason() {

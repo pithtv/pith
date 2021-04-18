@@ -98,10 +98,10 @@ class SonarrChannel extends Channel {
             pithShow.seasons.forEach(season => {
                 let seasonEps = mappedEpisodes.filter(ep => ep.season === season.season);
                 season.playState = TvShowUtils.aggregatePlayState(seasonEps);
+                season.episodes = seasonEps;
             });
 
             return {
-                episodes: mappedEpisodes,
                 hasNew: lastPlayable && (!lastPlayable.playState || lastPlayable.playState.status !== 'watched') && lastPlayable.dateScanned > (new Date(new Date().getTime() - 1000 * 60 * 60 * 24 * settingsStore.settings.maxAgeForNew)),
                 playState: TvShowUtils.aggregatePlayState(pithShow.seasons),
                 ...pithShow
