@@ -207,7 +207,7 @@ export class Channel extends RestModule {
   }
 
   listContents(path, cacheOptions?: CacheOptions): Observable<ChannelItem[]> {
-    return this.getAndCache(null, 'list', path || '', {includePlayStates: true}) as Observable<ChannelItem[]>;
+    return this.getAndCache(null, 'list', path || '') as Observable<ChannelItem[]>;
   }
 
   getDetails(path, cacheOptions?: CacheOptions): Observable<ChannelItem> {

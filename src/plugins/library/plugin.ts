@@ -11,7 +11,7 @@ import {SettingsStore, SettingsStoreSymbol} from '../../settings/SettingsStore';
 import {DBDriver, DBDriverSymbol} from '../../persistence/DBDriver';
 import {PithPlugin, plugin} from '../plugins';
 import {DirectoryFactory, LibraryRoot} from "./types";
-import {IChannelItem} from "../../channel";
+import {IChannelItem, IPlayState} from "../../channel";
 
 const logger = getLogger("pith.plugin.library");
 
@@ -28,7 +28,7 @@ class LibraryChannel extends Channel {
         this.directory = directoryFactory(this);
     }
 
-    listContents(containerId) : Promise<IChannelItem[]> {
+    private listContentsWithoutPlayStates(containerId) : Promise<IChannelItem[]> {
         if(!containerId) {
             return Promise.resolve(this.directory.filter(function(d) {
                 return d.visible !== false;
@@ -46,19 +46,18 @@ class LibraryChannel extends Channel {
         }
     }
 
-    listContentsWithPlayStates(path) {
-        return this.listContents(path).then(contents =>
-            Promise.all(contents.map(item => {
-                if(item.playState) {
+    async listContents(path) {
+        const contents = await this.listContentsWithoutPlayStates(path);
+        return Promise.all(contents.map(item => {
+            if(item.playState) {
+                return item;
+            } else {
+                return this.getLastPlayStateFromItem(item).then(playState => {
+                    item.playState = playState;
                     return item;
-                } else {
-                    return this.getLastPlayStateFromItem(item).then(playState => {
-                        item.playState = playState;
-                        return item;
-                    })
-                }
-            }))
-        );
+                })
+            }
+        }));
     }
 
     async getItem(itemId) : Promise<IChannelItem> {
@@ -85,10 +84,11 @@ class LibraryChannel extends Channel {
         }
     }
 
-    getStream(item, options) {
+    async getStream(item, options) {
         const channel = this;
         const targetChannel = channel.pithApp.getChannelInstance(item.channelId);
-        return targetChannel.getItem(item.originalId).then(targetItem => targetChannel.getStream(targetItem, options));
+        const targetItem = await targetChannel.getItem(item.originalId);
+        return targetChannel.getStream(targetItem, options);
     }
 
     getLastPlayStateFromItem(item) {
@@ -100,16 +100,15 @@ class LibraryChannel extends Channel {
         }
     }
 
-    getLastPlayState(itemId) {
-        return this.getItem(itemId).then(item => this.getLastPlayStateFromItem(item));
+    async getLastPlayState(itemId) : Promise<IPlayState>{
+        const item = await this.getItem(itemId);
+        return this.getLastPlayStateFromItem(item);
     }
 
-    putPlayState(itemId, state) {
-        const self = this;
-        return this.getItem(itemId).then(item => {
-            const targetChannel = self.pithApp.getChannelInstance(item.channelId);
-            return targetChannel.putPlayState(item.originalId, state);
-        });
+    async putPlayState(itemId, state) {
+        const item = await this.getItem(itemId);
+        const targetChannel = this.pithApp.getChannelInstance(item.channelId);
+        return targetChannel.putPlayState(item.originalId, state);
     }
 }
 

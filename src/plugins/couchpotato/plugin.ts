@@ -116,8 +116,9 @@ class CouchPotatoChannel extends Channel {
         }
 
         let filePath = release && release.files.movie[0];
+        const id = 'media/' + movie._id;
         return {
-            id: 'media/' + movie._id,
+            id: id,
             mediatype: 'movie',
             mimetype: filePath && mimetypes.fromFilePath(filePath),
             title: movie.title,
@@ -136,7 +137,8 @@ class CouchPotatoChannel extends Channel {
             writers: movie.info.writers,
             filePath: filePath,
             hasNew: movie.tags && movie.tags.indexOf('recent') > -1,
-            creationTime: stat && stat.mtime
+            creationTime: stat && stat.mtime,
+            playState: await this.getLastPlayState(id)
         };
     }
 

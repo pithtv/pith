@@ -18,11 +18,7 @@ export abstract class Channel extends RestComponent implements IChannel {
             this.putPlayState(path, req.body).then((c) => res.json(c)).catch(next);
         }).get(/list\/(.*)$/, (req, res, next) => {
             const path = req.params[0];
-            if (req.query.includePlayStates) {
-                this.listContentsWithPlayStates(path).then((c) => res.json(c)).catch(next);
-            } else {
-                this.listContents(path).then((c) => res.json(c)).catch(next);
-            }
+            this.listContents(path).then((c) => res.json(c)).catch(next);
         }).get(/stream\/(.*)$/, (req, res, next) => {
             const path = req.params[0];
             this.getItem(path).then((item) => {
@@ -41,12 +37,6 @@ export abstract class Channel extends RestComponent implements IChannel {
             const stream = await this.getStream(item);
             res.redirect(stream.url);
         });
-    }
-
-    public async listContentsWithPlayStates(path): Promise<IChannelItem[]> {
-        const contents = await this.listContents(path);
-        const values = contents.map(async (item) => ({...item, playState: await this.getLastPlayStateFromItem(item)}));
-        return Promise.all(values);
     }
 
     public abstract listContents(containerId: string): Promise<IChannelItem[]>;
