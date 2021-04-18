@@ -95,7 +95,8 @@ export class FilesChannel extends Channel {
                 fileSize: stats && stats.size,
                 modificationTime: stats && stats.mtime,
                 creationTime: stats && stats.ctime,
-            })
+            }),
+            playState: await this.getLastPlayState(itemId)
         };
 
         const applicableProviders = metaDataProviders.filter(f => f.appliesTo(channel, filepath, item));

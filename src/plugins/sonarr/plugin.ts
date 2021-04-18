@@ -265,7 +265,7 @@ class SonarrChannel extends Channel {
     async getLastPlayStateFromItem(item): Promise<IPlayState | undefined> {
         if (item.mediatype === 'episode' && !item.unavailable) {
             let filesChannel = this.pith.getChannelInstance('files') as FilesChannel;
-            const fileId = this.getFileId(item);
+            const fileId = await this.getFileId(item);
             try {
                 return filesChannel.getLastPlayState(fileId);
             } catch (e) {
