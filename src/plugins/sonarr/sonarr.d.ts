@@ -1,3 +1,5 @@
+export type CoverType = 'poster' | 'banner' | 'fanart';
+
 export interface SonarrSeries {
     title: string,
     alternateTitles: { title: string, seasonNumber: number }[],
@@ -12,7 +14,7 @@ export interface SonarrSeries {
     previousAiring: string,
     network: string,
     airTime: string,
-    images: { coverType: string, url: string }[],
+    images: { coverType: CoverType, url: string }[],
     seasons: SonarrSeason[],
     year: number,
     path: string,

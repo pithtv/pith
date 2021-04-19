@@ -6,7 +6,7 @@ import {parse as parseUrl} from 'url';
 import fetch from 'node-fetch';
 import {Pith} from '../../pith';
 import {FilesChannel} from '../files/plugin';
-import {IChannelItem, IPlayState, ITvShow, ITvShowEpisode, ITvShowSeason} from '../../channel';
+import {IChannelItem, Image, IPlayState, ITvShow, ITvShowEpisode, ITvShowSeason} from '../../channel';
 import {mapSeries} from '../../lib/async';
 import {SettingsStoreSymbol} from '../../settings/SettingsStore';
 import {container} from 'tsyringe';
@@ -68,10 +68,28 @@ class SonarrChannel extends Channel {
         });
     }
 
-    private img(show, type) {
-        let img = show.images.find(img => img.coverType === type),
-            imgUrl = img && img.url && img.url.replace(/(sonarr\/)(.*)/, '$1api/$2&apiKey=' + this.apikey);
-        return imgUrl && this.url.resolve(imgUrl);
+    private imgs(show: SonarrSeries) : {
+        poster?: string,
+        backdrop?: string,
+        banner?: string,
+        posters: Image[],
+        backdrops: Image[],
+        banners: Image[]
+    } {
+        const perType : {[coverType: string]: {url: string}[]} = show.images.reduce((result, img) => ({
+            ...result,
+            [img.coverType]: [...result[img.coverType], { url: this.url.resolve(img.url.replace(/(sonarr\/)(.*)/, '$1api/$2&apiKey=' + this.apikey))}]
+        }), {
+        });
+
+        return {
+            poster: (perType.poster??[])[0]?.url,
+            backdrop: (perType.fanArt??[])[0]?.url,
+            banner: (perType.banner??[])[0]?.url,
+            posters: perType.poster,
+            backdrops: perType.fanart,
+            banners: perType.banner
+        }
     }
 
     private async convertSeries(show, episodes: SonarrEpisode[]): Promise<ITvShow> {
@@ -84,9 +102,7 @@ class SonarrChannel extends Channel {
             noSeasons: show.seasonCount,
             title: show.title,
             overview: show.overview,
-            backdrop: this.img(show, 'fanart'),
-            poster: this.img(show, 'poster'),
-            banner: this.img(show, 'banner'),
+            ...this.imgs(show),
             type: 'container',
             seasons: show.seasons.map(sonarrSeason => this.convertSeason(show, sonarrSeason))
         };
@@ -129,9 +145,7 @@ class SonarrChannel extends Channel {
             mediatype: 'season',
             season: sonarrSeason.seasonNumber,
             noEpisodes: sonarrSeason.statistics.totalEpisodeCount,
-            backdrop: this.img(show, 'fanart'),
-            poster: this.img(show, 'poster'),
-            banner: this.img(show, 'banner'),
+            ...this.imgs(show),
             type: 'container',
             unavailable: sonarrSeason.statistics.episodeCount === 0
         });

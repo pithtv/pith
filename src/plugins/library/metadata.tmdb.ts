@@ -1,16 +1,23 @@
-import moviedb from 'moviedb';
+import {MovieDb} from 'moviedb-promise';
 import {getLogger} from 'log4js';
-import {wrap} from '../../lib/async';
 import {Episode, Season, Show} from "../../persistence/Schema";
+import {
+    Backdrop,
+    ExternalId,
+    MovieImagesResponse,
+    MovieKeywordResponse,
+    MovieResponse,
+    PersonMovieCreditsResponse,
+    Poster
+} from "moviedb-promise/dist/request-types";
+import {Image} from "../../channel";
 
-const tmdb = moviedb('a08cfd3b50689d40b46a078ecc7390bb');
+const tmdb = new MovieDb('a08cfd3b50689d40b46a078ecc7390bb');
 const dateParser = /(\d{4})-(\d{2})-(\d{2})/;
 const logger = getLogger('pith.plugin.library.metadata.tmdb');
 
 let configuration;
-tmdb.configuration((err, conf) => {
-    configuration = conf;
-});
+tmdb.configuration().then(conf => configuration = conf);
 
 function createUrl(path) {
     return path && configuration.images.base_url + 'original' + path;
@@ -27,19 +34,33 @@ function parseDate(d) {
     return new Date(parseInt(p[1]), parseInt(p[2]) - 1, parseInt(p[3]));
 }
 
-async function parseMovie(movie) {
-    const result = await wrap<any>(cb => tmdb.movieInfo({
-        id: movie.id,
-        append_to_response: 'credits,keywords'
-    }, cb));
+function extractImages(backdrops: (Backdrop | Poster)[]): Image[] {
+    return backdrops.map(i => ({
+        url: createUrl(i.file_path),
+        width: i.width,
+        height: i.height,
+        language: i.iso_639_1
+    }))
+}
 
+async function parseMovie(movie) {
+    const result = await tmdb.movieInfo({
+        id: movie.id,
+        append_to_response: 'credits,keywords,images'
+    }) as MovieResponse & {
+        credits: PersonMovieCreditsResponse,
+        keywords: MovieKeywordResponse,
+        images: MovieImagesResponse
+    };
+
+    const releaseDate = parseDate(result.release_date);
     return {
         genres: result.genres.map(e => e['name']),
         title: result.title,
         imdbId: result.imdb_id,
         poster: createUrl(result.poster_path),
         backdrop: createUrl(result.backdrop_path),
-        releaseDate: parseDate(result.release_date),
+        releaseDate: releaseDate,
         runtime: result.runtime,
         tagline: result.tagline,
         plot: result.overview,
@@ -47,10 +68,11 @@ async function parseMovie(movie) {
         tmdbVoteCount: result.vote_count,
         keywords: result.keywords.keywords.map(e => e['name']),
         actors: result.credits.cast.map(e => e['name']),
-
         directors: result.credits.crew.filter(e => e.job === 'Director').map(e => e['name']),
-
-        writers: result.credits.crew.filter(e => e.job === 'Screenplay').map(e => e['name'])
+        writers: result.credits.crew.filter(e => e.job === 'Screenplay').map(e => e['name']),
+        backdrops: extractImages(result.images.backdrops),
+        posters: extractImages(result.images.posters),
+        year: releaseDate.getFullYear()
     };
 }
 
@@ -99,17 +121,17 @@ function parseSeason(result): Omit<Season, 'showId'> {
 }
 
 async function queryMovieByImdbId(imdbId) {
-    return await wrap<{movie_results: any[]}>(cb => tmdb.find({
+    return await tmdb.find({
         id: imdbId,
-        external_source: 'imdb_id'
-    }, cb));
+        external_source: ExternalId.ImdbId
+    });
 }
 
 async function queryMovieByTitleAndYear(title, year) {
-    return await wrap<{results: any[]}>(cb => tmdb.searchMovie({
+    return await tmdb.searchMovie({
         query: title,
         year: year
-    }, cb));
+    });
 }
 
 export async function queryMovie(item) {
@@ -131,21 +153,21 @@ export async function queryMovie(item) {
 
 export async function queryShow(item) : Promise<Omit<Show, 'id'>> {
     if (item.tmdbId) {
-        const show = await wrap(cb => tmdb.tvInfo({id: item.tmdbId}, cb));
+        const show = await tmdb.tvInfo({id: item.tmdbId});
         return parseShow(show);
     } else if (item.tvdbId) {
-        const show = await wrap(cb => tmdb.find({
+        const show = await tmdb.find({
             id: item.tvdbId,
-            external_source: 'tvdb_id'
-        }, cb));
+            external_source: ExternalId.TvdbId
+        });
         return parseShow(show);
     } else {
         const query = {query: item.showname || item.title};
-        const result = await wrap<any>(cb => tmdb.searchTv(query, cb));
+        const result = await tmdb.searchTv(query);
         if (!result.results[0]) {
             throw new Error(`No result found for show ${item} using query ${query.query}`);
         } else {
-            const tv = await wrap(cb => tmdb.tvInfo({id: result.results[0].id}, cb));
+            const tv = await tmdb.tvInfo({id: result.results[0].id});
             return parseShow(tv);
         }
     }
@@ -153,7 +175,7 @@ export async function queryShow(item) : Promise<Omit<Show, 'id'>> {
 
 export async function querySeason(item : {showTmdbId: string, season: number}) : Promise<Omit<Season, 'showId'>> {
     if (item.showTmdbId) {
-        const season = await wrap(cb => tmdb.tvSeasonInfo({id: item.showTmdbId, season_number: item.season}, cb));
+        const season = await tmdb.seasonInfo({id: item.showTmdbId, season_number: item.season});
         return parseSeason(season);
     } else {
         throw new Error('Need show tmdb id');
@@ -162,11 +184,11 @@ export async function querySeason(item : {showTmdbId: string, season: number}) :
 
 export async function queryEpisode(item : {showTmdbId: string, season: number, episode: number}) : Promise<Omit<Episode, 'showId'>> {
     if (item.showTmdbId) {
-        const episode = await wrap(cb => tmdb.tvEpisodeInfo({
+        const episode = await tmdb.episodeInfo({
             id: item.showTmdbId,
             season_number: item.season,
             episode_number: item.episode
-        }, cb));
+        });
         return parseEpisode(episode);
     } else {
         throw new Error('Need show tmdb id');

@@ -18,9 +18,19 @@ export interface IChannelItem {
     backdrop?: string;
     poster?: string;
     banner?: string;
+    banners?: Image[];
+    posters?: Image[];
+    backdrops?: Image[];
     [key: string]: any;
     subtitles?: Subtitle[];
     playState?: IPlayState;
+}
+
+export interface Image {
+    url: string;
+    width?: number;
+    height?: number;
+    language?: string;
 }
 
 export interface Subtitle {
