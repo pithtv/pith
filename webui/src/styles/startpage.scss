@@ -1,14 +1,7 @@
-$ribbon-padding-left: 80px;
-$ribbon-padding-top: 30px;
+$aspect-ratio-backdrop: 16 / 9;
+$aspect-ratio-poster: 2 / 3;
 
-$ribbon-width: 130px;
-$ribbon-height: 200px;
-$ribbon-height: $ribbon-width * 1.5;
-$ribbon-item-spacing: 2px;
-
-$selected-ribbon-width: 200px;
-$selected-ribbon-height: 355px;
-$ribbon-active-topOffset: 20px;
+$selectedAdditionalHeight: 50px;
 
 .c-startPage {
   width: 100%;
@@ -24,33 +17,64 @@ $ribbon-active-topOffset: 20px;
 }
 
 .c-ribbon {
-  padding: $ribbon-padding-top 0;
+  --leftPadding: 80px;
+  --topPadding: 30px;
+  --itemSpacing: 8px;
+  --selectedTopOffset: 20px;
+
+  padding: var(--topPadding) 0;
 
   &__title {
     font-size: 150%;
     font-weight: bold;
-    padding: 0 $ribbon-padding-left;
+    padding: 0 var(--leftPadding);
   }
 
   &__content {
+    --ribbonHeight: 200px;
+    --ribbonZoom: 1.4;
+
     width: 100%;
 
     white-space: nowrap;
-    padding: $ribbon-active-topOffset*2 ($ribbon-padding-left - $ribbon-item-spacing);
+    padding: calc(var(--selectedTopOffset)*2) calc(var(--leftPadding) - var(--itemSpacing));
     overflow: hidden;
-    height: 400px;
-    margin-top: -$ribbon-active-topOffset*2;
+    height: calc(var(--ribbonHeight) * var(--ribbonZoom) + 150px);
+    margin-top: calc(var(--selectedTopOffset) * -2);
     margin-bottom: -150px;
 
     .c-ribbonItem {
+      --aspectRatio: #{$aspect-ratio-poster};
+      --ribbonWidth: calc(var(--ribbonHeight) * var(--aspectRatio));
+
+      width: var(--ribbonWidth);
+      height: var(--ribbonHeight);
+
       display: inline-block;
-      width: $ribbon-width;
-      height: $ribbon-height;
       vertical-align: top;
       cursor: pointer;
       position: relative;
-      margin: 0 $ribbon-item-spacing;
+      margin: 0 var(--itemSpacing);
       outline: none;
+
+      .c-ribbonItem__poster {
+        display: block;
+      }
+
+      .c-ribbonItem__backdrop {
+        display: none;
+      }
+
+      &.c-ribbonItem-hasBackdrop {
+        --aspectRatio: #{$aspect-ratio-backdrop};
+        .c-ribbonItem__backdrop {
+          display: block;
+        }
+
+        .c-ribbonItem__poster {
+          display: none;
+        }
+      }
 
       &:first-child .c-ribbonItem__details {
         left: 0;
@@ -64,20 +88,23 @@ $ribbon-active-topOffset: 20px;
 
       .c-ribbonItem__details {
         position: absolute;
+        top: 0;
         left: 50%;
         transform: translateX(-50%);
 
-        top: 0;
-        width: $ribbon-width;
-        height: $ribbon-height;
-        & > * {
+        width: var(--ribbonWidth);
+        height: var(--ribbonHeight);
+
+        .c-ribbonItem__backdrop,
+        .c-ribbonItem__poster {
+          width: 100%;
+        }
+
+        & > button {
           display: none;
         }
 
-        background-repeat: no-repeat;
-        background-size: contain;
-        background-position: 0 0;
-        background-color: rgba(0,0,0,0.5);
+        background-color: rgba(0, 0, 0, 0.5);
         border-radius: 8px;
 
         transition: 100ms ease-in-out;
@@ -88,7 +115,6 @@ $ribbon-active-topOffset: 20px;
 
       &-selected {
         z-index: 2;
-        position: relative;
 
         &:first-child .c-ribbonItem__details {
           left: 0;
@@ -101,13 +127,13 @@ $ribbon-active-topOffset: 20px;
         .c-ribbonItem__details {
           z-index: 1;
           box-shadow: 0 5px 15px 5px rgb(0 0 0 / 40%);
-          width: $selected-ribbon-width;
-          height: $selected-ribbon-height;
 
-          top: -$ribbon-active-topOffset;
+          width: calc(var(--ribbonWidth) * var(--ribbonZoom));
+          height: calc(var(--ribbonHeight) * var(--ribbonZoom) + 50px);
+
+          top: calc(-1 * var(--selectedTopOffset));
 
           & > .u-borderlessButton {
-            margin-top: 305px;
             display: unset;
           }
         }
@@ -117,11 +143,6 @@ $ribbon-active-topOffset: 20px;
 }
 
 @media only screen and (max-width: 600px) {
-  $ribbon-width: 115px;
-  $ribbon-height: $ribbon-width * 1.5;
-
-  $ribbon-padding-left: 12px;
-
   .c-startPage {
     mask-image: linear-gradient(90deg,
       transparent,
@@ -132,27 +153,34 @@ $ribbon-active-topOffset: 20px;
   }
 
   .c-ribbon {
+    --leftPadding: 12px;
+    --itemSpacing: 2px;
+    --ribbonZoom: 1.6;
+
     padding: 5px 0;
 
-    &__title {
-      padding: 0 $ribbon-padding-left;
-    }
-
     &__content {
-      padding: $ribbon-active-topOffset ($ribbon-padding-left - $ribbon-item-spacing);
+      --ribbonHeight: 150px;
 
       .c-ribbonItem {
-        width: $ribbon-width;
+        --aspectRatio: #{$aspect-ratio-backdrop};
 
-        .c-ribbonItem__details {
-          width: $ribbon-width;
-          height: $ribbon-height;
+        .c-ribbonItem__backdrop {
+          display: block;
         }
 
-        &-selected {
-          .c-ribbonItem__details {
-            width: $selected-ribbon-width;
-            height: $selected-ribbon-height;
+        .c-ribbonItem__poster {
+          display: none;
+        }
+
+        &.c-ribbonItem-hasPoster {
+          --aspectRatio: #{$aspect-ratio-poster};
+          .c-ribbonItem__backdrop {
+            display: none;
+          }
+
+          .c-ribbonItem__poster {
+            display: block;
           }
         }
       }

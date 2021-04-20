@@ -3,12 +3,15 @@
   <div class="c-ribbon__content" syntheticScroll>
       <div class="c-ribbonItem" *ngFor="let ribbonItem of contents, index as itemIndex"
            [class.c-ribbonItem-selected]="ribbonItem === selectedItem"
+           [class.c-ribbonItem-hasPoster]="ribbonItem.item.posters.length > 0"
+           [class.c-ribbonItem-hasBackdrop]="ribbonItem.item.backdrops.length > 0"
            [tabindex]="1000 + itemIndex"
            (focus)="select(ribbonItem)"
            (blur)="select(null)"
       >
-        <div class="c-ribbonItem__details"
-             [style.background-image]="ribbonItem.item.poster && 'url(' + (ribbonItem.item.poster | prescale:'260x390') + ')'">
+        <div class="c-ribbonItem__details">
+          <img class="c-ribbonItem__backdrop" *ngIf="ribbonItem.item.backdrops.length > 0" [src]="ribbonItem.item.backdrops | image" />
+          <img class="c-ribbonItem__poster" *ngIf="ribbonItem.item.posters.length > 0" [src]="ribbonItem.item.posters | image" />
           <button (click)="play(ribbonItem)" class="u-borderlessButton oi oi-play-circle"></button>
           <button (click)="open(ribbonItem)" class="u-borderlessButton oi oi-info"></button>
         </div>

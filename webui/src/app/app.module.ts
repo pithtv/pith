@@ -35,6 +35,7 @@ import {ItemOtherActionsComponent} from "./channelbrowser/item-other-actions.com
 import {StartPageComponent} from "./startpage/start-page.component";
 import {RibbonComponent} from "./startpage/ribbon.component";
 import {SyntheticScrollDirective} from "./util/synthetic-scroll.directive";
+import {ImagePipe} from "./util/image.pipe";
 
 @NgModule({
   declarations: [
@@ -55,7 +56,8 @@ import {SyntheticScrollDirective} from "./util/synthetic-scroll.directive";
     ItemOtherActionsComponent,
     StartPageComponent,
     RibbonComponent,
-    SyntheticScrollDirective
+    SyntheticScrollDirective,
+    ImagePipe
   ],
   exports: [
     TimePipe

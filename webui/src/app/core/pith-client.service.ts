@@ -162,6 +162,17 @@ export interface ChannelItem {
   episode: number;
   season: number;
   duration?: number;
+
+  banners?: Image[];
+  posters?: Image[];
+  backdrops?: Image[];
+}
+
+export interface Image {
+  url: string;
+  width?: number;
+  height?: number;
+  language?: string;
 }
 
 export interface Episode extends ChannelItem {
