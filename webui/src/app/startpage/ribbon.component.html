@@ -9,12 +9,10 @@
            (focus)="select(ribbonItem)"
            (blur)="select(null)"
       >
-        <div class="c-ribbonItem__details">
-          <img class="c-ribbonItem__backdrop" *ngIf="ribbonItem.item.backdrops.length > 0" [src]="ribbonItem.item.backdrops | image" />
-          <img class="c-ribbonItem__poster" *ngIf="ribbonItem.item.posters.length > 0" [src]="ribbonItem.item.posters | image" />
-          <button (click)="play(ribbonItem)" class="u-borderlessButton oi oi-play-circle"></button>
-          <button (click)="open(ribbonItem)" class="u-borderlessButton oi oi-info"></button>
-        </div>
+        <img class="c-ribbonItem__backdrop" *ngIf="ribbonItem.item.backdrops.length > 0" [src]="ribbonItem.item.backdrops | image" />
+        <img class="c-ribbonItem__poster" *ngIf="ribbonItem.item.posters.length > 0" [src]="ribbonItem.item.posters | image" />
+        <button (click)="play(ribbonItem)" class="u-borderlessButton oi oi-play-circle"></button>
+        <button (click)="open(ribbonItem)" class="u-borderlessButton oi oi-info"></button>
       </div>
   </div>
 </section>

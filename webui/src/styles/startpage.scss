@@ -1,6 +1,3 @@
-$aspect-ratio-backdrop: 16 / 9;
-$aspect-ratio-poster: 2 / 3;
-
 $selectedAdditionalHeight: 50px;
 
 .c-startPage {
@@ -44,12 +41,6 @@ $selectedAdditionalHeight: 50px;
     margin-bottom: -150px;
 
     .c-ribbonItem {
-      --aspectRatio: #{$aspect-ratio-poster};
-      --ribbonWidth: calc(var(--ribbonHeight) * var(--aspectRatio));
-
-      width: var(--ribbonWidth);
-      height: var(--ribbonHeight);
-
       display: inline-block;
       vertical-align: top;
       cursor: pointer;
@@ -66,7 +57,6 @@ $selectedAdditionalHeight: 50px;
       }
 
       &.c-ribbonItem-hasBackdrop {
-        --aspectRatio: #{$aspect-ratio-backdrop};
         .c-ribbonItem__backdrop {
           display: block;
         }
@@ -76,67 +66,43 @@ $selectedAdditionalHeight: 50px;
         }
       }
 
-      &:first-child .c-ribbonItem__details {
-        left: 0;
-        transform: none;
-      }
-
-      &:last-child .c-ribbonItem__details {
-        left: 100%;
-        transform: translateX(-100%);
-      }
-
-      .c-ribbonItem__details {
-        position: absolute;
-        top: 0;
-        left: 50%;
-        transform: translateX(-50%);
-
-        width: var(--ribbonWidth);
+      .c-ribbonItem__backdrop,
+      .c-ribbonItem__poster {
         height: var(--ribbonHeight);
+      }
 
-        .c-ribbonItem__backdrop,
-        .c-ribbonItem__poster {
-          width: 100%;
-        }
+      & > button {
+        display: none;
+      }
 
-        & > button {
-          display: none;
-        }
+      background-color: rgba(0, 0, 0, 0.5);
+      border-radius: 8px;
 
-        background-color: rgba(0, 0, 0, 0.5);
-        border-radius: 8px;
+      transition: 100ms ease-in-out;
+      transition-property: width, height, left, top, transform;
+      font-size: 150%;
+      overflow: hidden;
 
-        transition: 100ms ease-in-out;
-        transition-property: width, height, left, top, transform;
-        font-size: 200%;
-        overflow: hidden;
+      transform-origin: top center;
+
+      &:first-child {
+        transform-origin: top left;
+      }
+
+      &:last-child {
+        transform-origin: top right;
       }
 
       &-selected {
         z-index: 2;
 
-        &:first-child .c-ribbonItem__details {
-          left: 0;
+        box-shadow: 0 5px 15px 5px rgb(0 0 0 / 40%);
+
+        & > .u-borderlessButton {
+          display: unset;
         }
 
-        &:last-child .c-ribbonItem__details {
-          right: 0
-        }
-
-        .c-ribbonItem__details {
-          z-index: 1;
-          box-shadow: 0 5px 15px 5px rgb(0 0 0 / 40%);
-
-          width: calc(var(--ribbonWidth) * var(--ribbonZoom));
-          height: calc(var(--ribbonHeight) * var(--ribbonZoom) + 50px);
-
-          top: calc(-1 * var(--selectedTopOffset));
-
-          & > .u-borderlessButton {
-            display: unset;
-          }
-        }
+        transform: scale(var(--ribbonZoom)) translateY(calc(-1 * var(--selectedTopOffset)));
       }
     }
   }
@@ -163,8 +129,6 @@ $selectedAdditionalHeight: 50px;
       --ribbonHeight: 150px;
 
       .c-ribbonItem {
-        --aspectRatio: #{$aspect-ratio-backdrop};
-
         .c-ribbonItem__backdrop {
           display: block;
         }
@@ -174,7 +138,6 @@ $selectedAdditionalHeight: 50px;
         }
 
         &.c-ribbonItem-hasPoster {
-          --aspectRatio: #{$aspect-ratio-poster};
           .c-ribbonItem__backdrop {
             display: none;
           }
