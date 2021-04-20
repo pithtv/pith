@@ -3,8 +3,8 @@
   <div class="c-ribbon__content" syntheticScroll>
       <div class="c-ribbonItem" *ngFor="let ribbonItem of contents, index as itemIndex"
            [class.c-ribbonItem-selected]="ribbonItem === selectedItem"
-           [class.c-ribbonItem-hasPoster]="ribbonItem.item.posters.length > 0"
-           [class.c-ribbonItem-hasBackdrop]="ribbonItem.item.backdrops.length > 0"
+           [class.c-ribbonItem-has-poster]="ribbonItem.item.posters.length > 0"
+           [class.c-ribbonItem-has-backdrop]="ribbonItem.item.backdrops.length > 0"
            [tabindex]="1000 + itemIndex"
            (focus)="select(ribbonItem)"
            (blur)="select(null)"

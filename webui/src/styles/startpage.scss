@@ -1,5 +1,25 @@
 $selectedAdditionalHeight: 50px;
 
+@mixin preferView($primary, $secondary) {
+  .c-ribbonItem__#{$secondary} {
+    display: block;
+  }
+
+  .c-ribbonItem__#{$primary} {
+    display: none;
+  }
+
+  &.c-ribbonItem-has-#{$primary} {
+    .c-ribbonItem__#{$primary} {
+      display: block;
+    }
+
+    .c-ribbonItem__#{$secondary} {
+      display: none;
+    }
+  }
+}
+
 .c-startPage {
   width: 100%;
   min-height: 100%;
@@ -48,23 +68,7 @@ $selectedAdditionalHeight: 50px;
       margin: 0 var(--itemSpacing);
       outline: none;
 
-      .c-ribbonItem__poster {
-        display: block;
-      }
-
-      .c-ribbonItem__backdrop {
-        display: none;
-      }
-
-      &.c-ribbonItem-hasBackdrop {
-        .c-ribbonItem__backdrop {
-          display: block;
-        }
-
-        .c-ribbonItem__poster {
-          display: none;
-        }
-      }
+      @include preferView('backdrop','poster');
 
       .c-ribbonItem__backdrop,
       .c-ribbonItem__poster {
@@ -129,23 +133,7 @@ $selectedAdditionalHeight: 50px;
       --ribbonHeight: 150px;
 
       .c-ribbonItem {
-        .c-ribbonItem__backdrop {
-          display: block;
-        }
-
-        .c-ribbonItem__poster {
-          display: none;
-        }
-
-        &.c-ribbonItem-hasPoster {
-          .c-ribbonItem__backdrop {
-            display: none;
-          }
-
-          .c-ribbonItem__poster {
-            display: block;
-          }
-        }
+        @include preferView('poster', 'backdrop');
       }
     }
   }
