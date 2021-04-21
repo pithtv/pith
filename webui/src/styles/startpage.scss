@@ -75,7 +75,7 @@ $selectedAdditionalHeight: 50px;
         height: var(--ribbonHeight);
       }
 
-      & > button {
+      .c-ribbonItem__details {
         display: none;
       }
 
@@ -102,8 +102,8 @@ $selectedAdditionalHeight: 50px;
 
         box-shadow: 0 5px 15px 5px rgb(0 0 0 / 40%);
 
-        & > .u-borderlessButton {
-          display: unset;
+        .c-ribbonItem__details {
+          display: block;
         }
 
         transform: scale(var(--ribbonZoom)) translateY(calc(-1 * var(--selectedTopOffset)));
