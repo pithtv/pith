@@ -55,11 +55,19 @@ test('listRibbons', async () => {
                 return [{
                     type: 'file',
                     id: 'dummy_item_1',
-                    title: 'Dummy Item 1'
+                    title: 'Dummy Item 1',
+                    playState: {
+                        status: "inprogress",
+                        time: 3000
+                    }
                 }, {
                     type: 'file',
                     id: 'dummy_item_2',
-                    title: 'Dummy Item 2'
+                    title: 'Dummy Item 2',
+                    playState: {
+                        status: "inprogress",
+                        time: 8000
+                    }
                 }];
             }
             return [];
@@ -75,7 +83,11 @@ test('listRibbons', async () => {
                     return [{
                         type: 'file',
                         id: 'dummy_item_3',
-                        title: 'Dummy Item 3'
+                        title: 'Dummy Item 3',
+                        playState: {
+                            status: "inprogress",
+                            time: 6000
+                        }
                     }];
                 case 'recentlyReleased':
                     return [{
@@ -97,20 +109,32 @@ test('listRibbons', async () => {
         {
             channelId: 'dummy_1', item: {
                 type: 'file',
-                id: 'dummy_item_1',
-                title: 'Dummy Item 1'
-            }
-        }, {
-            channelId: 'dummy_1', item: {
-                type: 'file',
                 id: 'dummy_item_2',
-                title: 'Dummy Item 2'
+                title: 'Dummy Item 2',
+                playState: {
+                    status: "inprogress",
+                    time: 8000
+                }
             }
         }, {
             channelId: 'dummy_2', item: {
                 type: 'file',
                 id: 'dummy_item_3',
-                title: 'Dummy Item 3'
+                title: 'Dummy Item 3',
+                playState: {
+                    status: "inprogress",
+                    time: 6000
+                }
+            }
+        }, {
+            channelId: 'dummy_1', item: {
+                type: 'file',
+                id: 'dummy_item_1',
+                title: 'Dummy Item 1',
+                playState: {
+                    status: "inprogress",
+                    time: 3000
+                }
             }
         }
     ]);

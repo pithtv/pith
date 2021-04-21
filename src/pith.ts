@@ -5,7 +5,7 @@ import {IPlayer} from "./player";
 import {container} from 'tsyringe';
 import {PluginSymbol} from './plugins/plugins';
 import {getLogger} from 'log4js';
-import {Ribbon} from "./ribbon";
+import {Ribbon, RibbonItem, RibbonOrder} from "./ribbon";
 import {Channel} from "./lib/channel";
 
 const route = Router();
@@ -182,9 +182,12 @@ export class Pith extends EventEmitter {
         return Object.values(index);
     }
 
-    public async listRibbonContents(ribbonId: string) : Promise<{channelId: string, item: IMediaChannelItem}[]> {
+    public async listRibbonContents(ribbonId: string, maximum: number = 10) : Promise<RibbonItem[]> {
         const channels = await this.getChannelInstances();
-        const items = (await Promise.all(channels.map(async channel => (channel.listRibbonContents? (await channel.listRibbonContents(ribbonId)).map(item => ({channelId: channel.id, item})) : [])))).reduce((a,b) => a.concat(b), []);
-        return items;
+        const items = (await Promise.all(channels.map(async channel => (channel.listRibbonContents? (await channel.listRibbonContents(ribbonId, maximum)).map(item => ({channelId: channel.id, item})) : [])))).reduce((a,b) => a.concat(b), []);
+        if(ribbonId in RibbonOrder) {
+            items.sort(RibbonOrder[ribbonId]);
+        }
+        return items.slice(0, maximum);
     }
 }

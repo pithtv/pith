@@ -20,7 +20,7 @@ class LibraryChannel extends Channel implements IChannel {
     private db: Repository;
     private directory: LibraryRoot[];
 
-    constructor(private pithApp: Pith, dbDriver: DBDriver, directoryFactory: DirectoryFactory) {
+    constructor(private pithApp: Pith, dbDriver: DBDriver, directoryFactory: DirectoryFactory, private ribbons: Ribbon[]) {
         super();
 
         this.pithApp = pithApp;
@@ -113,13 +113,18 @@ class LibraryChannel extends Channel implements IChannel {
     }
 
     async getRibbons(): Promise<Ribbon[]> {
-        return [SharedRibbons.recentlyReleased];
+        return this.ribbons;
     }
 
-    async listRibbonContents(ribbonId: string): Promise<IMediaChannelItem[]> {
+    async listRibbonContents(ribbonId: string, maximum: number): Promise<IMediaChannelItem[]> {
+        if(!this.ribbons.find(r => r.id === ribbonId)) {
+            return [];
+        }
         switch(ribbonId) {
-            case SharedRibbons.recentlyReleased.id:
+            case SharedRibbons.recentlyAdded.id:
                 return await this.listContents("recentlyadded") as IMediaChannelItem[];
+            case SharedRibbons.recentlyReleased.id:
+                return await this.listContents("recentlyreleased") as IMediaChannelItem[];
             default:
                 return [];
         }
@@ -138,8 +143,8 @@ export default class LibraryPlugin implements PithPlugin {
 
     init(opts) {
         const self = this;
-        const moviesChannel = new LibraryChannel(opts.pith, this.dbDriver, moviesDirectory);
-        const showsChannel = new LibraryChannel(opts.pith, this.dbDriver, showsDirectory);
+        const moviesChannel = new LibraryChannel(opts.pith, this.dbDriver, moviesDirectory, [SharedRibbons.recentlyReleased, SharedRibbons.recentlyAdded]);
+        const showsChannel = new LibraryChannel(opts.pith, this.dbDriver, showsDirectory, [SharedRibbons.recentlyAdded]);
 
         this.pith = opts.pith;
 

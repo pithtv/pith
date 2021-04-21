@@ -58,7 +58,7 @@ $selectedAdditionalHeight: 50px;
     overflow: hidden;
     height: calc(var(--ribbonHeight) * var(--ribbonZoom) + 150px);
     margin-top: calc(var(--selectedTopOffset) * -2);
-    margin-bottom: -150px;
+    margin-bottom: -200px;
 
     .c-ribbonItem {
       display: inline-block;
@@ -131,6 +131,7 @@ $selectedAdditionalHeight: 50px;
 
     &__content {
       --ribbonHeight: 150px;
+      margin-bottom: -150px;
 
       .c-ribbonItem {
         @include preferView('poster', 'backdrop');

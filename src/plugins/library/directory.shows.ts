@@ -60,6 +60,7 @@ export default function(plugin) : LibraryRoot[] {
             mediatype: 'episode',
             playState: playState || {},
             playable: episode.originalId != null,
+            releaseDate: episode.airDate,
             unavailable: episode.originalId == null
         };
     }

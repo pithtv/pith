@@ -103,3 +103,13 @@ export async function directoryExists(path) {
         return false;
     }
 }
+
+export function flatMap<T>(a: T[], b: T[]) : T[] {
+    if(a === undefined || a === null) {
+        return b;
+    }
+    if(b === undefined || b === null) {
+        return a;
+    }
+    return a.concat(b);
+}

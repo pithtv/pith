@@ -24,6 +24,7 @@ export interface IChannelItem {
     [key: string]: any;
     subtitles?: Subtitle[];
     playState?: IPlayState;
+    releaseDate?: Date;
 }
 
 export interface Image {
@@ -59,7 +60,7 @@ export interface ITvShowEpisode extends IMediaChannelItem {
     season: number;
     episode: number;
     mediatype: 'episode',
-    airDate: Date
+    releaseDate: Date
 }
 
 export interface IPlayState {
@@ -94,6 +95,6 @@ export interface IChannel {
 
     getRibbons?(): Promise<Ribbon[]>;
 
-    listRibbonContents?(ribbonId: string) : Promise<IMediaChannelItem[]>
+    listRibbonContents?(ribbonId: string, maximum: number) : Promise<IMediaChannelItem[]>
 }
 

@@ -10,9 +10,9 @@ import {Router} from "@angular/router";
 })
 export class RibbonComponent {
   _ribbon: Ribbon;
-  private contents: RibbonItem[];
-  private susbcription: Subscription;
-  private selectedItem: RibbonItem | undefined;
+  contents: RibbonItem[];
+  selectedItem: RibbonItem | undefined;
+  private subscription: Subscription;
 
   constructor(private pithClient: PithClientService, private playerService: PlayerService, private router: Router) {
 
@@ -21,10 +21,10 @@ export class RibbonComponent {
   @Input("ribbon")
   set ribbon(value: Ribbon) {
     this._ribbon = value;
-    if(this.susbcription) {
-      this.susbcription.unsubscribe();
+    if(this.subscription) {
+      this.subscription.unsubscribe();
     }
-    this.susbcription = value.listContents().subscribe(contents => this.contents = contents.slice(0, 50));
+    this.subscription = value.listContents().subscribe(contents => this.contents = contents.slice(0, 50));
   }
 
   select(ribbonItem: RibbonItem) {
