@@ -4,7 +4,7 @@ import {Collection, DBDriver, DBDriverSymbol} from '../../persistence/DBDriver';
 import {initialiser} from '../../lib/AsyncInitialisation';
 
 interface PersistedPlayState extends IPlayState {
-    _id;
+    _id?;
 }
 
 @injectable()
@@ -26,13 +26,17 @@ export class StateStore {
         this.scheduleFlush();
     }
 
-    get(id: string) {
+    get(id: string) : IPlayState {
         return this.cache[id];
     }
 
     put(object: IPlayState) {
         const existing = this.get(object.id);
-        const dbObject = {...existing, ...object};
+        const dbObject : PersistedPlayState = {
+            ...existing,
+            ...object,
+            updated: new Date()
+        };
 
         this.cache[object.id] = dbObject;
 

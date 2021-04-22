@@ -67,7 +67,8 @@ export interface IPlayState {
     id?: string,
     time?: number,
     duration?: number,
-    status: "watched"|"inprogress"|"none";
+    status: "watched"|"inprogress"|"none",
+    updated?: Date;
 }
 
 export interface IChannelInitialiser {

@@ -16,6 +16,7 @@ import {getLogger} from "log4js";
 import {SonarrEpisode, SonarrSeries} from "./sonarr";
 import {IStream} from "../../stream";
 import {Ribbon, SharedRibbons} from "../../ribbon";
+import * as Arrays from "../../lib/Arrays";
 
 const logger = getLogger('pith.plugin.sonarr');
 const settingsStore = container.resolve(SettingsStoreSymbol);
@@ -71,7 +72,7 @@ class SonarrChannel extends Channel {
         });
     }
 
-    private imgs(show: SonarrSeries) : {
+    private imgs(show: SonarrSeries): {
         poster?: string,
         backdrop?: string,
         banner?: string,
@@ -79,20 +80,19 @@ class SonarrChannel extends Channel {
         backdrops: Image[],
         banners: Image[]
     } {
-        const perType : {[coverType: string]: {url: string}[]} = show.images.reduce((result, img) => ({
+        const perType: { [coverType: string]: { url: string }[] } = show.images.reduce((result, img) => ({
             ...result,
-            [img.coverType]: [...(result[img.coverType]||[]), { url: this.url.resolve(img.url.replace(/(sonarr\/)(.*)/, '$1api/$2&apiKey=' + this.apikey))}]
-        }), {
-        });
+            [img.coverType]: [...(result[img.coverType] || []), {url: this.url.resolve(img.url.replace(/(sonarr\/)(.*)/, '$1api/$2&apiKey=' + this.apikey))}]
+        }), {});
 
         return {
-            poster: (perType.poster??[])[0]?.url,
-            backdrop: (perType.fanArt??[])[0]?.url,
-            banner: (perType.banner??[])[0]?.url,
+            poster: (perType.poster ?? [])[0]?.url,
+            backdrop: (perType.fanArt ?? [])[0]?.url,
+            banner: (perType.banner ?? [])[0]?.url,
             posters: perType.poster,
             backdrops: perType.fanart,
             banners: perType.banner
-        }
+        };
     }
 
     private async convertSeries(show: SonarrSeries, episodes: SonarrEpisode[]): Promise<ITvShow> {
@@ -131,7 +131,7 @@ class SonarrChannel extends Channel {
         }
     }
 
-    private findLastPlayable(mappedEpisodes: SonarrEpisodeItem[]) : SonarrEpisodeItem {
+    private findLastPlayable(mappedEpisodes: SonarrEpisodeItem[]): SonarrEpisodeItem {
         let lastPlayable;
         for (let x = mappedEpisodes.length; x && !lastPlayable; x--) {
             if (mappedEpisodes[x - 1].playable) {
@@ -200,7 +200,7 @@ class SonarrChannel extends Channel {
         }
     }
 
-    private async findAllSeries() : Promise<ITvShow[]> {
+    private async findAllSeries(): Promise<ITvShow[]> {
         let series = await this.queryAllSeries();
         series.sort((a, b) => a.title.localeCompare(b.title));
         return await mapSeries(series, (async show => {
@@ -307,21 +307,50 @@ class SonarrChannel extends Channel {
     }
 
     async getRibbons(): Promise<Ribbon[]> {
-        return [SharedRibbons.recentlyAdded, SharedRibbons.recentlyReleased];
+        return [SharedRibbons.recentlyAdded, SharedRibbons.recentlyReleased, SharedRibbons.continueWatching];
     }
 
-    private async findRecentlyAdded(maximum: number) : Promise<ITvShowEpisode[]> {
+    private async findRecentlyAdded(maximum: number): Promise<ITvShowEpisode[]> {
         const series = await this.findAllSeries();
         const seasons = series.map(series => series.seasons).reduce(flatMap);
         const episodes = seasons.map(season => season.episodes).reduce(flatMap).filter(e => e.playable);
         return episodes;
     }
 
+    /**
+     * Find the last played shows. Then for each return either the last played episode if it wasn't finished yet, or the next episode if it was.
+     * @param maximum
+     * @private
+     */
+    private async findContinueWatching(maximum: number): Promise<ITvShowEpisode[]> {
+        const series = (await this.findAllSeries())
+            .filter(s => s.playState?.updated)
+            .sort((a, b) => b.playState.updated?.getTime() - a.playState.updated?.getTime())
+            .slice(0, maximum);
+
+        return series.map(series => this.findNextEpisode(series)).filter(ep => ep);
+    }
+
+    private findNextEpisode(series: ITvShow): ITvShowEpisode {
+        const episodes = series.seasons.map(season => season.episodes).reduce(flatMap).filter(ep => ep.playState?.status === 'watched' || ep.playState?.status === 'inprogress');
+        const {value: episode} = Arrays.max(episodes, Arrays.compare(ep => ep.time));
+        if(episode.playState.status === 'watched') {
+            const laterEpisodes = episodes.filter(ep => ep.season == episode.season && ep.episode > episode.episode || ep.season > episode.season);
+            return Arrays.max(laterEpisodes,
+                Arrays.reverse(Arrays.chain(Arrays.compare(ep => ep.season), Arrays.compare(ep => ep.episode)))
+            ).value;
+        } else if(episode.playState.status === 'inprogress') {
+            return episode;
+        }
+    }
+
     listRibbonContents(ribbonId: string, maximum: number): Promise<IMediaChannelItem[]> {
-        switch(ribbonId) {
+        switch (ribbonId) {
             case SharedRibbons.recentlyAdded.id:
             case SharedRibbons.recentlyReleased.id:
                 return this.findRecentlyAdded(maximum);
+            case SharedRibbons.continueWatching.id:
+                return this.findContinueWatching(maximum);
         }
     }
 }

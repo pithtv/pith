@@ -36,6 +36,7 @@ export function aggregatePlayState(items) : IPlayState {
             playstate = 'inprogress'; // some unwatched
     }
     return {
-        status: playstate
+        status: playstate,
+        time: items.map(ps => ps.time).reduce(Math.max)
     };
 }
