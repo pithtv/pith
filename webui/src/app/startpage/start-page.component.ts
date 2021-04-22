@@ -5,7 +5,7 @@ import {PithClientService, Ribbon} from "../core/pith-client.service";
   templateUrl: './start-page.component.html'
 })
 export class StartPageComponent {
-  private ribbons: Ribbon[];
+  ribbons: Ribbon[];
 
   constructor(private pithClient: PithClientService) {
     pithClient.queryRibbons().subscribe(ribbons => this.ribbons = ribbons);
