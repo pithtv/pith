@@ -43,12 +43,12 @@ function parseItemId(itemId) {
 }
 
 function lastDateScanned(seasonEps: IChannelItem[]) : Date {
-    const {value: lastEpisode} = Arrays.max(seasonEps, Arrays.compare(ep => ep.dateScanned));
+    const {value: lastEpisode} = Arrays.max(seasonEps, Arrays.compare(ep => ep.unavailable ? 0 : ep.dateScanned));
     return lastEpisode.dateScanned;
 }
 
 function lastReleaseDate(seasonEps: IChannelItem[]) : Date {
-    const {value: lastEpisode} = Arrays.max(seasonEps, Arrays.compare(ep => ep.releaseDate));
+    const {value: lastEpisode} = Arrays.max(seasonEps, Arrays.compare(ep => ep.unavailable ? 0 : ep.releaseDate));
     return lastEpisode.releaseDate;
 }
 
@@ -368,9 +368,9 @@ class SonarrChannel extends Channel {
     listRibbonContents(ribbonId: string, maximum: number): Promise<IMediaChannelItem[]> {
         switch (ribbonId) {
             case SharedRibbons.recentlyReleased.id:
-                return this.findByEpisode(maximum, e => e.releaseDate);
+                return this.findByEpisode(maximum, e => e.unavailable ? 0 : e.releaseDate);
             case SharedRibbons.recentlyAdded.id:
-                return this.findByEpisode(maximum, e => e.dateScanned);
+                return this.findByEpisode(maximum, e => e.unavailable ? 0 : e.dateScanned);
             case SharedRibbons.continueWatching.id:
                 return this.findContinueWatching(maximum);
         }
