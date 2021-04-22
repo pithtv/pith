@@ -20,9 +20,20 @@ $selectedAdditionalHeight: 50px;
   }
 }
 
+.c-ribbonItem__details {
+  padding-top: 24px;
+}
+
 .c-ribbonItem__title {
+  max-width: 100%;
+  text-overflow: ellipsis;
   padding: 5px 7px;
   font-size: 12px;
+  position: absolute;
+  margin-top: -22px;
+  left: 0;
+  right: 0;
+  overflow: hidden;
 }
 
 .c-startPage {
@@ -130,13 +141,12 @@ $selectedAdditionalHeight: 50px;
   .c-ribbon {
     --leftPadding: 12px;
     --itemSpacing: 2px;
-    --ribbonZoom: 1.6;
     --ribbonHeight: 150px;
 
     padding: 5px 0;
 
     &__content {
-      margin-bottom: -190px;
+      margin-bottom: -180px;
 
       .c-ribbonItem {
         @include preferView('poster', 'backdrop');
