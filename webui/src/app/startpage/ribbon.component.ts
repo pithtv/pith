@@ -27,6 +27,9 @@ export class RibbonComponent {
     this.subscription = value.listContents().subscribe(contents => this.contents = contents.slice(0, 50));
   }
 
+  @Input("ribbonIndex")
+  ribbonIndex: number;
+
   select(ribbonItem: RibbonItem) {
     setTimeout(() => {
       this.selectedItem = ribbonItem;

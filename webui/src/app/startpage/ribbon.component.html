@@ -5,7 +5,7 @@
            [class.c-ribbonItem-selected]="ribbonItem === selectedItem"
            [class.c-ribbonItem-has-poster]="ribbonItem.item.posters?.length > 0"
            [class.c-ribbonItem-has-backdrop]="ribbonItem.item.backdrops?.length > 0"
-           [tabindex]="1000 + itemIndex"
+           [tabindex]="1000 + 1000 * ribbonIndex + itemIndex"
            (focus)="select(ribbonItem)"
            (blur)="select(null)"
       >
