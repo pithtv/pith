@@ -20,6 +20,11 @@ $selectedAdditionalHeight: 50px;
   }
 }
 
+.c-ribbonItem__title {
+  padding: 5px 7px;
+  font-size: 12px;
+}
+
 .c-startPage {
   width: 100%;
   min-height: 100%;
@@ -27,17 +32,19 @@ $selectedAdditionalHeight: 50px;
 
   mask-image: linear-gradient(90deg,
     transparent,
-    black 80px,
-    black calc(100% - 80px),
+    black 60px,
+    black calc(100% - 60px),
     transparent
   );
 }
 
 .c-ribbon {
-  --leftPadding: 80px;
+  --leftPadding: 60px;
   --topPadding: 30px;
-  --itemSpacing: 8px;
+  --itemSpacing: 2px;
   --selectedTopOffset: 20px;
+  --ribbonHeight: 160px;
+  --ribbonZoom: 1.4;
 
   padding: var(--topPadding) 0;
 
@@ -48,8 +55,6 @@ $selectedAdditionalHeight: 50px;
   }
 
   &__content {
-    --ribbonHeight: 200px;
-    --ribbonZoom: 1.4;
 
     width: 100%;
 
@@ -79,7 +84,7 @@ $selectedAdditionalHeight: 50px;
         display: none;
       }
 
-      background-color: rgba(0, 0, 0, 0.5);
+      background-color: rgb(17, 17, 17);
       border-radius: 8px;
 
       transition: 100ms ease-in-out;
@@ -126,12 +131,12 @@ $selectedAdditionalHeight: 50px;
     --leftPadding: 12px;
     --itemSpacing: 2px;
     --ribbonZoom: 1.6;
+    --ribbonHeight: 150px;
 
     padding: 5px 0;
 
     &__content {
-      --ribbonHeight: 150px;
-      margin-bottom: -150px;
+      margin-bottom: -190px;
 
       .c-ribbonItem {
         @include preferView('poster', 'backdrop');
