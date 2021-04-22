@@ -17,6 +17,7 @@ import {SonarrEpisode, SonarrSeries} from "./sonarr";
 import {IStream} from "../../stream";
 import {Ribbon, SharedRibbons} from "../../ribbon";
 import * as Arrays from "../../lib/Arrays";
+import {Accessor, Comparator} from "../../lib/Arrays";
 
 const logger = getLogger('pith.plugin.sonarr');
 const settingsStore = container.resolve(SettingsStoreSymbol);
@@ -39,6 +40,16 @@ function parseItemId(itemId) {
             id = match && match[2];
         return {mediatype, id};
     }
+}
+
+function lastDateScanned(seasonEps: IChannelItem[]) : Date {
+    const {value: lastEpisode} = Arrays.max(seasonEps, Arrays.compare(ep => ep.dateScanned));
+    return lastEpisode.dateScanned;
+}
+
+function lastReleaseDate(seasonEps: IChannelItem[]) : Date {
+    const {value: lastEpisode} = Arrays.max(seasonEps, Arrays.compare(ep => ep.releaseDate));
+    return lastEpisode.releaseDate;
 }
 
 class SonarrChannel extends Channel {
@@ -119,11 +130,16 @@ class SonarrChannel extends Channel {
                 let seasonEps = mappedEpisodes.filter(ep => ep.season === season.season);
                 season.playState = TvShowUtils.aggregatePlayState(seasonEps);
                 season.episodes = seasonEps;
+
+                season.dateScanned = lastDateScanned(seasonEps);
+                season.releaseDate = lastReleaseDate(seasonEps);
             });
 
             return {
                 hasNew: lastPlayable && (!lastPlayable.playState || lastPlayable.playState.status !== 'watched') && lastPlayable.dateScanned > (new Date(new Date().getTime() - 1000 * 60 * 60 * 24 * settingsStore.settings.maxAgeForNew)),
                 playState: TvShowUtils.aggregatePlayState(pithShow.seasons),
+                dateScanned: lastDateScanned(pithShow.seasons),
+                releaseDate: lastReleaseDate(pithShow.seasons),
                 ...pithShow
             };
         } else {
@@ -310,11 +326,16 @@ class SonarrChannel extends Channel {
         return [SharedRibbons.recentlyAdded, SharedRibbons.recentlyReleased, SharedRibbons.continueWatching];
     }
 
-    private async findRecentlyAdded(maximum: number): Promise<ITvShowEpisode[]> {
-        const series = await this.findAllSeries();
-        const seasons = series.map(series => series.seasons).reduce(flatMap);
-        const episodes = seasons.map(season => season.episodes).reduce(flatMap).filter(e => e.playable);
-        return episodes;
+    private async findByEpisode(maximum: number, accessor: Accessor<IChannelItem>): Promise<ITvShowEpisode[]> {
+        const allSeries = await this.findAllSeries();
+        const filteredSeries = allSeries.filter(accessor).sort(Arrays.reverse(Arrays.compare(accessor)));
+        const series = filteredSeries.slice(0, maximum);
+        return series.map(show => {
+            const {value: episode} = Arrays.max(
+                show.seasons.map(season => season.episodes).reduce(flatMap),
+                Arrays.compare(accessor) as Comparator<ITvShowEpisode>);
+            return episode;
+        });
     }
 
     /**
@@ -346,9 +367,10 @@ class SonarrChannel extends Channel {
 
     listRibbonContents(ribbonId: string, maximum: number): Promise<IMediaChannelItem[]> {
         switch (ribbonId) {
-            case SharedRibbons.recentlyAdded.id:
             case SharedRibbons.recentlyReleased.id:
-                return this.findRecentlyAdded(maximum);
+                return this.findByEpisode(maximum, e => e.releaseDate);
+            case SharedRibbons.recentlyAdded.id:
+                return this.findByEpisode(maximum, e => e.dateScanned);
             case SharedRibbons.continueWatching.id:
                 return this.findContinueWatching(maximum);
         }

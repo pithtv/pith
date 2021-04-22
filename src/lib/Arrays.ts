@@ -1,4 +1,4 @@
-export type comparable = string | number;
+export type comparable = string | number | Date;
 export type Accessor<T> = (a: T) => comparable;
 export type Comparator<T> = (a: T, b: T) => number;
 
