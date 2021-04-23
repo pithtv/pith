@@ -10,17 +10,18 @@ import {inject, injectable} from 'tsyringe';
 import {SettingsStore, SettingsStoreSymbol} from '../../settings/SettingsStore';
 import {DBDriver, DBDriverSymbol} from '../../persistence/DBDriver';
 import {PithPlugin, plugin} from '../plugins';
-import {DirectoryFactory, LibraryRoot} from "./types";
+import {Directory, DirectoryFactory, LibraryRoot} from "./types";
 import {IChannel, IChannelItem, IMediaChannelItem, IPlayState} from "../../channel";
 import {Ribbon, SharedRibbons} from "../../ribbon";
+import {max} from "../../lib/Arrays";
 
 const logger = getLogger("pith.plugin.library");
 
 class LibraryChannel extends Channel implements IChannel {
     private db: Repository;
-    private directory: LibraryRoot[];
+    private directory: Directory;
 
-    constructor(private pithApp: Pith, dbDriver: DBDriver, directoryFactory: DirectoryFactory, private ribbons: Ribbon[]) {
+    constructor(private pithApp: Pith, dbDriver: DBDriver, directoryFactory: DirectoryFactory) {
         super();
 
         this.pithApp = pithApp;
@@ -31,17 +32,13 @@ class LibraryChannel extends Channel implements IChannel {
 
     private listContentsWithoutPlayStates(containerId) : Promise<IChannelItem[]> {
         if(!containerId) {
-            return Promise.resolve(this.directory.filter(function(d) {
-                return d.visible !== false;
-            }));
+            return Promise.resolve(this.directory.directories.filter(d => d.visible !== false));
         } else {
             const i = containerId.indexOf('/');
 
             const directoryId = i > -1 ? containerId.substring(0, i) : containerId;
 
-            const directory = this.directory.filter(function (e) {
-                return e.id === directoryId;
-            })[0];
+            const directory = this.directory.directories.find(e => e.id === directoryId);
 
             return directory._getContents(i > -1 ? containerId.substring(i + 1) : null);
         }
@@ -69,9 +66,7 @@ class LibraryChannel extends Channel implements IChannel {
 
             const directoryId = i > -1 ? itemId.substring(0, i) : itemId;
 
-            const directory = this.directory.filter(function (e) {
-                return e.id === directoryId;
-            })[0];
+            const directory = this.directory.directories.find(e => e.id === directoryId);
 
             if(!directory) {
                 throw Error("Not found");
@@ -113,21 +108,12 @@ class LibraryChannel extends Channel implements IChannel {
     }
 
     async getRibbons(): Promise<Ribbon[]> {
-        return this.ribbons;
+        return this.directory.ribbons.map(r => r.ribbon);
     }
 
     async listRibbonContents(ribbonId: string, maximum: number): Promise<IMediaChannelItem[]> {
-        if(!this.ribbons.find(r => r.id === ribbonId)) {
-            return [];
-        }
-        switch(ribbonId) {
-            case SharedRibbons.recentlyAdded.id:
-                return await this.listContents("recentlyadded") as IMediaChannelItem[];
-            case SharedRibbons.recentlyReleased.id:
-                return await this.listContents("recentlyreleased") as IMediaChannelItem[];
-            default:
-                return [];
-        }
+        const ribbon = this.directory.ribbons.find(r => r.ribbon.id === ribbonId);
+        return ribbon.getContents(maximum);
     }
 }
 
@@ -143,8 +129,8 @@ export default class LibraryPlugin implements PithPlugin {
 
     init(opts) {
         const self = this;
-        const moviesChannel = new LibraryChannel(opts.pith, this.dbDriver, moviesDirectory, [SharedRibbons.recentlyReleased, SharedRibbons.recentlyAdded]);
-        const showsChannel = new LibraryChannel(opts.pith, this.dbDriver, showsDirectory, [SharedRibbons.recentlyAdded]);
+        const moviesChannel = new LibraryChannel(opts.pith, this.dbDriver, moviesDirectory);
+        const showsChannel = new LibraryChannel(opts.pith, this.dbDriver, showsDirectory);
 
         this.pith = opts.pith;
 
