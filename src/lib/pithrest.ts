@@ -22,28 +22,26 @@ export function handle(pith) {
         const channelInstance = pith.getChannelInstance(req.params.channelId);
         channelInstance.route.apply(channelInstance.route, arguments);
     }).get("/players", function(req,res) {
-        pith.listPlayers().then(function(list) {
+        return pith.listPlayers().then(function(list) {
             res.json(list);
         });
-    }).get(/player\/([^\/]*)\/load\/([^\/]*)\/(.*)$/, function(req, res) {
+    }).get(/player\/([^\/]*)\/load\/([^\/]*)\/(.*)$/, function(req, res, next) {
         const playerId = req.params[0];
         const channelId = req.params[1];
         const itemId = req.params[2];
-        pith.loadMedia(channelId, itemId, playerId, json.bind(res), req.query);
-    }).get("/player/:playerId/:command", function(req, res) {
-        pith.controlPlayback(req.params.playerId, req.params.command, req.query);
-        res.end();
+        pith.loadMedia(channelId, itemId, playerId, json.bind(res), req.query).catch(next);
+    }).get("/player/:playerId/:command", function(req, res, next) {
+        pith.controlPlayback(req.params.playerId, req.params.command, req.query).then(() => res.end()).catch(next);
     }).get("/settings", function(req, res) {
         let settingsStore = container.resolve(SettingsStoreSymbol);
         res.json(settingsStore.settings);
-    }).put("/settings", function(req, res) {
+    }).put("/settings", function(req, res, next) {
         let settingsStore = container.resolve(SettingsStoreSymbol);
-        settingsStore.storeSettings(req.body);
-        res.end();
-    }).get("/ribbons", (req, res) => {
-        pith.listRibbons().then(ribbons => res.json(ribbons));
-    }).get("/ribbons/:ribbonId", (req, res) => {
-        pith.listRibbonContents(req.params.ribbonId).then(contents => res.json(contents));
+        settingsStore.storeSettings(req.body).then(() => res.end()).catch(next);
+    }).get("/ribbons", (req, res, next) => {
+        return pith.listRibbons().then(ribbons => res.json(ribbons)).catch(next);
+    }).get("/ribbons/:ribbonId", (req, res, next) => {
+        return pith.listRibbonContents(req.params.ribbonId).then(contents => res.json(contents)).catch(next);
     });
 
     return router;

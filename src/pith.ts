@@ -7,6 +7,7 @@ import {PluginSymbol} from './plugins/plugins';
 import {getLogger} from 'log4js';
 import {Ribbon, RibbonItem, RibbonOrder} from "./ribbon";
 import {Channel} from "./lib/channel";
+import {flatMap} from "./lib/util";
 
 const route = Router();
 const logger = getLogger("pith");
@@ -184,7 +185,11 @@ export class Pith extends EventEmitter {
 
     public async listRibbonContents(ribbonId: string, maximum: number = 10) : Promise<RibbonItem[]> {
         const channels = await this.getChannelInstances();
-        const items = (await Promise.all(channels.map(async channel => (channel.listRibbonContents? (await channel.listRibbonContents(ribbonId, maximum)).map(item => ({channelId: channel.id, item})) : [])))).reduce((a,b) => a.concat(b), []);
+        const items = (await Promise.all(
+            channels
+                .map(async channel =>
+                    (channel.listRibbonContents ? ((await channel.listRibbonContents(ribbonId, maximum))??[]).map(item => ({channelId: channel.id, item})) : [])
+                ))).reduce(flatMap);
         if(ribbonId in RibbonOrder) {
             items.sort(RibbonOrder[ribbonId]);
         }
