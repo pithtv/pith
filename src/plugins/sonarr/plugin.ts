@@ -18,6 +18,7 @@ import {IStream} from "../../stream";
 import {Ribbon, SharedRibbons} from "../../ribbon";
 import * as Arrays from "../../lib/Arrays";
 import {Accessor, Comparator} from "../../lib/Arrays";
+import {AsyncCache} from "../../lib/cache";
 
 const logger = getLogger('pith.plugin.sonarr');
 const settingsStore = container.resolve(SettingsStoreSymbol);
@@ -57,7 +58,7 @@ class SonarrChannel extends Channel {
     private pith: Pith;
     private apikey: any;
 
-    private episodeCache: Map<number, { cacheKey: string, content: SonarrEpisode[] }> = new Map();
+    private episodeCache: AsyncCache<number, string, SonarrEpisode[]> = new AsyncCache();
 
     constructor(pith, url, apikey) {
         super();
@@ -257,13 +258,7 @@ class SonarrChannel extends Channel {
 
     private async queryEpisodes(sonarrId: number, cacheKey?: string): Promise<SonarrEpisode[]> {
         if (cacheKey !== undefined) {
-            let cacheEntry = this.episodeCache.get(sonarrId);
-            if (!cacheEntry || cacheEntry.cacheKey !== cacheKey) {
-                logger.debug(`Cache miss; wanted %s, got %s`, cacheKey, cacheEntry?.cacheKey);
-                cacheEntry = {cacheKey, content: await this.queryEpisodes(sonarrId)};
-                this.episodeCache.set(sonarrId, cacheEntry);
-            }
-            return cacheEntry.content;
+            return this.episodeCache.resolve(sonarrId, cacheKey, () => this.queryEpisodes(sonarrId));
         }
         return this._get(`api/episode?seriesId=${sonarrId}`);
     }
