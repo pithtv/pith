@@ -142,7 +142,7 @@ export class Pith extends EventEmitter {
             return;
         }
         const channel = this.getChannelInstance(channelId);
-        channel.getItem(itemId).then(
+        return channel.getItem(itemId).then(
             (item) => player.load(channel, item),
         ).then(
             () => player.play(opts && opts.time),
