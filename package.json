@@ -28,7 +28,7 @@
     "express": "^4.16.4",
     "fluent-ffmpeg": "^2.0.0-rc3",
     "http-string-parser": "0.0.6",
-    "log4js": "^6.1.0",
+    "log4js": "^6.4.0",
     "mongodb": "^3.5.3",
     "moviedb": "^0.2.10",
     "nestdb": "^2.0.0",
