@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@types/express": "^4.17.2",
+    "@types/mdns": "0.0.34",
     "@types/mongodb": "^3.3.16",
     "@types/node-fetch": "^2.5.6",
     "@types/sharp": "^0.24.0",
@@ -29,6 +30,7 @@
     "fluent-ffmpeg": "^2.0.0-rc3",
     "http-string-parser": "0.0.6",
     "log4js": "^6.1.0",
+    "mdns": "^2.7.2",
     "mongodb": "^3.5.3",
     "moviedb-promise": "^3.1.8",
     "nestdb": "^2.0.0",

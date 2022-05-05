@@ -167,6 +167,7 @@ export class Pith extends EventEmitter {
         require("./plugins/couchpotato/plugin");
         require("./plugins/upnp-mediaserver/plugin");
         require("./plugins/webui/plugin");
+        require("./plugins/vlc/plugin");
 
         container.resolveAll(PluginSymbol).forEach(plugin => plugin.init({pith: this}));
     }
