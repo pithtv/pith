@@ -9,7 +9,7 @@ const logger = getLogger('pith.plugin.VlcClient');
 
 export class VlcClient extends EventEmitter implements IPlayer {
   private webSocket: WebSocket;
-  constructor(public readonly address: string, public readonly port: number) {
+  constructor(public readonly address: string, public readonly port: number, public readonly name: string) {
     super();
     this.icons = {
       "48x48": {
@@ -19,7 +19,7 @@ export class VlcClient extends EventEmitter implements IPlayer {
         type: "image/png"
       }
     };
-    this.friendlyName = "VLC";
+    this.friendlyName = name;
   }
 
   async connect() {
