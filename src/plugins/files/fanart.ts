@@ -12,6 +12,7 @@ export default class FanartProvider implements MetaDataProvider {
         if(await fileExists(tbnFile)) {
             const itemPath = $path.relative(channel.rootDir, tbnFile).split($path.sep).map(encodeURIComponent).join("/");
             item.backdrop = channel.pith.rootPath + "/stream/" + itemPath;
+            item.backdrops = [{url: item.backdrop}];
         }
     }
 }

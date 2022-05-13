@@ -1,5 +1,6 @@
 import {Pith} from "./pith";
 import {IStream} from './stream';
+import {Ribbon} from "./ribbon";
 
 export interface IChannelItem {
     creationTime?: Date;
@@ -17,9 +18,20 @@ export interface IChannelItem {
     backdrop?: string;
     poster?: string;
     banner?: string;
+    banners?: Image[];
+    posters?: Image[];
+    backdrops?: Image[];
     [key: string]: any;
     subtitles?: Subtitle[];
     playState?: IPlayState;
+    releaseDate?: Date;
+}
+
+export interface Image {
+    url: string;
+    width?: number;
+    height?: number;
+    language?: string;
 }
 
 export interface Subtitle {
@@ -48,14 +60,15 @@ export interface ITvShowEpisode extends IMediaChannelItem {
     season: number;
     episode: number;
     mediatype: 'episode',
-    airDate: Date
+    releaseDate: Date
 }
 
 export interface IPlayState {
     id?: string,
     time?: number,
     duration?: number,
-    status: "watched"|"inprogress"|"none";
+    status: "watched"|"inprogress"|"none",
+    updated?: Date;
 }
 
 export interface IChannelInitialiser {
@@ -80,4 +93,9 @@ export interface IChannel {
     getLastPlayState(itemId: string): Promise<IPlayState>;
 
     getLastPlayStateFromItem(item: IChannelItem): Promise<IPlayState>;
+
+    getRibbons?(): Promise<Ribbon[]>;
+
+    listRibbonContents?(ribbonId: string, maximum: number) : Promise<IMediaChannelItem[]>
 }
+

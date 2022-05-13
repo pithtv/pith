@@ -97,7 +97,11 @@ export class RemotePlayer extends RestModule {
   }
 
   load(channel: Channel, item: ChannelItem, seekTime?: number) {
-    this.get('load', channel.id, item.id, seekTime !== null ? {time: seekTime} : {}).subscribe();
+    this.loadById(channel.id, item.id, seekTime);
+  }
+
+  loadById(channel: string, item: string, seekTime?: number) {
+    this.get('load', channel, item, seekTime !== null ? {time: seekTime} : {}).subscribe();
   }
 
   play() {
@@ -158,6 +162,17 @@ export interface ChannelItem {
   episode: number;
   season: number;
   duration?: number;
+
+  banners?: Image[];
+  posters?: Image[];
+  backdrops?: Image[];
+}
+
+export interface Image {
+  url: string;
+  width?: number;
+  height?: number;
+  language?: string;
 }
 
 export interface Episode extends ChannelItem {
@@ -229,6 +244,24 @@ export class Channel extends RestModule {
 
   stream(path, options: any = {}): Observable<{ item: ChannelItem, stream: Stream }> {
     return this.get<{ item: ChannelItem, stream: Stream }>('stream', path || '', options);
+  }
+}
+
+export interface RibbonItem {
+  channelId: string;
+  item: ChannelItem;
+}
+
+export class Ribbon extends RestModule {
+  public readonly id: string;
+  public readonly name: string;
+
+  get root() {
+    return ['ribbons', this.id];
+  }
+
+  listContents(): Observable<RibbonItem[]> {
+    return this.getAndCache(null) as Observable<RibbonItem[]>
   }
 }
 
@@ -361,6 +394,10 @@ export class PithClientService {
 
   getChannel(id: string): Observable<Channel> {
     return this.queryChannels().pipe(map((channels => channels.find(channel => channel.id === id))));
+  }
+
+  queryRibbons(): Observable<Ribbon[]> {
+    return (this.get('ribbons') as Observable<any>).pipe(map(p => p.map(pp => new Ribbon(this, pp))));
   }
 
   get errors() {

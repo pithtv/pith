@@ -10,14 +10,15 @@ import {inject, injectable} from 'tsyringe';
 import {SettingsStore, SettingsStoreSymbol} from '../../settings/SettingsStore';
 import {DBDriver, DBDriverSymbol} from '../../persistence/DBDriver';
 import {PithPlugin, plugin} from '../plugins';
-import {DirectoryFactory, LibraryRoot} from "./types";
-import {IChannelItem, IPlayState} from "../../channel";
+import {Directory, DirectoryFactory} from "./types";
+import {IChannel, IChannelItem, IMediaChannelItem, IPlayState} from "../../channel";
+import {Ribbon} from "../../ribbon";
 
 const logger = getLogger("pith.plugin.library");
 
-class LibraryChannel extends Channel {
+class LibraryChannel extends Channel implements IChannel {
     private db: Repository;
-    private directory: LibraryRoot[];
+    private directory: Directory;
 
     constructor(private pithApp: Pith, dbDriver: DBDriver, directoryFactory: DirectoryFactory) {
         super();
@@ -28,19 +29,15 @@ class LibraryChannel extends Channel {
         this.directory = directoryFactory(this);
     }
 
-    private listContentsWithoutPlayStates(containerId) : Promise<IChannelItem[]> {
-        if(!containerId) {
-            return Promise.resolve(this.directory.filter(function(d) {
-                return d.visible !== false;
-            }));
+    private listContentsWithoutPlayStates(containerId): Promise<IChannelItem[]> {
+        if (!containerId) {
+            return Promise.resolve(this.directory.directories.filter(d => d.visible !== false));
         } else {
             const i = containerId.indexOf('/');
 
             const directoryId = i > -1 ? containerId.substring(0, i) : containerId;
 
-            const directory = this.directory.filter(function (e) {
-                return e.id === directoryId;
-            })[0];
+            const directory = this.directory.directories.find(e => e.id === directoryId);
 
             return directory._getContents(i > -1 ? containerId.substring(i + 1) : null);
         }
@@ -49,37 +46,41 @@ class LibraryChannel extends Channel {
     async listContents(path) {
         const contents = await this.listContentsWithoutPlayStates(path);
         return Promise.all(contents.map(item => {
-            if(item.playState) {
+            if (item.playState) {
                 return item;
             } else {
                 return this.getLastPlayStateFromItem(item).then(playState => {
                     item.playState = playState;
                     return item;
-                })
+                });
             }
         }));
     }
 
-    async getItem(itemId) : Promise<IChannelItem> {
-        if(!itemId) {
-            return { title: "Movies", id: null, type: "container" };
+    async getItem(itemId): Promise<IChannelItem> {
+        if (!itemId) {
+            return {title: "Movies", id: null, type: "container"};
         } else {
             const i = itemId.indexOf('/');
 
             const directoryId = i > -1 ? itemId.substring(0, i) : itemId;
 
-            const directory = this.directory.filter(function (e) {
-                return e.id === directoryId;
-            })[0];
+            const directory = this.directory.directories.find(e => e.id === directoryId);
 
-            if(!directory) {
+            if (!directory) {
                 throw Error("Not found");
             }
 
-            if(directory._getItem) {
-                return directory._getItem(i > -1 ? itemId.substring(i+1).replace(/\/$/,'') : null);
+            if (directory._getItem) {
+                return directory._getItem(i > -1 ? itemId.substring(i + 1).replace(/\/$/, '') : null);
             } else {
-                return {id: itemId, sortableFields: directory.sortableFields, type: directory.type, title: directory.title, description: directory.description};
+                return {
+                    id: itemId,
+                    sortableFields: directory.sortableFields,
+                    type: directory.type,
+                    title: directory.title,
+                    description: directory.description
+                };
             }
         }
     }
@@ -92,7 +93,7 @@ class LibraryChannel extends Channel {
     }
 
     getLastPlayStateFromItem(item) {
-        if(item && item.originalId) {
+        if (item && item.originalId) {
             const targetChannel = this.pithApp.getChannelInstance(item.channelId);
             return targetChannel.getLastPlayState(item.originalId);
         } else {
@@ -100,7 +101,7 @@ class LibraryChannel extends Channel {
         }
     }
 
-    async getLastPlayState(itemId) : Promise<IPlayState>{
+    async getLastPlayState(itemId): Promise<IPlayState> {
         const item = await this.getItem(itemId);
         return this.getLastPlayStateFromItem(item);
     }
@@ -109,6 +110,17 @@ class LibraryChannel extends Channel {
         const item = await this.getItem(itemId);
         const targetChannel = this.pithApp.getChannelInstance(item.channelId);
         return targetChannel.putPlayState(item.originalId, state);
+    }
+
+    async getRibbons(): Promise<Ribbon[]> {
+        return this.directory.ribbons.map(r => r.ribbon);
+    }
+
+    async listRibbonContents(ribbonId: string, maximum: number): Promise<IMediaChannelItem[]> {
+        const ribbon = this.directory.ribbons.find(r => r.ribbon.id === ribbonId);
+        if (ribbon) {
+            return ribbon.getContents(maximum);
+        }
     }
 }
 
@@ -120,7 +132,8 @@ export default class LibraryPlugin implements PithPlugin {
     private pith: Pith;
 
     constructor(@inject(SettingsStoreSymbol) private settingsStore: SettingsStore,
-                @inject(DBDriverSymbol) private dbDriver: DBDriver) {}
+                @inject(DBDriverSymbol) private dbDriver: DBDriver) {
+    }
 
     init(opts) {
         const self = this;
@@ -137,14 +150,14 @@ export default class LibraryPlugin implements PithPlugin {
             movies: moviesScanner(scannerOpts),
             tvshows: showsScanner(scannerOpts)
         };
-        setTimeout(function() {
+        setTimeout(function () {
             self.scan(false);
         }, 10000);
 
         opts.pith.registerChannel({
             id: 'movies',
             title: 'Movies',
-            init: function(opts) {
+            init: function (opts) {
                 return moviesChannel;
             },
             sequence: 2
@@ -153,7 +166,7 @@ export default class LibraryPlugin implements PithPlugin {
         opts.pith.registerChannel({
             id: 'shows',
             title: 'Shows',
-            init: function(opts) {
+            init: function (opts) {
                 return showsChannel;
             }
         });
@@ -173,7 +186,7 @@ export default class LibraryPlugin implements PithPlugin {
                     await plug.scanners[dir.contains].scan(channelInstance, dir);
                 }
             }
-        } catch(e) {
+        } catch (e) {
             logger.error("Scanning aborted due to error");
             logger.error(e);
         } finally {

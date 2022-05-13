@@ -27,7 +27,7 @@ class MediaServerDelegate implements DeviceDelegate {
         this.pith = pith;
     }
 
-    async fetchChildren(id) {
+    async fetchChildren(id, {max, start, sort}) {
         if (id === 0 || id === '0') {
             let channels = await this.pith.listChannels();
             let items = channels.map(channel => ({
@@ -52,7 +52,7 @@ class MediaServerDelegate implements DeviceDelegate {
             let items = contents.filter(item => !item.unavailable).map(item => convertToDidl(channel, item, id, channelId));
             return {
                 updateId: 0,
-                items: items,
+                items: max === 0 ? items : items.slice(start, start + max),
                 totalItems: items.length
             };
         }

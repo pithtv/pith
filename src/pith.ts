@@ -1,10 +1,13 @@
 import {Express, Router} from "express";
-import {IChannel, IChannelInitialiser} from "./channel";
+import {IChannel, IChannelInitialiser, IMediaChannelItem} from "./channel";
 import {EventEmitter} from "./lib/events";
 import {IPlayer} from "./player";
 import {container} from 'tsyringe';
 import {PluginSymbol} from './plugins/plugins';
 import {getLogger} from 'log4js';
+import {Ribbon, RibbonItem, RibbonOrder} from "./ribbon";
+import {Channel} from "./lib/channel";
+import {flatMap} from "./lib/util";
 
 const route = Router();
 const logger = getLogger("pith");
@@ -15,7 +18,7 @@ function newId() {
     return "id" + (sequence++);
 }
 
-export class Pith extends EventEmitter implements Pith {
+export class Pith extends EventEmitter {
     private route: Router;
     public readonly handle: Router;
     private channels: IChannelInitialiser[];
@@ -26,7 +29,7 @@ export class Pith extends EventEmitter implements Pith {
     readonly express: Express;
     public readonly rootUrl: string;
 
-    constructor(opts) {
+    constructor(opts = {}) {
         super();
 
         this.route = route;
@@ -39,7 +42,6 @@ export class Pith extends EventEmitter implements Pith {
         this.playerMap = {};
 
         Object.assign(this, opts);
-        this.load();
     }
 
     public getChannelInstance(channelId): IChannel {
@@ -105,7 +107,7 @@ export class Pith extends EventEmitter implements Pith {
         return Promise.resolve(this.players);
     }
 
-    public listChannels() {
+    public listChannels() : Promise<IChannelInitialiser[]> {
         return Promise.resolve(this.channels);
     }
 
@@ -140,7 +142,7 @@ export class Pith extends EventEmitter implements Pith {
             return;
         }
         const channel = this.getChannelInstance(channelId);
-        channel.getItem(itemId).then(
+        return channel.getItem(itemId).then(
             (item) => player.load(channel, item),
         ).then(
             () => player.play(opts && opts.time),
@@ -165,7 +167,33 @@ export class Pith extends EventEmitter implements Pith {
         require("./plugins/couchpotato/plugin");
         require("./plugins/upnp-mediaserver/plugin");
         require("./plugins/webui/plugin");
+        require("./plugins/vlc/plugin");
 
         container.resolveAll(PluginSymbol).forEach(plugin => plugin.init({pith: this}));
+    }
+
+    private async getChannelInstances() : Promise<IChannel[]> {
+        return Promise.all(this.channels.map(channelInitialiser => this.getChannelInstance(channelInitialiser.id)));
+    }
+
+    public async listRibbons() : Promise<Ribbon[]> {
+        const channels = await this.getChannelInstances();
+        const allRibbons = await Promise.all(channels.map(channel => channel.getRibbons ? channel.getRibbons() : []));
+        const index = allRibbons.reduce((a,b) => a.concat(b), []).reduce<{[key: string]: Ribbon}>(
+            (idx, itm) => ({...idx, [itm.id]: itm}), {});
+        return Object.values(index);
+    }
+
+    public async listRibbonContents(ribbonId: string, maximum: number = 10) : Promise<RibbonItem[]> {
+        const channels = await this.getChannelInstances();
+        const items = (await Promise.all(
+            channels
+                .map(async channel =>
+                    (channel.listRibbonContents ? ((await channel.listRibbonContents(ribbonId, maximum))??[]).map(item => ({channelId: channel.id, item})) : [])
+                ))).reduce(flatMap);
+        if(ribbonId in RibbonOrder) {
+            items.sort(RibbonOrder[ribbonId]);
+        }
+        return items.slice(0, maximum);
     }
 }

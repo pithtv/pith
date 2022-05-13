@@ -1,12 +1,12 @@
 import mimetypes from '../../lib/mimetypes';
-import {parseDate} from '../../lib/util';
+import {flatMap, parseDate} from '../../lib/util';
 import * as TvShowUtils from '../../lib/tvshowutils';
 import {Channel} from '../../lib/channel';
 import {parse as parseUrl} from 'url';
 import fetch from 'node-fetch';
 import {Pith} from '../../pith';
 import {FilesChannel} from '../files/plugin';
-import {IChannelItem, IPlayState, ITvShow, ITvShowEpisode, ITvShowSeason} from '../../channel';
+import {IChannelItem, Image, IMediaChannelItem, IPlayState, ITvShow, ITvShowEpisode, ITvShowSeason} from '../../channel';
 import {mapSeries} from '../../lib/async';
 import {SettingsStoreSymbol} from '../../settings/SettingsStore';
 import {container} from 'tsyringe';
@@ -14,6 +14,11 @@ import {PithPlugin, plugin} from '../plugins';
 import md5 from 'MD5';
 import {getLogger} from "log4js";
 import {SonarrEpisode, SonarrSeries} from "./sonarr";
+import {IStream} from "../../stream";
+import {Ribbon, SharedRibbons} from "../../ribbon";
+import * as Arrays from "../../lib/Arrays";
+import {Accessor, Comparator} from "../../lib/Arrays";
+import {AsyncCache} from "../../lib/cache";
 
 const logger = getLogger('pith.plugin.sonarr');
 const settingsStore = container.resolve(SettingsStoreSymbol);
@@ -38,12 +43,22 @@ function parseItemId(itemId) {
     }
 }
 
+function lastDateScanned(seasonEps: IChannelItem[]) : Date {
+    const {value: lastEpisode} = Arrays.max(seasonEps, Arrays.compare(ep => ep.unavailable ? 0 : ep.dateScanned));
+    return lastEpisode.dateScanned;
+}
+
+function lastReleaseDate(seasonEps: IChannelItem[]) : Date {
+    const {value: lastEpisode} = Arrays.max(seasonEps, Arrays.compare(ep => ep.unavailable ? 0 : ep.releaseDate));
+    return lastEpisode.releaseDate;
+}
+
 class SonarrChannel extends Channel {
     private url;
     private pith: Pith;
     private apikey: any;
 
-    private episodeCache: Map<number, { cacheKey: string, content: SonarrEpisode[] }> = new Map();
+    private episodeCache: AsyncCache<number, string, SonarrEpisode[]> = new AsyncCache();
 
     constructor(pith, url, apikey) {
         super();
@@ -53,6 +68,7 @@ class SonarrChannel extends Channel {
     }
 
     private _get(url): Promise<any> {
+        const startTime = new Date().getTime();
         let u = this.url.resolve(url);
         if (u.indexOf('?') > 0) {
             u += '&';
@@ -63,17 +79,35 @@ class SonarrChannel extends Channel {
 
         logger.trace("Querying sonarr", url);
         return fetch(u).then(res => {
+            logger.trace("Query %s took %d ms", url, (new Date().getTime() - startTime));
             return res.json();
         });
     }
 
-    private img(show, type) {
-        let img = show.images.find(img => img.coverType === type),
-            imgUrl = img && img.url && img.url.replace(/(sonarr\/)(.*)/, '$1api/$2&apiKey=' + this.apikey);
-        return imgUrl && this.url.resolve(imgUrl);
+    private imgs(show: SonarrSeries): {
+        poster?: string,
+        backdrop?: string,
+        banner?: string,
+        posters: Image[],
+        backdrops: Image[],
+        banners: Image[]
+    } {
+        const perType: { [coverType: string]: { url: string }[] } = show.images.reduce((result, img) => ({
+            ...result,
+            [img.coverType]: [...(result[img.coverType] || []), {url: this.url.resolve(img.url.replace(/(sonarr\/)(.*)/, '$1api/$2&apiKey=' + this.apikey))}]
+        }), {});
+
+        return {
+            poster: (perType.poster ?? [])[0]?.url,
+            backdrop: (perType.fanArt ?? [])[0]?.url,
+            banner: (perType.banner ?? [])[0]?.url,
+            posters: perType.poster,
+            backdrops: perType.fanart,
+            banners: perType.banner
+        };
     }
 
-    private async convertSeries(show, episodes: SonarrEpisode[]): Promise<ITvShow> {
+    private async convertSeries(show: SonarrSeries, episodes: SonarrEpisode[]): Promise<ITvShow> {
         let pithShow: ITvShow = {
             creationTime: show.added && new Date(show.added),
             genres: show.genres,
@@ -83,15 +117,13 @@ class SonarrChannel extends Channel {
             noSeasons: show.seasonCount,
             title: show.title,
             overview: show.overview,
-            backdrop: this.img(show, 'fanart'),
-            poster: this.img(show, 'poster'),
-            banner: this.img(show, 'banner'),
+            ...this.imgs(show),
             type: 'container',
             seasons: show.seasons.map(sonarrSeason => this.convertSeason(show, sonarrSeason))
         };
 
         if (episodes) {
-            const mappedEpisodes = await mapSeries(episodes, sonarrEpisode => this.convertEpisode(sonarrEpisode));
+            const mappedEpisodes = await mapSeries(episodes, sonarrEpisode => this.convertEpisode(sonarrEpisode, show));
 
             let lastPlayable = this.findLastPlayable(mappedEpisodes);
 
@@ -99,11 +131,16 @@ class SonarrChannel extends Channel {
                 let seasonEps = mappedEpisodes.filter(ep => ep.season === season.season);
                 season.playState = TvShowUtils.aggregatePlayState(seasonEps);
                 season.episodes = seasonEps;
+
+                season.dateScanned = lastDateScanned(seasonEps);
+                season.releaseDate = lastReleaseDate(seasonEps);
             });
 
             return {
                 hasNew: lastPlayable && (!lastPlayable.playState || lastPlayable.playState.status !== 'watched') && lastPlayable.dateScanned > (new Date(new Date().getTime() - 1000 * 60 * 60 * 24 * settingsStore.settings.maxAgeForNew)),
                 playState: TvShowUtils.aggregatePlayState(pithShow.seasons),
+                dateScanned: lastDateScanned(pithShow.seasons),
+                releaseDate: lastReleaseDate(pithShow.seasons),
                 ...pithShow
             };
         } else {
@@ -111,7 +148,7 @@ class SonarrChannel extends Channel {
         }
     }
 
-    private findLastPlayable(mappedEpisodes: SonarrEpisodeItem[]) {
+    private findLastPlayable(mappedEpisodes: SonarrEpisodeItem[]): SonarrEpisodeItem {
         let lastPlayable;
         for (let x = mappedEpisodes.length; x && !lastPlayable; x--) {
             if (mappedEpisodes[x - 1].playable) {
@@ -128,21 +165,19 @@ class SonarrChannel extends Channel {
             mediatype: 'season',
             season: sonarrSeason.seasonNumber,
             noEpisodes: sonarrSeason.statistics.totalEpisodeCount,
-            backdrop: this.img(show, 'fanart'),
-            poster: this.img(show, 'poster'),
-            banner: this.img(show, 'banner'),
+            ...this.imgs(show),
             type: 'container',
             unavailable: sonarrSeason.statistics.episodeCount === 0
         });
     }
 
-    private async convertEpisode(sonarrEpisode: SonarrEpisode): Promise<SonarrEpisodeItem> {
+    private async convertEpisode(sonarrEpisode: SonarrEpisode, sonarrSeries?: SonarrSeries): Promise<SonarrEpisodeItem> {
         let episode: SonarrEpisodeItem = {
             id: `sonarr.episode.${sonarrEpisode.id}`,
             type: 'file',
             mediatype: 'episode',
             mimetype: sonarrEpisode.episodeFile && mimetypes.fromFilePath(sonarrEpisode.episodeFile.relativePath),
-            airDate: sonarrEpisode.airDate && new Date(sonarrEpisode.airDate),
+            releaseDate: sonarrEpisode.airDate && new Date(sonarrEpisode.airDate),
             dateScanned: sonarrEpisode.episodeFile && parseDate(sonarrEpisode.episodeFile.dateAdded),
             season: sonarrEpisode.seasonNumber,
             episode: sonarrEpisode.episodeNumber,
@@ -151,7 +186,8 @@ class SonarrChannel extends Channel {
             title: sonarrEpisode.title,
             unavailable: !sonarrEpisode.hasFile,
             sonarrEpisodeFileId: sonarrEpisode.episodeFileId,
-            _episodeFile: sonarrEpisode.episodeFile
+            _episodeFile: sonarrEpisode.episodeFile,
+            ...sonarrSeries ? this.imgs(sonarrSeries) : {}
         };
         const playState = await this.getLastPlayStateFromItem(episode);
         if (playState === undefined) {
@@ -171,22 +207,27 @@ class SonarrChannel extends Channel {
                 return seasons.map(sonarrSeason => this.convertSeason(series, sonarrSeason));
             } else if (showId !== undefined && seasonId !== undefined) {
                 let allEpisodes = await this.queryEpisodes(showId);
+                let series = await this.querySeries(showId);
                 let seasonNumber = parseInt(seasonId);
                 let seasonEpisodes = allEpisodes.filter(e => e.seasonNumber === seasonNumber);
-                return Promise.all(seasonEpisodes.map(e => this.convertEpisode(e)));
+                return Promise.all(seasonEpisodes.map(e => this.convertEpisode(e, series)));
             }
         } else {
-            let series = await this.queryAllSeries();
-            series.sort((a, b) => a.title.localeCompare(b.title));
-            return await mapSeries(series, (async show => {
-                const cacheKey = md5(JSON.stringify([
-                    show.sizeOnDisk,
-                    show.lastInfoSync
-                ]));
-                let episodes = await this.queryEpisodes(show.id, cacheKey);
-                return await this.convertSeries(show, episodes);
-            }));
+            return await this.findAllSeries();
         }
+    }
+
+    private async findAllSeries(): Promise<ITvShow[]> {
+        let series = await this.queryAllSeries();
+        series.sort((a, b) => a.title.localeCompare(b.title));
+        return await mapSeries(series, (async show => {
+            const cacheKey = md5(JSON.stringify([
+                show.sizeOnDisk,
+                show.lastInfoSync
+            ]));
+            let episodes = await this.queryEpisodes(show.id, cacheKey);
+            return await this.convertSeries(show, episodes);
+        }));
     }
 
     getItem(itemId, detailed = false): Promise<IChannelItem | SonarrEpisodeItem> {
@@ -217,13 +258,7 @@ class SonarrChannel extends Channel {
 
     private async queryEpisodes(sonarrId: number, cacheKey?: string): Promise<SonarrEpisode[]> {
         if (cacheKey !== undefined) {
-            let cacheEntry = this.episodeCache.get(sonarrId);
-            if (!cacheEntry || cacheEntry.cacheKey !== cacheKey) {
-                logger.debug(`Cache miss; wanted {}, got {}`, cacheKey, cacheEntry?.cacheKey);
-                cacheEntry = {cacheKey, content: await this.queryEpisodes(sonarrId)};
-                this.episodeCache.set(sonarrId, cacheEntry);
-            }
-            return cacheEntry.content;
+            return this.episodeCache.resolve(sonarrId, cacheKey, () => this.queryEpisodes(sonarrId));
         }
         return this._get(`api/episode?seriesId=${sonarrId}`);
     }
@@ -246,11 +281,10 @@ class SonarrChannel extends Channel {
         return filesChannel.resolveFileId(sonarrFile.path);
     }
 
-    getStream(item, options) {
+    async getStream(item, options): Promise<IStream> {
         let filesChannel = this.pith.getChannelInstance('files');
-        return this.getFile(item).then(file => {
-            return filesChannel.getStream(file, options);
-        });
+        const file = await this.getFile(item);
+        return filesChannel.getStream(file, options);
     }
 
     async getLastPlayState(itemId): Promise<IPlayState | undefined> {
@@ -281,6 +315,60 @@ class SonarrChannel extends Channel {
         const item = await this.getItem(itemId);
         const fileId = await this.getFileId(item as SonarrEpisodeItem);
         await filesChannel.putPlayState(fileId, state);
+    }
+
+    async getRibbons(): Promise<Ribbon[]> {
+        return [SharedRibbons.recentlyAdded, SharedRibbons.recentlyReleased, SharedRibbons.continueWatching];
+    }
+
+    private async findByEpisode(maximum: number, accessor: Accessor<IChannelItem>): Promise<ITvShowEpisode[]> {
+        const allSeries = await this.findAllSeries();
+        const filteredSeries = allSeries.filter(accessor).sort(Arrays.reverse(Arrays.compare(accessor)));
+        const series = filteredSeries.slice(0, maximum);
+        return series.map(show => {
+            const {value: episode} = Arrays.max(
+                show.seasons.map(season => season.episodes).reduce(flatMap),
+                Arrays.compare(accessor) as Comparator<ITvShowEpisode>);
+            return episode;
+        });
+    }
+
+    /**
+     * Find the last played shows. Then for each return either the last played episode if it wasn't finished yet, or the next episode if it was.
+     * @param maximum
+     * @private
+     */
+    private async findContinueWatching(maximum: number): Promise<ITvShowEpisode[]> {
+        const series = (await this.findAllSeries())
+            .filter(s => s.playState?.updated)
+            .sort((a, b) => b.playState.updated?.getTime() - a.playState.updated?.getTime())
+            .slice(0, maximum);
+
+        return series.map(series => this.findNextEpisode(series)).filter(ep => ep);
+    }
+
+    private findNextEpisode(series: ITvShow): ITvShowEpisode {
+        const episodes = series.seasons.map(season => season.episodes).reduce(flatMap).filter(ep => ep.playState?.status === 'watched' || ep.playState?.status === 'inprogress');
+        const {value: episode} = Arrays.max(episodes, Arrays.compare(ep => ep.time));
+        if(episode.playState.status === 'watched') {
+            const laterEpisodes = episodes.filter(ep => ep.season == episode.season && ep.episode > episode.episode || ep.season > episode.season);
+            return Arrays.max(laterEpisodes,
+                Arrays.reverse(Arrays.chain(Arrays.compare(ep => ep.season), Arrays.compare(ep => ep.episode)))
+            ).value;
+        } else if(episode.playState.status === 'inprogress') {
+            return episode;
+        }
+    }
+
+    listRibbonContents(ribbonId: string, maximum: number): Promise<IMediaChannelItem[]> {
+        switch (ribbonId) {
+            case SharedRibbons.recentlyReleased.id:
+                return this.findByEpisode(maximum, e => e.unavailable ? 0 : e.releaseDate);
+            case SharedRibbons.recentlyAdded.id:
+                return this.findByEpisode(maximum, e => e.unavailable ? 0 : e.dateScanned);
+            case SharedRibbons.continueWatching.id:
+                return this.findContinueWatching(maximum);
+        }
     }
 }
 

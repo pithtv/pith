@@ -79,6 +79,8 @@ class Bootstrap {
             express: app
         });
 
+        pithApp.load();
+
         app.use(bodyparser.json());
 
         app.set('x-powered-by', false);
@@ -102,7 +104,7 @@ class Bootstrap {
         const server = new http.Server(app);
 
         server.listen(port, serverAddress);
-        server.listen(port);
+        // server.listen(port);
 
         const wss = new ws.Server({server: server});
 

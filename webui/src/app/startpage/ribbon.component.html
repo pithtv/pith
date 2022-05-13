@@ -1,0 +1,27 @@
+<section class="c-ribbon" *ngIf="contents?.length > 0">
+  <span class="c-ribbon__title">{{ _ribbon.name }}</span>
+  <div class="c-ribbon__content" syntheticScroll>
+      <div class="c-ribbonItem" *ngFor="let ribbonItem of contents, index as itemIndex"
+           [class.c-ribbonItem-selected]="ribbonItem === selectedItem"
+           [class.c-ribbonItem-has-poster]="ribbonItem.item.posters?.length > 0"
+           [class.c-ribbonItem-has-backdrop]="ribbonItem.item.backdrops?.length > 0"
+           [tabindex]="1000 + 1000 * ribbonIndex + itemIndex"
+           (focus)="select(ribbonItem)"
+           (blur)="select(null)"
+      >
+        <img [alt]="ribbonItem.item.title" class="c-ribbonItem__backdrop" *ngIf="ribbonItem.item.backdrops?.length > 0"
+             [src]="ribbonItem.item.backdrops | image"
+             draggable="false"/>
+        <img [alt]="ribbonItem.item.title" class="c-ribbonItem__poster" *ngIf="ribbonItem.item.posters?.length > 0"
+             [src]="ribbonItem.item.posters | image"
+             draggable="false"/>
+        <div class="c-ribbonItem__details">
+          <div class="c-ribbonItem__title">
+            {{ribbonItem.item.title}}
+          </div>
+          <button (click)="play(ribbonItem)" class="u-borderlessButton oi oi-play-circle"></button>
+          <button (click)="open(ribbonItem)" class="u-borderlessButton oi oi-info"></button>
+        </div>
+      </div>
+  </div>
+</section>

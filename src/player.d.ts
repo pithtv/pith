@@ -9,7 +9,7 @@ export interface Icon {
 }
 
 export interface IPlayerStatus {
-    position?: {time: number};
+    position?: {time: number, title?: string, uri?: string, duration?: number};
     serverTimestamp?: number;
     state?: {playing?: boolean};
     actions?: {stop?: boolean, seek?: boolean, play?: boolean, pause?: boolean}

@@ -32,6 +32,10 @@ import {SwipeFromLeftDirective} from "./util/swipe-from-left.directive";
 import {SwipeOutDirective} from "./util/swipe-out.directive";
 import {ItemActionsComponent} from "./channelbrowser/item-actions.component";
 import {ItemOtherActionsComponent} from "./channelbrowser/item-other-actions.component";
+import {StartPageComponent} from "./startpage/start-page.component";
+import {RibbonComponent} from "./startpage/ribbon.component";
+import {SyntheticScrollDirective} from "./util/synthetic-scroll.directive";
+import {ImagePipe} from "./util/image.pipe";
 
 @NgModule({
   declarations: [
@@ -49,7 +53,11 @@ import {ItemOtherActionsComponent} from "./channelbrowser/item-other-actions.com
     SwipeFromLeftDirective,
     SwipeOutDirective,
     ItemActionsComponent,
-    ItemOtherActionsComponent
+    ItemOtherActionsComponent,
+    StartPageComponent,
+    RibbonComponent,
+    SyntheticScrollDirective,
+    ImagePipe
   ],
   exports: [
     TimePipe

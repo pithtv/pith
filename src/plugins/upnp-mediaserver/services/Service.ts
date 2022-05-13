@@ -240,7 +240,7 @@ class Subscription {
     private eventKey: number;
     private minTimeout: number;
     private urls: string[];
-    private destructionTimer: number;
+    private destructionTimer: any;
 
     constructor(uuid, urls, service) {
         this.uuid = uuid;

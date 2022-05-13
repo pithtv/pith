@@ -1,6 +1,7 @@
-import {IChannelItem} from '../../channel';
+import {IChannelItem, IMediaChannelItem} from '../../channel';
 import {PithPlugin} from "../plugins";
 import {Channel} from "../../lib/channel";
+import {Ribbon} from "../../ribbon";
 
 export namespace MovieLibrary {
     export interface Movie extends IChannelItem {
@@ -16,7 +17,15 @@ export namespace MovieLibrary {
     }
 }
 
-export type LibraryRoot = {
+export interface Directory {
+    directories: LibraryRoot[];
+    ribbons: {
+        ribbon: Ribbon;
+        getContents(maximum: number): Promise<IMediaChannelItem[]>;
+    }[];
+}
+
+export interface LibraryRoot {
     id: string
     title: string
     type: "container"|"file"
@@ -27,4 +36,4 @@ export type LibraryRoot = {
     _getItem?(itemId: string): Promise<IChannelItem>
 }
 
-export type DirectoryFactory = (plugin: Channel) => LibraryRoot[]
+export type DirectoryFactory = (plugin: Channel) => Directory
