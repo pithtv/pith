@@ -16,7 +16,7 @@ export default class VlcClientPlugin implements PithPlugin {
       client.connect();
     });
     discovery.on('serviceDown', (client: VlcClient) => {
-        opts.pith.unregisterPlayer(client);
+      opts.pith.unregisterPlayer(client);
     });
     discovery.start();
   }
