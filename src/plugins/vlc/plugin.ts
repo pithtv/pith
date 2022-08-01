@@ -14,6 +14,9 @@ export default class VlcClientPlugin implements PithPlugin {
       logger.info(`VideoLAN Client found at ${client.address}:${client.port}`)
       opts.pith.registerPlayer(client);
       client.connect();
+      client.on("disconnect", () => {
+        opts.pith.unregisterPlayer(client);
+      })
     });
     discovery.on('serviceDown', (client: VlcClient) => {
       opts.pith.unregisterPlayer(client);

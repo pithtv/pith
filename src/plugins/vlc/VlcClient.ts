@@ -25,6 +25,7 @@ export class VlcClient extends EventEmitter implements IPlayer {
   async connect() {
     this.webSocket = new WebSocket(`http://${this.address}:${this.port}`);
     this.webSocket.on('message', (data) => this.processMessage(JSON.parse(data.toString())));
+    this.webSocket.on('close', () => this.emit("disconnect"));
     await wrap(cb => this.webSocket.on('open', cb));
     this.send({type: "playing"});
   }

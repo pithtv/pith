@@ -34,7 +34,7 @@ export class VlcDiscovery extends EventEmitter {
   }
 
   private collect(addresses: Array<string>, port: number) {
-    let clientIdx = this.clients.findIndex(c => addresses.includes(c.address) && port === c.port);
+    let clientIdx = this.clients.findIndex(c => addresses?.includes(c.address) && port === c.port);
     if(clientIdx < 0) return;
     let client = this.clients.splice(clientIdx, 1)[0];
     this.emit('serviceDown', client);
