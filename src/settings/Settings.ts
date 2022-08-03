@@ -39,6 +39,12 @@ export interface Settings {
         apikey: string
     }
 
+    radarr: {
+        enabled: boolean
+        url: string
+        apikey: string
+    }
+
     couchpotato: {
         enabled: boolean
         url: string

@@ -6,7 +6,8 @@
     "prepublishOnly": "npm install && npm run build",
     "start": "node $NODE_DEBUG_OPTION built/app",
     "test": "jest __tests__/*.ts",
-    "testweb": "npm --prefix webui test"
+    "testweb": "npm --prefix webui test",
+    "generateRadarrClient": "openapi -i src/plugins/radarr/radarr-openapi.json -o src/plugins/radarr/client --client node"
   },
   "engines": {
     "node": ">=16.0.0"
@@ -59,6 +60,7 @@
     "@types/jest": "^25.2.3",
     "jest": "^25.5.4",
     "mock-fs": "^4.14.0",
+    "openapi-typescript-codegen": "^0.23.0",
     "ts-jest": "^25.5.1",
     "typescript": "^3.9.10"
   },

@@ -164,6 +164,7 @@ export class Pith extends EventEmitter {
         require("./plugins/library/plugin");
         require("./plugins/upnp-mediarenderer/plugin");
         require("./plugins/sonarr/plugin");
+        require("./plugins/radarr/plugin");
         require("./plugins/couchpotato/plugin");
         require("./plugins/upnp-mediaserver/plugin");
         require("./plugins/webui/plugin");

@@ -200,7 +200,7 @@ export class FilesChannel extends Channel {
             }
             return relative;
         } else {
-            return Promise.reject('File not contained within media root');
+            throw 'File not contained within media root';
         }
     }
 

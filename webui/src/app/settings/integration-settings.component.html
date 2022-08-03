@@ -18,6 +18,24 @@
 
 <div class="card my-3">
     <div class="card-header">
+        <input type="checkbox" [(ngModel)]="settings.radarr.enabled" id="radarrEnabled" /> <label class="m-0" for="radarrEnabled">Radarr</label>
+    </div>
+    <div class="card-body" [hidden]="!settings.radarr.enabled">
+        <div class="form-group">
+            <label for="radarrUrl">Radarr URL</label>
+            <input type="text" [(ngModel)]="settings.radarr.url" name="radarrUrl" id="radarrUrl" class="form-control" [required]="settings.radarr.enabled"/>
+        </div>
+        <div class="form-group">
+            <label for="radarrApikey">API key
+                <small>which you can find here: <a target="_blank" href="{{ getRadarrSettingsUrl() }}">{{getRadarrSettingsUrl()}}</a></small>
+            </label>
+            <input type="text" [(ngModel)]="settings.radarr.apikey" name="radarrApikey" id="radarrApikey" class="form-control" [required]="settings.radarr.enabled"/>
+        </div>
+    </div>
+</div>
+
+<div class="card my-3">
+    <div class="card-header">
         <input type="checkbox" [(ngModel)]="settings.couchpotato.enabled" id="couchpotatoEnabled" /> <label class="m-0" for="couchpotatoEnabled">CouchPotato</label>
     </div>
     <div class="card-body" [hidden]="!settings.couchpotato.enabled">
