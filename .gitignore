@@ -1,11 +1,10 @@
-/node_modules/
-/.c9revisions/
+node_modules
 
 *.settings
 /.idea/
 
-/webui/node_modules/
-/webui/dist/
-/webui/out-tsc/
-/built
+/packages/webui/node_modules/
+/packages/webui/dist/
+/packages/webui/out-tsc/
+/packages/server/built
 /coverage/

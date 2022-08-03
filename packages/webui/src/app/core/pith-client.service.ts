@@ -1,4 +1,4 @@
-import {BehaviorSubject, EMPTY, Observable, of, Subject} from 'rxjs';
+import {BehaviorSubject, EMPTY, Observable, of, merge, Subject} from 'rxjs';
 
 import {catchError, finalize, map, tap} from 'rxjs/operators';
 import {HttpClient, HttpParams} from '@angular/common/http';
@@ -7,7 +7,7 @@ import {Injectable} from '@angular/core';
 import {PithEventsService} from './pith-events.service';
 
 export interface CacheOptions {
-  noRefresh?: boolean
+  noRefresh?: boolean;
 }
 
 abstract class RestModule {
@@ -359,9 +359,9 @@ export class PithClientService {
     }));
     if (this.cache.has(cacheKey)) {
       if (cacheOptions?.noRefresh) {
-        return Observable.of(this.cache.get(cacheKey) as unknown as T);
+        return of(this.cache.get(cacheKey) as unknown as T);
       } else {
-        return Observable.merge(Observable.of(this.cache.get(cacheKey)), requestFactory()) as Observable<T>;
+        return merge(of(this.cache.get(cacheKey)), requestFactory()) as Observable<T>;
       }
     } else {
       return requestFactory();
