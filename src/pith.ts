@@ -169,7 +169,13 @@ export class Pith extends EventEmitter {
         require("./plugins/webui/plugin");
         require("./plugins/vlc/plugin");
 
-        container.resolveAll(PluginSymbol).forEach(plugin => plugin.init({pith: this}));
+        container.resolveAll(PluginSymbol).forEach(plugin => {
+            try {
+                plugin.init({pith: this})
+            } catch(e) {
+                logger.error(`Error initializing plugin`, e);
+            }
+        });
     }
 
     private async getChannelInstances() : Promise<IChannel[]> {
