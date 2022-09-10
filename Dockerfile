@@ -1,6 +1,6 @@
 FROM node:16-alpine AS build
 
-RUN apk add --virtual .builddeps vips-dev avahi-dev make g++
+RUN apk add --virtual .builddeps vips-dev avahi-dev make g++ git
 
 WORKDIR /usr/src/app
 
@@ -9,6 +9,7 @@ COPY packages/server/package.json ./packages/server/package.json
 COPY packages/webui/package.json ./packages/webui/package.json
 
 RUN --mount=type=bind,target=.yarn,source=.yarn,rw=true \
+    --mount=type=cache,target=.yarn/cache \
     yarn install --immutable
 
 COPY . .
@@ -30,6 +31,7 @@ COPY package.json .yarnrc.yml yarn.lock ./
 COPY bin ./bin
 
 RUN --mount=type=bind,target=.yarn,source=.yarn,rw=true \
+    --mount=type=cache,target=.yarn/cache,from=build,source=/usr/src/app/.yarn/cache \
     yarn workspaces focus --production @pithmediaserver/pith; \
     apk del .builddeps
 

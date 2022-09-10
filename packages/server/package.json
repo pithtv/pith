@@ -27,7 +27,6 @@
     "node-fetch": "^1.6.3",
     "node-uuid": "^1.4.8",
     "reflect-metadata": "^0.1.13",
-    "retrieve-keyframes": "^2.13.4",
     "sharp": "^0.31.0",
     "source-map-support": "^0.5.21",
     "sprintf-js": "^1.1.2",
