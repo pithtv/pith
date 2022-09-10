@@ -36,7 +36,10 @@ RUN --mount=type=bind,target=/build,from=build,source=/usr/src/app \
     echo 'avahi-daemon --no-chroot &' >> startup.sh ; \
     echo 'node bin/pith.js "$@"' >> startup.sh
 
+ENV PITH_DATA_DIR=/data
+
 EXPOSE 3333
 VOLUME /media
+VOLUME /data
 
 ENTRYPOINT ["sh","startup.sh"]
