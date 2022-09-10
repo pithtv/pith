@@ -19,7 +19,7 @@
   display: inline-block;
   width: 80px;
   height: 16px;
-  background-image: url(assets/img/staroutline.png);
+  background-image: url(../assets/img/staroutline.png);
   background-size: 16px 16px;
   position: relative;
   color: rgba(0,0,0,0);
@@ -28,7 +28,7 @@
 
 
 .stars:after {
-  background-image: url(assets/img/star.png);
+  background-image: url(../assets/img/star.png);
   background-size: 16px;
   position: absolute;
   display: block;
@@ -74,7 +74,7 @@
 a.link-imdb {
   height: 2ex;
   width: 3ex;
-  background: url(assets/img/imdb.png);
+  background: url(../assets/img/imdb.png);
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center 0.5ex;

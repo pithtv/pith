@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "scripts": {
     "build": "tsc",
-    "start": "node $NODE_DEBUG_OPTION built/app",
+    "start": "node ${NODE_DEBUG_OPTION:-} built/app",
     "test": "jest __tests__/*.ts"
   },
   "engines": {
