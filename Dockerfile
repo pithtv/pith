@@ -26,11 +26,13 @@ RUN --mount=type=bind,target=/build,from=build,source=/usr/src/app \
     --mount=type=bind,target=/usr/src/app/.yarn,source=/usr/src/app/.yarn,rw=true,from=build \
     apk add avahi avahi-compat-libdns_sd vips ffmpeg;\
     apk add --virtual .builddeps vips-dev avahi-dev make g++; \
-    find . -name 'package.tgz' -mindepth 0 -maxdepth 4 -exec sh -c 'mkdir -p /usr/src/app/`dirname {}` && tar -xzf {} --strip 1 -C /usr/src/app/`dirname {}`' \; \
+    cd /build; \
+    find . -name 'package.tgz' -mindepth 0 -maxdepth 4 -exec sh -c 'mkdir -p /usr/src/app/`dirname {}` && tar -xzf {} --strip 1 -C /usr/src/app/`dirname {}`' \; ;\
+    cd /usr/src/app; \
     yarn workspaces focus --production @pithmediaserver/pith; \
     apk del .builddeps
 
 EXPOSE 3333
 VOLUME /media
 
-ENTRYPOINT [ "bin/pith.js" ]
+ENTRYPOINT [ "node", "bin/pith.js" ]
