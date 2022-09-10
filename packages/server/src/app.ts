@@ -32,7 +32,7 @@ log4js.configure({
     }
 });
 
-process.on('uncaughtException', function (err) {
+process.on('uncaughtException', (err) => {
     // handle the error safely
     logger.error(err);
 });
@@ -42,6 +42,7 @@ Object.defineProperty(http.IncomingMessage.prototype, 'upgrade', {
     get() {
         return 'connection' in this.headers && 'upgrade' in this.headers && this.headers.connection.startsWith('Upgrade') && this.headers.upgrade.toLowerCase() === 'websocket';
     },
+    // tslint:disable-next-line:no-empty
     set(v) {
     }
 });
@@ -115,7 +116,7 @@ class Bootstrap {
                     const message = JSON.parse(data.toString());
                     switch (message.action) {
                         case 'on':
-                            const listener = function () {
+                            const listener = () => {
                                 try {
                                     connection.send(JSON.stringify({
                                         event: message.event,
@@ -133,9 +134,9 @@ class Bootstrap {
                     logger.error('Error processing event message', data, e);
                 }
             });
-            connection.on('close', function () {
+            connection.on('close', () => {
                 logger.debug('Client disconnected, cleaning up listeners');
-                listeners.forEach(function (e) {
+                listeners.forEach((e) => {
                     pithApp.removeListener(e.event, e.listener);
                 });
             });
@@ -143,7 +144,7 @@ class Bootstrap {
     }
 }
 
-(async function() {
+(async function start() {
     await fileSettingsStore.load();
     container.resolve(Bootstrap).startup();
 })();

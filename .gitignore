@@ -8,3 +8,5 @@ node_modules
 /packages/webui/out-tsc/
 /packages/server/built
 /coverage/
+
+package.tgz

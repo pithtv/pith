@@ -1,5 +1,6 @@
 {
   "name": "pithmediaserver",
+  "version": "0.2.0",
   "workspaces": {
     "packages": [
       "packages/*"
@@ -10,11 +11,18 @@
       "**/typescript"
     ]
   },
+  "files": [
+    "bin",
+    "README.md",
+    "LICENSE",
+    "AUTHORS"
+  ],
   "private": true,
   "scripts": {
     "build": "yarn workspaces foreach run build",
     "prepublishOnly": "yarn install && yarn build",
     "start": "yarn workspace @pithmediaserver/pith start",
-    "test": "yarn workspaces foreach test"
+    "test": "yarn workspaces foreach test",
+    "pack": "yarn workspaces foreach pack"
   }
 }
