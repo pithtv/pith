@@ -27,6 +27,7 @@
     "@ng-bootstrap/ng-bootstrap": "^6.1.0",
     "bootstrap": "^4.4.1",
     "core-js": "^2.5.7",
+    "license-webpack-plugin": "^4.0.2",
     "ngx-infinite-scroll": "^6.0.1",
     "open-iconic": "^1.1.1",
     "rxjs": "^6.5.4",

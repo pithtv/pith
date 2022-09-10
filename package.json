@@ -12,7 +12,7 @@
   },
   "private": true,
   "scripts": {
-    "build": "yarn workspaces foreach build",
+    "build": "yarn workspaces foreach run build",
     "prepublishOnly": "yarn install && yarn build",
     "start": "yarn workspace @pithmediaserver/pith start",
     "test": "yarn workspaces foreach test"
