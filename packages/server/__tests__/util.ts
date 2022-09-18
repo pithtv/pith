@@ -1,3 +1,4 @@
+import {expect, test} from '@jest/globals';
 import * as util from '../src/lib/util';
 
 test("Test assign", function () {

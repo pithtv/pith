@@ -3,7 +3,7 @@ import mimetypes from '../../lib/mimetypes';
 
 import vidstreamer from '../../lib/vidstreamer';
 import $path from 'path';
-import {StateStore} from './playstate';
+import {IStateStore, StateStore} from './playstate';
 import ff, {FfprobeData} from 'fluent-ffmpeg';
 import {Channel} from '../../lib/channel';
 import profiles from '../../lib/profiles';
@@ -30,7 +30,7 @@ export const metaDataProviders: MetaDataProvider[] = [new movie_nfo(), new tvsho
 export class FilesChannel extends Channel {
     private rootDir: string;
 
-    constructor(private pith: Pith, private statestore: StateStore, private settingsStore: SettingsStore) {
+    constructor(private pith: Pith, private statestore: IStateStore, private settingsStore: SettingsStore) {
         super();
 
         this.rootDir = settingsStore.settings.files.rootDir;
@@ -39,33 +39,33 @@ export class FilesChannel extends Channel {
         const channel = this;
 
         vidstreamer.settings({
-            getFile: function (path, cb) {
-                cb(channel.getFile(path));
+            getFile(p, cb) {
+                cb(channel.getFile(p));
             }
         });
 
         if (pith.handle) {
             pith.handle.use('/stream/:fingerprint', vidstreamer);
-            pith.handle.use('/preview', preview(path => this.getFile(path)));
+            pith.handle.use('/preview', preview(p => this.getFile(p)));
         }
     }
 
     async listContents(containerId?) {
         const rootDir = this.rootDir;
-        let path;
+        let p;
         if (containerId) {
-            path = $path.resolve(rootDir, containerId);
+            p = $path.resolve(rootDir, containerId);
         } else {
-            path = rootDir;
+            p = rootDir;
         }
 
         const filesChannel = this;
 
-        const files = await fs.readdir(path);
+        const files = await fs.readdir(p);
         const filteredFiles = files.filter(e => (e[0] !== '.' || this.settingsStore.settings.files.showHiddenFiles) && this.settingsStore.settings.files.excludeExtensions.indexOf($path.extname(e)) === -1);
 
         const transformed = await Promise.all(filteredFiles.map(file => {
-            const filepath = $path.resolve(path, file);
+            const filepath = $path.resolve(p, file);
             const itemId = $path.relative(rootDir, filepath);
             return filesChannel.getItem(itemId, false);
         }));
@@ -134,24 +134,24 @@ export class FilesChannel extends Channel {
                     resolution: stream.codec_type === 'video' ? { width: stream.width, height: stream.height }: undefined
                 }))
             },
-            duration: duration,
+            duration,
             streams: [],
             keyframes: []
         };
 
         if (options && options.target) {
             desc.streams = options.target.split(',').map((profileName) => {
-                let profile = profiles[profileName];
+                const profile = profiles[profileName];
                 let url = `${baseUrl}?transcode=${profileName}`;
                 if (profile.requiresPlaylist) {
                     url += `&playlist=${profile.requiresPlaylist}`;
                 }
 
                 return {
-                    url: url,
+                    url,
                     mimetype: profile.mimetype,
                     seekable: profile.seekable,
-                    duration: duration
+                    duration
                 };
             });
         }

@@ -1,12 +1,25 @@
+import {expect, test, jest} from '@jest/globals';
 import 'reflect-metadata';
-import mock from 'mock-fs';
+import mockFs from 'mock-fs';
 import {FilesChannel} from '../src/plugins/files/plugin';
 import {Pith} from '../src/pith';
 import {StateStore} from '../src/plugins/files/playstate';
 import {SettingsStore} from '../src/settings/SettingsStore';
+import {IPlayState} from "../src/channel";
+
+function mockStateStore() {
+  return {
+    get(id: string) {
+      return undefined
+    },
+    put(s: IPlayState) {
+      return
+    }
+  };
+}
 
 test('Movie file metadata', async () => {
-    mock({
+    mockFs({
         '/data/movies/': {
             'Angels In Antwerp (2020)': {
                 'moviefile.mkv': 'notempty',
@@ -25,7 +38,7 @@ test('Movie file metadata', async () => {
 
     const channel = new FilesChannel({
         rootUrl: "http://localhost:3333/"
-    } as Pith, {} as StateStore, {
+    } as Pith, mockStateStore(), {
         settings: {
             files: {
                 rootDir: '/data',
@@ -129,11 +142,11 @@ test('Movie file metadata', async () => {
         mimetype: 'video/x-matroska'
     });
 
-    mock.restore();
+    mockFs.restore();
 });
 
 test("nfo metadata provider", async () => {
-    mock({
+    mockFs({
         '/data/movies': {
             'Titled (2020)': {
                 'Titled.nfo': '<?xml version="1.0" ?><movie><title>Titled</title><year>2020</year></movie>',
@@ -150,7 +163,7 @@ test("nfo metadata provider", async () => {
         }
     });
 
-    const channel = new FilesChannel({} as Pith, {} as StateStore, {
+    const channel = new FilesChannel({} as Pith, mockStateStore(), {
         settings: {
             files: {
                 rootDir: '/data',
@@ -175,5 +188,5 @@ test("nfo metadata provider", async () => {
         year: 1988
     });
 
-    mock.restore();
+    mockFs.restore();
 });

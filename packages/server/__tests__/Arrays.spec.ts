@@ -1,3 +1,4 @@
+import {expect, test} from '@jest/globals';
 import * as Arrays from "../src/lib/Arrays";
 
 test("Arrays.max", () => {

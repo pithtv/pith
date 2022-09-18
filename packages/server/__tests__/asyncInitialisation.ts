@@ -1,5 +1,5 @@
 import {initialiser} from '../src/lib/AsyncInitialisation';
-
+import {expect, test} from '@jest/globals';
 
 test("init is only called once", async done => {
 
@@ -12,8 +12,7 @@ test("init is only called once", async done => {
     let resolveInit;
 
     class SomeClass {
-        constructor() {}
-
+        // @ts-ignore
         @initialiser() init() : Promise<void> {
             expect(initializing).toBeFalsy();
             expect(initialized).toBeFalsy();
@@ -28,9 +27,9 @@ test("init is only called once", async done => {
         }
     }
 
-    let classToInitialize = new SomeClass();
+    const classToInitialize = new SomeClass();
 
-    let promisesToWaitFor = [];
+    const promisesToWaitFor = [];
 
     promisesToWaitFor.push(classToInitialize.init().then(() => initA = true));
 

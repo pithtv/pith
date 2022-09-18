@@ -1,3 +1,4 @@
+import {expect, test} from '@jest/globals';
 import "reflect-metadata";
 import {IChannel, IChannelInitialiser, IChannelItem, IMediaChannelItem, IPlayState} from "../src/channel";
 import {Pith} from "../src/pith";

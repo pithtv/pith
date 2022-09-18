@@ -1,8 +1,9 @@
+import {expect, test} from '@jest/globals';
 import * as async from '../src/lib/async';
 
 test("Map should map", async () => {
     const arr = ["a", "b", "c"];
-    let result = await async.map(arr, (x) => {
+    const result = await async.map(arr, (x) => {
         return new Promise((resolve, reject) => {
             setTimeout(() => {
                 resolve(x.toUpperCase());
@@ -15,9 +16,9 @@ test("Map should map", async () => {
 test("MapSeries should map one after the other", async done => {
     const arr = ["a", "b", "c"];
     let alreadyRunning = false;
-    let result = await async.mapSeries(arr, (x) => {
+    const result = await async.mapSeries(arr, (x) => {
         if (alreadyRunning) {
-            done.fail();
+            throw new Error("fail");
         }
         alreadyRunning = true;
         return new Promise((resolve, reject) => {

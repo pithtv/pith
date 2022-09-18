@@ -7,9 +7,14 @@ interface PersistedPlayState extends IPlayState {
     _id?;
 }
 
+export interface IStateStore {
+    get(id: string): IPlayState;
+    put(state: IPlayState): void;
+}
+
 @injectable()
 @singleton()
-export class StateStore {
+export class StateStore implements IStateStore {
     private cache: { [key: string]: PersistedPlayState } = {};
     private queue: PersistedPlayState[] = [];
     private collection: Collection<object>;
@@ -40,7 +45,7 @@ export class StateStore {
 
         this.cache[object.id] = dbObject;
 
-        let x = 0;
+        const x = 0;
         const idx = this.queue.findIndex(q => q.id === object.id);
         if (idx >= 0) {
             this.queue[x] = dbObject;

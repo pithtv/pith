@@ -1,4 +1,5 @@
 import {AsyncCache} from "../src/lib/cache";
+import {expect, test, jest} from '@jest/globals';
 
 interface TestIf {
     id: string,
@@ -82,7 +83,7 @@ test("It doesn't launch a second provider if a previous one was resolved", async
 test("It resolves a new instance if the signature doesn't match", async () => {
     const cache = new AsyncCache<string, number, TestIf>();
 
-    const provider = jest.fn((id, signature) => Promise.resolve({id, signature}));
+    const provider = jest.fn((id, signature) => Promise.resolve({id, signature} as TestIf));
 
     const result_1 = await cache.resolve("a", 0, provider);
     expect(result_1).toEqual({id: "a", signature: 0});
@@ -105,7 +106,7 @@ test("It resolves a new instance if the signature doesn't match", async () => {
 
 test("It differentiates between ids", async () => {
     const cache = new AsyncCache<string, number, TestIf>();
-    const provider = jest.fn((id, signature) => Promise.resolve({id, signature}));
+    const provider = jest.fn((id, signature) => Promise.resolve({id, signature} as TestIf));
 
     const result_1 = await cache.resolve("a", 0, provider);
     expect(result_1).toEqual({id: "a", signature: 0});

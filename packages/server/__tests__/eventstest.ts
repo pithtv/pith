@@ -1,3 +1,4 @@
+import {expect, test} from '@jest/globals';
 import {EventEmitter} from '../src/lib/events';
 
 function setupHandlers(e, done = () => {}) {
