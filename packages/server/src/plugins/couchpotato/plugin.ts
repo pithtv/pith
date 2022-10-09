@@ -8,10 +8,10 @@ import mimetypes from '../../lib/mimetypes';
 import {getLogger} from 'log4js';
 import {Pith} from '../../pith';
 import {IChannelItem} from '../../channel';
-import {FilesChannel} from '../files/plugin';
 import {SettingsStore, SettingsStoreSymbol} from '../../settings/SettingsStore';
 import {inject, injectable} from 'tsyringe';
 import {PithPlugin, plugin} from '../plugins';
+import {FilesChannel} from "../files/FilesChannel";
 
 const logger = getLogger('pith.plugin.couchpotato');
 

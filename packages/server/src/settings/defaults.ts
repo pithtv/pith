@@ -43,6 +43,7 @@ const defaults : Settings = {
     enabled: false,
     url: "http://localhost:8989/",
     apikey: "",
+    pathMapping: []
   },
 
   couchpotato: {

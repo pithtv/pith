@@ -1,3 +1,9 @@
+export type PathMapping = {
+    remotePath: string
+    localPath: string
+}
+export type PathMappings = PathMapping[]
+
 export interface Settings {
     dbEngine: "mongodb"|"nestdb"
     mongoUrl: string
@@ -37,6 +43,7 @@ export interface Settings {
         enabled: boolean
         url: string
         apikey: string
+        pathMapping: PathMappings | null
     }
 
     couchpotato: {

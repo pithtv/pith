@@ -5,7 +5,6 @@ import {Channel} from '../../lib/channel';
 import {parse as parseUrl} from 'url';
 import fetch from 'node-fetch';
 import {Pith} from '../../pith';
-import {FilesChannel} from '../files/plugin';
 import {IChannelItem, Image, IMediaChannelItem, IPlayState, ITvShow, ITvShowEpisode, ITvShowSeason} from '../../channel';
 import {mapSeries} from '../../lib/async';
 import {SettingsStoreSymbol} from '../../settings/SettingsStore';
@@ -19,6 +18,9 @@ import {Ribbon, SharedRibbons} from "../../ribbon";
 import * as Arrays from "../../lib/Arrays";
 import {Accessor, Comparator} from "../../lib/Arrays";
 import {AsyncCache} from "../../lib/cache";
+import {FilesChannel} from "../files/FilesChannel";
+import {PathMappings} from "../../settings/Settings";
+import {mapPath} from "../../lib/PathMapper";
 
 const logger = getLogger('pith.plugin.sonarr');
 const settingsStore = container.resolve(SettingsStoreSymbol);
@@ -35,9 +37,9 @@ function parseItemId(itemId) {
             mediatype: 'root'
         };
     }
-    let match = itemId.match(/^sonarr\.(show|episode)\.([^.]*)$/);
+    const match = itemId.match(/^sonarr\.(show|episode)\.([^.]*)$/);
     if (match) {
-        let mediatype = match && match[1],
+        const mediatype = match && match[1],
             id = match && match[2];
         return {mediatype, id};
     }
@@ -60,7 +62,7 @@ class SonarrChannel extends Channel {
 
     private episodeCache: AsyncCache<number, string, SonarrEpisode[]> = new AsyncCache();
 
-    constructor(pith, url, apikey) {
+    constructor(pith, url, apikey, private pathMappings: PathMappings = null) {
         super();
         this.url = parseUrl(url.endsWith('/') ? url : url + '/');
         this.pith = pith;
@@ -108,7 +110,7 @@ class SonarrChannel extends Channel {
     }
 
     private async convertSeries(show: SonarrSeries, episodes: SonarrEpisode[]): Promise<ITvShow> {
-        let pithShow: ITvShow = {
+        const pithShow: ITvShow = {
             creationTime: show.added && new Date(show.added),
             genres: show.genres,
             id: 'sonarr.show.' + show.id,
@@ -125,10 +127,10 @@ class SonarrChannel extends Channel {
         if (episodes) {
             const mappedEpisodes = await mapSeries(episodes, sonarrEpisode => this.convertEpisode(sonarrEpisode, show));
 
-            let lastPlayable = this.findLastPlayable(mappedEpisodes);
+            const lastPlayable = this.findLastPlayable(mappedEpisodes);
 
             pithShow.seasons.forEach(season => {
-                let seasonEps = mappedEpisodes.filter(ep => ep.season === season.season);
+                const seasonEps = mappedEpisodes.filter(ep => ep.season === season.season);
                 season.playState = TvShowUtils.aggregatePlayState(seasonEps);
                 season.episodes = seasonEps;
 
@@ -172,7 +174,7 @@ class SonarrChannel extends Channel {
     }
 
     private async convertEpisode(sonarrEpisode: SonarrEpisode, sonarrSeries?: SonarrSeries): Promise<SonarrEpisodeItem> {
-        let episode: SonarrEpisodeItem = {
+        const episode: SonarrEpisodeItem = {
             id: `sonarr.episode.${sonarrEpisode.id}`,
             type: 'file',
             mediatype: 'episode',
@@ -200,16 +202,16 @@ class SonarrChannel extends Channel {
 
     async listContents(containerId) {
         if (containerId) {
-            let [, showId, , seasonId] = containerId.match(/^sonarr\.show\.([^.]*)(\.season\.([^.]*))?/);
+            const [, showId, , seasonId] = containerId.match(/^sonarr\.show\.([^.]*)(\.season\.([^.]*))?/);
             if (showId !== undefined && seasonId === undefined) {
-                let series = await this.querySeries(showId);
-                let seasons = series.seasons;
+                const series = await this.querySeries(showId);
+                const seasons = series.seasons;
                 return seasons.map(sonarrSeason => this.convertSeason(series, sonarrSeason));
             } else if (showId !== undefined && seasonId !== undefined) {
-                let allEpisodes = await this.queryEpisodes(showId);
-                let series = await this.querySeries(showId);
-                let seasonNumber = parseInt(seasonId);
-                let seasonEpisodes = allEpisodes.filter(e => e.seasonNumber === seasonNumber);
+                const allEpisodes = await this.queryEpisodes(showId);
+                const series = await this.querySeries(showId);
+                const seasonNumber = parseInt(seasonId);
+                const seasonEpisodes = allEpisodes.filter(e => e.seasonNumber === seasonNumber);
                 return Promise.all(seasonEpisodes.map(e => this.convertEpisode(e, series)));
             }
         } else {
@@ -218,21 +220,21 @@ class SonarrChannel extends Channel {
     }
 
     private async findAllSeries(): Promise<ITvShow[]> {
-        let series = await this.queryAllSeries();
+        const series = await this.queryAllSeries();
         series.sort((a, b) => a.title.localeCompare(b.title));
         return await mapSeries(series, (async show => {
             const cacheKey = md5(JSON.stringify([
                 show.sizeOnDisk,
                 show.lastInfoSync
             ]));
-            let episodes = await this.queryEpisodes(show.id, cacheKey);
+            const episodes = await this.queryEpisodes(show.id, cacheKey);
             return await this.convertSeries(show, episodes);
         }));
     }
 
     getItem(itemId, detailed = false): Promise<IChannelItem | SonarrEpisodeItem> {
-        let parsed = parseItemId(itemId);
-        let sonarrId = parsed.id;
+        const parsed = parseItemId(itemId);
+        const sonarrId = parsed.id;
         switch (parsed.mediatype) {
             case 'show':
                 return Promise.all([
@@ -264,7 +266,7 @@ class SonarrChannel extends Channel {
     }
 
     private async getFile(item): Promise<IChannelItem> {
-        let filesChannel = this.pith.getChannelInstance('files') as FilesChannel;
+        const filesChannel = this.getDelegateChannelInstance();
         let sonarrFile;
 
         if (item._episodeFile) {
@@ -275,20 +277,24 @@ class SonarrChannel extends Channel {
         return await filesChannel.resolveFile(sonarrFile.path);
     }
 
+    private getDelegateChannelInstance(): FilesChannel {
+        return this.pith.getChannelInstance('files') as FilesChannel;
+    }
+
     private async getFileId(item: SonarrEpisodeItem): Promise<string> {
-        let filesChannel = this.pith.getChannelInstance('files') as FilesChannel;
-        let sonarrFile = item._episodeFile;
-        return filesChannel.resolveFileId(sonarrFile.path);
+        const filesChannel = this.getDelegateChannelInstance();
+        const sonarrFile = item._episodeFile;
+        return filesChannel.resolveFileId(mapPath(sonarrFile.path, this.pathMappings));
     }
 
     async getStream(item, options): Promise<IStream> {
-        let filesChannel = this.pith.getChannelInstance('files');
+        const filesChannel = this.pith.getChannelInstance('files');
         const file = await this.getFile(item);
         return filesChannel.getStream(file, options);
     }
 
     async getLastPlayState(itemId): Promise<IPlayState | undefined> {
-        let parsed = parseItemId(itemId);
+        const parsed = parseItemId(itemId);
         if (parsed.mediatype === 'episode') {
             const item = this.getItem(itemId);
             return this.getLastPlayStateFromItem(item);
@@ -298,7 +304,7 @@ class SonarrChannel extends Channel {
 
     async getLastPlayStateFromItem(item): Promise<IPlayState | undefined> {
         if (item.mediatype === 'episode' && !item.unavailable) {
-            let filesChannel = this.pith.getChannelInstance('files') as FilesChannel;
+            const filesChannel = this.getDelegateChannelInstance();
             const fileId = await this.getFileId(item);
             try {
                 return filesChannel.getLastPlayState(fileId);
@@ -311,7 +317,7 @@ class SonarrChannel extends Channel {
     }
 
     async putPlayState(itemId, state) {
-        let filesChannel = this.pith.getChannelInstance('files');
+        const filesChannel = this.pith.getChannelInstance('files');
         const item = await this.getItem(itemId);
         const fileId = await this.getFileId(item as SonarrEpisodeItem);
         await filesChannel.putPlayState(fileId, state);
@@ -381,7 +387,7 @@ export default class SonarrPlugin implements PithPlugin {
                 id: 'sonarr',
                 title: 'Sonarr',
                 init(opts) {
-                    return new SonarrChannel(opts.pith, pluginSettings.url, pluginSettings.apikey);
+                    return new SonarrChannel(opts.pith, pluginSettings.url, pluginSettings.apikey, pluginSettings.pathMapping);
                 }
             });
         }

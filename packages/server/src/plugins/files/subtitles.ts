@@ -2,7 +2,7 @@ import {MetaDataProvider} from "./MetaDataProvider";
 import {IChannel, IChannelItem} from "../../channel";
 import path from "path";
 import {promises as fs} from "fs";
-import {FilesChannel} from "./plugin";
+import {FilesChannel} from "./FilesChannel";
 
 const extensionMap = {
     srt: "text/srt",
