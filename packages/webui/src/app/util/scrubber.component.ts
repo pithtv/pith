@@ -12,7 +12,7 @@ export class ScrubberComponent {
   @ViewChild("container", { static: true }) container;
 
   handleSeekClick(event) {
-    let targetTime = this.max * event.layerX / this.container.nativeElement.offsetWidth;
+    let targetTime = this.max * event.offsetX / this.container.nativeElement.offsetWidth;
     this.valueChanged.emit(targetTime);
   }
 }
