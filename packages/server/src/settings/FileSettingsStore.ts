@@ -26,7 +26,7 @@ export class FileSettingsStore implements SettingsStore {
             this.storeSettings(defaults);
         } else {
            const content = await fs.readFile(this.settingsPath, {encoding: 'utf-8'});
-           this._settings = JSON.parse(content.toString());
+           this._settings = {...defaults, ...JSON.parse(content.toString())};
         }
     }
 

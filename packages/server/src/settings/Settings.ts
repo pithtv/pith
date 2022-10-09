@@ -46,6 +46,12 @@ export interface Settings {
         pathMapping: PathMappings | null
     }
 
+    radarr: {
+        enabled: boolean
+        url: string
+        apikey: string
+    }
+
     couchpotato: {
         enabled: boolean
         url: string

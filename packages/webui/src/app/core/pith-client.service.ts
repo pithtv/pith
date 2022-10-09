@@ -302,6 +302,11 @@ export class PithSettings {
     url: string,
     apikey: string
   };
+  radarr: {
+    enabled: boolean,
+    url: string,
+    apikey: string
+  };
 }
 
 export class PithError {

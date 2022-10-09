@@ -17,6 +17,15 @@ export class IntegrationSettingsComponent {
     return url;
   }
 
+  getRadarrSettingsUrl() {
+    var url = this.settings.radarr.url;
+    if(!url.endsWith('/')) {
+      url += '/';
+    }
+    url += 'settings/general';
+    return url;
+  }
+
   getCouchpotatoSettingsUrl() {
     var url = this.settings.couchpotato.url;
     if(!url.endsWith('/')) {
