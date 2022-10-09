@@ -17,9 +17,9 @@ const logger = getLogger('pith.plugin.couchpotato');
 
 function parseItemId(itemId) : Partial<IChannelItem> {
     if (itemId) {
-        let i = itemId.indexOf('/');
+        const i = itemId.indexOf('/');
         if (i === -1) {
-            throw 'Incorrect id';
+            throw new Error('Incorrect id');
         }
         return {
             type: 'file',
@@ -56,7 +56,7 @@ class CouchPotatoChannel extends Channel {
 
         return fetch(u).then(res => res.json()).then(j => {
             if (!j.success) {
-                throw 'Call failed';
+                throw new Error('Call failed');
             }
             return j;
         });
@@ -85,7 +85,7 @@ class CouchPotatoChannel extends Channel {
         logger.debug('Listening for new couchpotato event');
         this._get('nonblock/notification.listener').then(result => {
             logger.debug('Couchpotato event listener returned', JSON.stringify(result.result));
-            let events = result.result;
+            const events = result.result;
             if (events.find(e => e.type === 'renamer.after')) {
                 // "renamer.after" indicates movie download was completed, so refresh internal listing
                 this.retrieveContents();
@@ -98,16 +98,16 @@ class CouchPotatoChannel extends Channel {
     }
 
     extractPosterFromCache(movie) {
-        let posterPath = movie.files && movie.files.image_poster[0];
+        const posterPath = movie.files && movie.files.image_poster[0];
         if (posterPath) {
-            let uuid = posterPath.substr(posterPath.lastIndexOf('/'));
+            const uuid = posterPath.substr(posterPath.lastIndexOf('/'));
             return this.url.resolve(`api/${this.apikey}/file.cache/${uuid}`);
         }
     }
 
     async mapMovie(movie) : Promise<IChannelItem> {
-        let release = movie.releases.find(r => r.status === 'done');
-        let movieFile = release && release.files.movie && release.files.movie[0];
+        const release = movie.releases.find(r => r.status === 'done');
+        const movieFile = release && release.files.movie && release.files.movie[0];
         let stat;
         try {
             stat = movieFile && await async.wrap(cb => fs.stat(path.dirname(movieFile), cb));
@@ -115,10 +115,10 @@ class CouchPotatoChannel extends Channel {
             logger.warn(`File ${movieFile} not accessible, can not determine download date`);
         }
 
-        let filePath = release && release.files.movie[0];
+        const filePath = release && release.files.movie[0];
         const id = 'media/' + movie._id;
         return {
-            id: id,
+            id,
             mediatype: 'movie',
             mimetype: filePath && mimetypes.fromFilePath(filePath),
             title: movie.title,
@@ -135,7 +135,7 @@ class CouchPotatoChannel extends Channel {
             runtime: movie.info.runtime,
             actors: movie.info.actors,
             writers: movie.info.writers,
-            filePath: filePath,
+            filePath,
             hasNew: movie.tags && movie.tags.indexOf('recent') > -1,
             creationTime: stat && stat.mtime,
             playState: await this.getLastPlayState(id)
@@ -147,7 +147,7 @@ class CouchPotatoChannel extends Channel {
     }
 
     getItem(itemId, detailed = false) {
-        let parsed = parseItemId(itemId);
+        const parsed = parseItemId(itemId);
         if (parsed.mediatype === 'media') {
             return this.queryMedia(parsed.id);
         }
@@ -160,19 +160,19 @@ class CouchPotatoChannel extends Channel {
     }
 
     getFile(item) {
-        let filesChannel = this.pith.getChannelInstance('files') as FilesChannel;
+        const filesChannel = this.pith.getChannelInstance('files') as FilesChannel;
         return filesChannel.resolveFile(item.filePath);
     }
 
     getStream(item, options) {
-        let filesChannel = this.pith.getChannelInstance('files') as FilesChannel;
+        const filesChannel = this.pith.getChannelInstance('files') as FilesChannel;
         return this.getFile(item).then(file => {
             return filesChannel.getStream(file, options);
         });
     }
 
     getLastPlayState(itemId) {
-        let parsed = parseItemId(itemId);
+        const parsed = parseItemId(itemId);
         if (parsed.mediatype === 'media') {
             return this.getItem(itemId).then(item => this.getLastPlayStateFromItem(item));
         } else {
@@ -185,7 +185,7 @@ class CouchPotatoChannel extends Channel {
             if (item.unavailable) {
                 return Promise.resolve();
             } else {
-                let filesChannel = this.pith.getChannelInstance('files');
+                const filesChannel = this.pith.getChannelInstance('files');
                 return this.getFile(item).then(file => filesChannel.getLastPlayStateFromItem(file));
             }
         } else {
@@ -194,7 +194,7 @@ class CouchPotatoChannel extends Channel {
     }
 
     putPlayState(itemId, state) {
-        let filesChannel = this.pith.getChannelInstance('files');
+        const filesChannel = this.pith.getChannelInstance('files');
         return this.getItem(itemId).then(item => this.getFile(item)).then(file => filesChannel.putPlayState(file.id, state));
     }
 }
@@ -209,7 +209,7 @@ export default class CouchPotatoPlugin implements PithPlugin {
     init(opts) {
         const pluginSettings = this.settingsStore.settings.couchpotato;
         if (pluginSettings && pluginSettings.enabled && pluginSettings.url) {
-            let channel = new CouchPotatoChannel(opts.pith, pluginSettings.url, pluginSettings.apikey);
+            const channel = new CouchPotatoChannel(opts.pith, pluginSettings.url, pluginSettings.apikey);
             opts.pith.registerChannel({
                 id: 'couchpotato',
                 title: 'CouchPotato',
