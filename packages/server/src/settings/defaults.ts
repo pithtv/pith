@@ -55,7 +55,8 @@ const defaults : Settings = {
   radarr: {
     enabled: false,
     url: "http://localhost:7878",
-    apikey: ""
+    apikey: "",
+    pathMapping: []
   },
 
   upnpsharing: {

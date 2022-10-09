@@ -66,7 +66,7 @@ export class FilesChannel extends Channel {
     return $path.resolve(this.rootDir, targetPath);
   }
 
-  async getItem(itemId, detailed = true) {
+  async getItem(itemId, detailed = true) : Promise<IChannelItem> {
     const filepath = $path.resolve(this.rootDir, itemId);
     const channel = this;
     const stats = await fs.stat(filepath);
@@ -96,7 +96,7 @@ export class FilesChannel extends Channel {
     return item;
   }
 
-  async getStream(item, options?): Promise<IStream> {
+  async getStream(item: IChannelItem, options?): Promise<IStream> {
     const channel = this;
     const itemId = item.id;
     const itemPath = itemId.split($path.sep).map(encodeURIComponent).join('/');

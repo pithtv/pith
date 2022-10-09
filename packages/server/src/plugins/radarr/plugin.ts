@@ -8,12 +8,14 @@ import {getLogger} from "log4js";
 import {IStream} from "../../stream";
 import {MediaCoverTypes, MovieResource, MovieService, OpenAPI} from "./client";
 import {FilesChannel} from "../files/FilesChannel";
+import {PathMappings} from "../../settings/Settings";
+import {mapPath} from "../../lib/PathMapper";
 
 const logger = getLogger('pith.plugin.radarr');
 const settingsStore = container.resolve(SettingsStoreSymbol);
 
 class RadarrChannel extends Channel {
-  constructor(private pith: Pith, private url: string, private apikey: string) {
+  constructor(private pith: Pith, private url: string, private apikey: string, private pathMapping: PathMappings) {
     super();
     OpenAPI.BASE = url;
     OpenAPI.HEADERS = {"X-Api-Key": apikey};
@@ -31,18 +33,27 @@ class RadarrChannel extends Channel {
     }
   }
 
-  getLastPlayState(itemId: string): Promise<IPlayState> {
-    return Promise.resolve(undefined);
+  async getLastPlayState(itemId: string): Promise<IPlayState> {
+    return this.getDelegateChannelInstance().getLastPlayState(this.resolveDelegateFileId(await this.getItem(itemId)));
   }
 
-  getLastPlayStateFromItem(item: IChannelItem): Promise<IPlayState> {
-    return Promise.resolve(undefined);
+  async getLastPlayStateFromItem(item: IChannelItem): Promise<IPlayState> {
+    return this.getDelegateChannelInstance().getLastPlayState(this.resolveDelegateFileId(item));
   }
 
   async getStream(item: IChannelItem, opts?: any): Promise<IStream> {
-    let filesChannel = this.pith.getChannelInstance('files') as FilesChannel;
-    let file = await filesChannel.resolveFile(item._file);
-    return filesChannel.getStream(item._file, opts);
+    let fileId = this.resolveDelegateFileId(item);
+    return this.getDelegateChannelInstance().getStream(await this.getDelegateChannelInstance().getItem(fileId), opts);
+  }
+
+  private resolveDelegateFileId(item: IChannelItem) {
+    let filesChannel = this.getDelegateChannelInstance();
+    let fileId = filesChannel.resolveFileId(mapPath(item._file, this.pathMapping));
+    return fileId;
+  }
+
+  private getDelegateChannelInstance() {
+    return this.pith.getChannelInstance('files') as FilesChannel;
   }
 
   async listContents(containerId: string): Promise<IChannelItem[]> {
@@ -82,8 +93,8 @@ class RadarrChannel extends Channel {
     return image.remoteUrl;
   }
 
-  putPlayState(itemId: string, state: IPlayState): Promise<void> {
-    return Promise.resolve(undefined);
+  async putPlayState(itemId: string, state: IPlayState): Promise<void> {
+    return this.getDelegateChannelInstance().putPlayState(this.resolveDelegateFileId(await this.getItem(itemId)), state);
   }
 
   private async getMovie(id: string): Promise<IMediaChannelItem> {
@@ -101,7 +112,7 @@ export default class SonarrPlugin implements PithPlugin {
         id: 'radarr',
         title: 'radarr',
         init(opts) {
-          return new RadarrChannel(opts.pith, pluginSettings.url, pluginSettings.apikey);
+          return new RadarrChannel(opts.pith, pluginSettings.url, pluginSettings.apikey, pluginSettings.pathMapping);
         }
       });
     }

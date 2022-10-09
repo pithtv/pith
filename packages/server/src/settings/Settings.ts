@@ -50,6 +50,7 @@ export interface Settings {
         enabled: boolean
         url: string
         apikey: string
+        pathMapping: PathMappings | null
     }
 
     couchpotato: {
