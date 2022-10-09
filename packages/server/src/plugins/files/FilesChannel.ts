@@ -171,7 +171,7 @@ export class FilesChannel extends Channel {
     return this.getLastPlayState(item.id);
   }
 
-  putPlayState(itemId, state) {
+  putPlayState(itemId, state) : Promise<void> {
     try {
       state.id = itemId;
       this.statestore.put(state);
@@ -181,7 +181,7 @@ export class FilesChannel extends Channel {
     }
   }
 
-  resolveFileId(file: string) {
+  resolveFileId(file: string) : string {
     if (file.startsWith(this.rootDir)) {
       let relative = file.substring(this.rootDir.length);
       if (relative.startsWith('/')) {
@@ -189,11 +189,11 @@ export class FilesChannel extends Channel {
       }
       return relative;
     } else {
-      return Promise.reject('File not contained within media root');
+      throw new Error('File not contained within media root');
     }
   }
 
-  resolveFile(file: string) {
+  resolveFile(file: string) : Promise<IChannelItem> {
     return this.getItem(this.resolveFileId(file));
   }
 }

@@ -39,8 +39,7 @@ function parseItemId(itemId) {
     }
     const match = itemId.match(/^sonarr\.(show|episode)\.([^.]*)$/);
     if (match) {
-        const mediatype = match && match[1],
-            id = match && match[2];
+        const [,mediatype,id] = match;
         return {mediatype, id};
     }
 }
@@ -96,7 +95,7 @@ class SonarrChannel extends Channel {
     } {
         const perType: { [coverType: string]: { url: string }[] } = show.images.reduce((result, img) => ({
             ...result,
-            [img.coverType]: [...(result[img.coverType] || []), {url: this.url.resolve(img.url.replace(/(sonarr\/)(.*)/, '$1api/$2&apiKey=' + this.apikey))}]
+            [img.coverType]: [...(result[img.coverType] || []), {url: this.url.resolve(img.url.replace(/(.*\/)(MediaCover.*)/, '$1api/$2&apiKey=' + this.apikey))}]
         }), {});
 
         return {
@@ -274,7 +273,7 @@ class SonarrChannel extends Channel {
         } else {
             sonarrFile = await this._get(`api/episodeFile/${item.sonarrEpisodeFileId}`);
         }
-        return await filesChannel.resolveFile(sonarrFile.path);
+        return await filesChannel.resolveFile(this.mapPath(sonarrFile.path));
     }
 
     private getDelegateChannelInstance(): FilesChannel {
@@ -284,7 +283,11 @@ class SonarrChannel extends Channel {
     private async getFileId(item: SonarrEpisodeItem): Promise<string> {
         const filesChannel = this.getDelegateChannelInstance();
         const sonarrFile = item._episodeFile;
-        return filesChannel.resolveFileId(mapPath(sonarrFile.path, this.pathMappings));
+        return filesChannel.resolveFileId(this.mapPath(sonarrFile.path));
+    }
+
+    private mapPath(remotePath: string) {
+        return mapPath(remotePath, this.pathMappings);
     }
 
     async getStream(item, options): Promise<IStream> {
@@ -316,7 +319,7 @@ class SonarrChannel extends Channel {
         }
     }
 
-    async putPlayState(itemId, state) {
+    async putPlayState(itemId, state): Promise<void> {
         const filesChannel = this.pith.getChannelInstance('files');
         const item = await this.getItem(itemId);
         const fileId = await this.getFileId(item as SonarrEpisodeItem);
@@ -350,14 +353,14 @@ class SonarrChannel extends Channel {
             .sort((a, b) => b.playState.updated?.getTime() - a.playState.updated?.getTime())
             .slice(0, maximum);
 
-        return series.map(series => this.findNextEpisode(series)).filter(ep => ep);
+        return series.map(s => this.findNextEpisode(s)).filter(ep => ep);
     }
 
     private findNextEpisode(series: ITvShow): ITvShowEpisode {
         const episodes = series.seasons.map(season => season.episodes).reduce(flatMap).filter(ep => ep.playState?.status === 'watched' || ep.playState?.status === 'inprogress');
         const {value: episode} = Arrays.max(episodes, Arrays.compare(ep => ep.time));
         if(episode.playState.status === 'watched') {
-            const laterEpisodes = episodes.filter(ep => ep.season == episode.season && ep.episode > episode.episode || ep.season > episode.season);
+            const laterEpisodes = episodes.filter(ep => ep.season === episode.season && ep.episode > episode.episode || ep.season > episode.season);
             return Arrays.max(laterEpisodes,
                 Arrays.reverse(Arrays.chain(Arrays.compare(ep => ep.season), Arrays.compare(ep => ep.episode)))
             ).value;
@@ -386,8 +389,8 @@ export default class SonarrPlugin implements PithPlugin {
             opts.pith.registerChannel({
                 id: 'sonarr',
                 title: 'Sonarr',
-                init(opts) {
-                    return new SonarrChannel(opts.pith, pluginSettings.url, pluginSettings.apikey, pluginSettings.pathMapping);
+                init(channelInitOpts) {
+                    return new SonarrChannel(channelInitOpts.pith, pluginSettings.url, pluginSettings.apikey, pluginSettings.pathMapping);
                 }
             });
         }
