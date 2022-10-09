@@ -116,11 +116,11 @@ class Bootstrap {
                     const message = JSON.parse(data.toString());
                     switch (message.action) {
                         case 'on':
-                            const listener = () => {
+                            const listener = (...args) => {
                                 try {
                                     connection.send(JSON.stringify({
                                         event: message.event,
-                                        arguments: Array.prototype.slice.apply(arguments)
+                                        arguments: args
                                     }, jsonReplacer));
                                 } catch (e) {
                                     logger.error(e);
