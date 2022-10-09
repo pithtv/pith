@@ -1,5 +1,5 @@
 import {IChannel, IChannelItem} from "./channel";
-import {IEventEmitter} from "./lib/events";
+import {EventEmitter} from "events";
 
 export interface Icon {
     type: string,
@@ -15,7 +15,7 @@ export interface IPlayerStatus {
     actions?: {stop?: boolean, seek?: boolean, play?: boolean, pause?: boolean}
 }
 
-export interface IPlayer extends IEventEmitter {
+export interface IPlayer extends EventEmitter {
     status: IPlayerStatus;
     id: string;
     icons: {[size: string]: Icon};

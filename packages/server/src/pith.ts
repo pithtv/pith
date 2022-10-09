@@ -1,6 +1,5 @@
 import {Express, Router} from "express";
 import {IChannel, IChannelInitialiser, IMediaChannelItem} from "./channel";
-import {EventEmitter} from "./lib/events";
 import {IPlayer} from "./player";
 import {container} from 'tsyringe';
 import {PluginSymbol} from './plugins/plugins';
@@ -8,6 +7,7 @@ import {getLogger} from 'log4js';
 import {Ribbon, RibbonItem, RibbonOrder} from "./ribbon";
 import {Channel} from "./lib/channel";
 import {flatMap} from "./lib/util";
+import {EventEmitter} from "events";
 
 const route = Router();
 const logger = getLogger("pith");

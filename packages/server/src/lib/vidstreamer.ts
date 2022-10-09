@@ -7,7 +7,6 @@
 
 import fs from 'fs';
 import url from 'url';
-import {EventEmitter} from './events';
 
 import ff from 'fluent-ffmpeg';
 import profiles from './profiles';
@@ -16,6 +15,7 @@ import {keyframes} from './keyframes';
 import {getLogger} from 'log4js';
 // Stuff to serve. Don't add null or "null" to the list (".null" should be fine) as the regex extension check will fail and you'll have a big security hole. And obviously don't add .js, .php or anything else you don't want to serve as source either.
 import mimeTypes from './mimetypes';
+import {EventEmitter} from "events";
 
 const settings = {
     server: 'Pith', getFile(fileName, callback) {

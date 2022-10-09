@@ -1,6 +1,6 @@
 import {getLogger} from 'log4js';
 import dgram from 'dgram';
-import {EventEmitter} from './events';
+import {EventEmitter} from "events";
 
 const logger = getLogger('pith.ssdp-client');
 const newline = /\r\n/g;
