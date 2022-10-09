@@ -48,7 +48,7 @@ class RadarrChannel extends Channel {
 
   private resolveDelegateFileId(item: IChannelItem) {
     let filesChannel = this.getDelegateChannelInstance();
-    let fileId = filesChannel.resolveFileId(mapPath(item._file, this.pathMapping));
+    let fileId = filesChannel.resolveFileId(mapPath(item.file, this.pathMapping));
     return fileId;
   }
 
@@ -76,7 +76,7 @@ class RadarrChannel extends Channel {
       imdbId: movie.imdbId,
       tmdbId: movie.tmdbId,
       playable: movie.movieFile !== undefined,
-      _file: movie.movieFile?.path
+      file: movie.movieFile?.path
     };
   }
 
