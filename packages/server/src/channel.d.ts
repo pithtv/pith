@@ -42,6 +42,7 @@ export interface Subtitle {
 
 export interface IMediaChannelItem extends IChannelItem {
     type: 'file'
+    mediatype: 'episode' | 'movie'
 }
 
 export interface IContainerChannelItem extends IChannelItem {

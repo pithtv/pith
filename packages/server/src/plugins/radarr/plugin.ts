@@ -10,6 +10,7 @@ import {MediaCoverTypes, MovieResource, MovieService, OpenAPI} from "./client";
 import {FilesChannel} from "../files/FilesChannel";
 import {PathMappings} from "../../settings/Settings";
 import {mapPath} from "../../lib/PathMapper";
+import mimetypes from "../../lib/mimetypes";
 
 const logger = getLogger('pith.plugin.radarr');
 const settingsStore = container.resolve(SettingsStoreSymbol);
@@ -67,6 +68,7 @@ class RadarrChannel extends Channel {
       title: movie.title,
       type: "file",
       year: movie.year,
+      mediatype: 'movie',
       banner: this.resolveImage(movie, MediaCoverTypes.BANNER),
       poster: this.resolveImage(movie, MediaCoverTypes.POSTER),
       backdrop: this.resolveImage(movie, MediaCoverTypes.FANART),
@@ -76,7 +78,8 @@ class RadarrChannel extends Channel {
       imdbId: movie.imdbId,
       tmdbId: movie.tmdbId,
       playable: movie.movieFile !== undefined,
-      file: movie.movieFile?.path
+      file: movie.movieFile?.path,
+      mimetype: movie.movieFile && mimetypes.fromFilePath(movie.movieFile.path)
     };
   }
 
