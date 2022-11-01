@@ -1,7 +1,8 @@
 import {map} from 'rxjs/operators';
-import {Channel, ChannelItem, Player, PlayerStatus} from "../core/pith-client.service";
+import {Channel, Player, PlayerStatus} from "../core/pith-client.service";
 import {BehaviorSubject} from "rxjs";
-import { Injectable } from "@angular/core";
+import {Injectable} from "@angular/core";
+import {IChannelItem} from "@pithmediaserver/api";
 
 @Injectable()
 export class WebPlayer implements Player {
@@ -29,13 +30,13 @@ export class WebPlayer implements Player {
     throw new Error("Method not implemented.");
   }
 
-  load(channel: Channel, item: ChannelItem) {
+  load(channel: Channel, item: IChannelItem) {
     channel.stream(item.id, {target: 'hls,webmp4'}).subscribe(stream => {
       this._stream.next({ channel, item, stream });
     });
   }
 
-  findKeyFrames(channel: Channel, item: ChannelItem) {
+  findKeyFrames(channel: Channel, item: IChannelItem) {
     return channel.stream(item.id, {includeKeyFrames: true}).pipe(map((stream: any) => stream.stream.keyframes));
   }
 

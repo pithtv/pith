@@ -1,4 +1,4 @@
-import {Settings} from './Settings';
+import {Settings} from "@pithmediaserver/api/types/settings";
 
 const defaults : Settings = {
   dbEngine: "nestdb",

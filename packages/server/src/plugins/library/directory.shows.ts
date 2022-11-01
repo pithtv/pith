@@ -4,8 +4,8 @@ import {container} from 'tsyringe';
 import {SettingsStore} from '../../settings/SettingsStore';
 import {Directory} from "./types";
 import {Episode, Season, Show} from "../../persistence/Schema";
-import {IChannelItem, IMediaChannelItem} from "../../channel";
 import {SharedRibbons} from "../../ribbon";
+import {IChannelItem, IMediaChannelItem} from "@pithmediaserver/api";
 
 const settingsStore = container.resolve<SettingsStore>('SettingsStore');
 

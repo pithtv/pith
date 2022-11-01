@@ -2,8 +2,9 @@ import {wrap} from "../../lib/async";
 import WebSocket from 'ws';
 import {EventEmitter} from "events";
 import {Icon, IPlayer, IPlayerStatus} from "../../player";
-import {IChannel, IChannelItem} from "../../channel";
+import {IChannel} from "../../channel";
 import {getLogger} from "log4js";
+import {IChannelItem} from "@pithmediaserver/api";
 
 const logger = getLogger('pith.plugin.VlcClient');
 

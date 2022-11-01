@@ -7,14 +7,14 @@ import {preview} from "./preview";
 import $path from "path";
 import path from "path";
 import {promises as fs} from "fs";
-import {IChannelItem} from "../../channel";
+import {IChannelItem, Stream} from "@pithmediaserver/api";
 import mimetypes from "../../lib/mimetypes";
-import {IStream} from "../../stream";
 import {wrap} from "../../lib/async";
 import profiles from "../../lib/profiles";
 import {keyframes} from "../../lib/keyframes";
 import ff, {FfprobeData} from 'fluent-ffmpeg';
 import {metaDataProviders} from "./metaDataProviders";
+import {StreamDescriptor} from "@pithmediaserver/api/types/stream";
 
 export class FilesChannel extends Channel {
   private rootDir: string;
@@ -96,7 +96,7 @@ export class FilesChannel extends Channel {
     return item;
   }
 
-  async getStream(item: IChannelItem, options?): Promise<IStream> {
+  async getStream(item: IChannelItem, options?): Promise<StreamDescriptor> {
     const channel = this;
     const itemId = item.id;
     const itemPath = itemId.split($path.sep).map(encodeURIComponent).join('/');
@@ -105,13 +105,13 @@ export class FilesChannel extends Channel {
 
     const baseUrl = `${channel.pith.rootUrl}stream/${encodeURIComponent(options && options.fingerprint) || '0'}/${itemPath}`;
 
-    const desc: IStream = {
+    const desc = <StreamDescriptor>{
       url: baseUrl,
       mimetype: item.mimetype || 'application/octet-stream',
       seekable: true,
       format: {
         container: metadata.format.tags ? (metadata.format.tags as any).major_brand : 'unknown',
-        streams: metadata.streams.filter(stream => stream.disposition.attached_pic === 0 && stream.disposition.timed_thumbnails === 0).map(stream => ({
+        streams: metadata.streams.filter(stream => stream.disposition.attached_pic === 0 && stream.disposition.timed_thumbnails === 0).map(stream => (<Stream>{
           index: stream.index,
           type: stream.codec_type,
           codec: stream.codec_name,
@@ -124,12 +124,7 @@ export class FilesChannel extends Channel {
         }))
       },
       duration,
-      streams: [],
-      keyframes: []
-    };
-
-    if (options && options.target) {
-      desc.streams = options.target.split(',').map((profileName) => {
+      streams: options?.target?.split(',').map((profileName) => {
         const profile = profiles[profileName];
         let url = `${baseUrl}?transcode=${profileName}`;
         if (profile.requiresPlaylist) {
@@ -142,8 +137,9 @@ export class FilesChannel extends Channel {
           seekable: profile.seekable,
           duration
         };
-      });
-    }
+      }),
+      keyframes: []
+    };
 
     if (options && options.includeKeyFrames) {
       try {

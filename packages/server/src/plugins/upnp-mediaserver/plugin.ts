@@ -9,7 +9,7 @@ import {PithPlugin, plugin} from '../plugins';
 import {DeviceDelegate} from './Device';
 import {convertToDidl} from '../../lib/pith2didl';
 import {SoapError} from './Error';
-import {IPlayState} from '../../channel';
+import {IPlayState} from '@pithmediaserver/api';
 const global = container.resolve(Global);
 
 const settingsStore = container.resolve(SettingsStoreSymbol);

@@ -5,7 +5,6 @@ import {Channel} from '../../lib/channel';
 import {parse as parseUrl} from 'url';
 import fetch from 'node-fetch';
 import {Pith} from '../../pith';
-import {IChannelItem, Image, IMediaChannelItem, IPlayState, ITvShow, ITvShowEpisode, ITvShowSeason} from '../../channel';
 import {mapSeries} from '../../lib/async';
 import {SettingsStoreSymbol} from '../../settings/SettingsStore';
 import {container} from 'tsyringe';
@@ -13,14 +12,24 @@ import {PithPlugin, plugin} from '../plugins';
 import md5 from 'MD5';
 import {getLogger} from "log4js";
 import {SonarrEpisode, SonarrSeries} from "./sonarr";
-import {IStream} from "../../stream";
-import {Ribbon, SharedRibbons} from "../../ribbon";
+import {SharedRibbons} from "../../ribbon";
 import * as Arrays from "../../lib/Arrays";
 import {Accessor, Comparator} from "../../lib/Arrays";
 import {AsyncCache} from "../../lib/cache";
 import {FilesChannel} from "../files/FilesChannel";
-import {PathMappings} from "../../settings/Settings";
 import {mapPath} from "../../lib/PathMapper";
+import {
+    IChannelItem,
+    Image,
+    IMediaChannelItem,
+    IPlayState,
+    ITvShow,
+    ITvShowEpisode,
+    ITvShowSeason,
+    PathMappings,
+    Ribbon
+} from "@pithmediaserver/api";
+import {StreamDescriptor} from "@pithmediaserver/api/types/stream";
 
 const logger = getLogger('pith.plugin.sonarr');
 const settingsStore = container.resolve(SettingsStoreSymbol);
@@ -290,7 +299,7 @@ class SonarrChannel extends Channel {
         return mapPath(remotePath, this.pathMappings);
     }
 
-    async getStream(item, options): Promise<IStream> {
+    async getStream(item, options): Promise<StreamDescriptor> {
         const filesChannel = this.pith.getChannelInstance('files');
         const file = await this.getFile(item);
         return filesChannel.getStream(file, options);

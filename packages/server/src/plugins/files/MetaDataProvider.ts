@@ -1,5 +1,6 @@
-import {IChannel, IChannelItem} from '../../channel';
+import {IChannel} from '../../channel';
 import {FilesChannel} from "./FilesChannel";
+import {IChannelItem} from "@pithmediaserver/api";
 
 export interface MetaDataProvider {
     appliesTo(channel: IChannel, filepath: string, item: IChannelItem): boolean;

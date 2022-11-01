@@ -1,10 +1,11 @@
-import {BehaviorSubject, EMPTY, Observable, of, merge, Subject} from 'rxjs';
+import {BehaviorSubject, EMPTY, merge, Observable, of, Subject} from 'rxjs';
 
 import {catchError, finalize, map, tap} from 'rxjs/operators';
 import {HttpClient, HttpParams} from '@angular/common/http';
 import 'rxjs/Rx';
 import {Injectable} from '@angular/core';
 import {PithEventsService} from './pith-events.service';
+import {IChannelItem, RibbonItem, Settings, StreamDescriptor} from "@pithmediaserver/api";
 
 export interface CacheOptions {
   noRefresh?: boolean;
@@ -61,7 +62,7 @@ export interface Player {
   readonly friendlyName: string;
   readonly status: Observable<PlayerStatus>;
 
-  load(channel: Channel, item: ChannelItem);
+  load(channel: Channel, item: IChannelItem);
 
   play();
 
@@ -96,7 +97,7 @@ export class RemotePlayer extends RestModule {
     return ['player', this.id];
   }
 
-  load(channel: Channel, item: ChannelItem, seekTime?: number) {
+  load(channel: Channel, item: IChannelItem, seekTime?: number) {
     this.loadById(channel.id, item.id, seekTime);
   }
 
@@ -125,94 +126,6 @@ export class RemotePlayer extends RestModule {
   }
 }
 
-export interface PlayState {
-  id?: string,
-  time?: number,
-  duration?: number,
-  status: "watched" | "inprogress" | "none";
-}
-
-export interface ChannelItem {
-  id: string;
-  path?: { id: string, title: string }[];
-  preferredView?: 'poster' | 'details';
-  still?: string;
-  poster?: string;
-  backdrop?: string;
-  banner?: string;
-  title: string;
-  airDate: string;
-  mediatype: string;
-  playState: PlayState;
-  sortableFields: string[];
-  tagline: string;
-  rating: string;
-  genres: string[];
-  plot: string;
-  overview: string;
-  hasNew: boolean;
-  unavailable: boolean;
-  type: string;
-  year: string;
-  playable: boolean;
-  imdbId: string;
-  tmdbId: string;
-
-  showname: string;
-  episode: number;
-  season: number;
-  duration?: number;
-
-  banners?: Image[];
-  posters?: Image[];
-  backdrops?: Image[];
-}
-
-export interface Image {
-  url: string;
-  width?: number;
-  height?: number;
-  language?: string;
-}
-
-export interface Episode extends ChannelItem {
-  season: number;
-  episode: number;
-  showname: string;
-}
-
-export interface Season extends ChannelItem {
-  season: number;
-  episodes: Episode[];
-}
-
-export interface Show extends ChannelItem {
-  seasons: Season[];
-}
-
-export interface Stream {
-  url: string;
-  mimetype: string;
-  seekable: boolean;
-  duration: number;
-  format?: {
-    container: string,
-    streams: {
-      resolution?: { width: number, height: number };
-      language: string;
-      index: number,
-      type: 'video'|'audio'|'subtitle'
-      codec: string,
-      profile: number,
-      pixelFormat: string,
-      channels: string,
-      layout: string
-    }[]
-  },
-  streams?: {}[],
-  keyframes?: {}[]
-}
-
 export class Channel extends RestModule {
   id: string;
   title: string;
@@ -221,12 +134,12 @@ export class Channel extends RestModule {
     return ['channel', this.id];
   }
 
-  listContents(path, cacheOptions?: CacheOptions): Observable<ChannelItem[]> {
-    return this.getAndCache(null, 'list', path || '') as Observable<ChannelItem[]>;
+  listContents(path, cacheOptions?: CacheOptions): Observable<IChannelItem[]> {
+    return this.getAndCache(null, 'list', path || '') as Observable<IChannelItem[]>;
   }
 
-  getDetails(path, cacheOptions?: CacheOptions): Observable<ChannelItem> {
-    return this.getAndCache(cacheOptions, 'detail', path || '') as Observable<ChannelItem>;
+  getDetails(path, cacheOptions?: CacheOptions): Observable<IChannelItem> {
+    return this.getAndCache(cacheOptions, 'detail', path || '') as Observable<IChannelItem>;
   }
 
   togglePlayState(item) {
@@ -242,14 +155,9 @@ export class Channel extends RestModule {
     this.put('playstate', path, playstate).subscribe();
   }
 
-  stream(path, options: any = {}): Observable<{ item: ChannelItem, stream: Stream }> {
-    return this.get<{ item: ChannelItem, stream: Stream }>('stream', path || '', options);
+  stream(path, options: any = {}): Observable<{ item: IChannelItem, stream: StreamDescriptor }> {
+    return this.get<{ item: IChannelItem, stream: StreamDescriptor }>('stream', path || '', options);
   }
-}
-
-export interface RibbonItem {
-  channelId: string;
-  item: ChannelItem;
 }
 
 export class Ribbon extends RestModule {
@@ -263,50 +171,6 @@ export class Ribbon extends RestModule {
   listContents(): Observable<RibbonItem[]> {
     return this.getAndCache(null) as Observable<RibbonItem[]>
   }
-}
-
-export class PithSettings {
-  apiContext: string;
-  bindAddress: string;
-  couchpotato: {
-    enabled: boolean,
-    url: string,
-    apikey: string
-  };
-  upnpsharing: {
-    enabled: boolean,
-    port?: number
-  };
-  dbEngine: string;
-  files: {
-    rootDir: string,
-    excludeExtensions: string[],
-    showHiddenFiles: boolean
-  };
-  httpPort: number;
-  library: {
-    folders: [{
-      channelId: string,
-      containerId: string,
-      contains: string,
-      scanAutomatically: boolean
-    }],
-    scanInterval: number
-  };
-  maxAgeForNew: number;
-  mongoUrl: string;
-  pithContext: string;
-  server: string;
-  sonarr: {
-    enabled: boolean,
-    url: string,
-    apikey: string
-  };
-  radarr: {
-    enabled: boolean,
-    url: string,
-    apikey: string
-  };
 }
 
 export class PithError {
@@ -432,10 +296,10 @@ export class PithClientService {
   }
 
   loadSettings() {
-    return (this.get('settings') as Observable<PithSettings>);
+    return (this.get('settings') as Observable<Settings>);
   }
 
-  storeSettings(settings: PithSettings) {
+  storeSettings(settings: Settings) {
     return this.put('settings', settings).subscribe();
   }
 }

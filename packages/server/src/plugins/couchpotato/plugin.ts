@@ -7,7 +7,7 @@ import path from 'path';
 import mimetypes from '../../lib/mimetypes';
 import {getLogger} from 'log4js';
 import {Pith} from '../../pith';
-import {IChannelItem} from '../../channel';
+import {IChannelItem} from "@pithmediaserver/api";
 import {SettingsStore, SettingsStoreSymbol} from '../../settings/SettingsStore';
 import {inject, injectable} from 'tsyringe';
 import {PithPlugin, plugin} from '../plugins';

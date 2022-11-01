@@ -1,9 +1,10 @@
 import {Component} from "@angular/core";
 import {NgbActiveModal} from "@ng-bootstrap/ng-bootstrap";
-import {Channel, ChannelItem, PithClientService} from "../core/pith-client.service";
+import {Channel, PithClientService} from "../core/pith-client.service";
+import {IChannelItem} from "@pithmediaserver/api";
 
 class State {
-  constructor(public channel: Channel, public container: ChannelItem) {}
+  constructor(public channel: Channel, public container: IChannelItem) {}
 }
 
 @Component({
@@ -13,14 +14,14 @@ export class ContainerChooserComponent {
   history: State[] = [];
   state: State = new State(null, null);
   limit: number;
-  contents: (Channel|ChannelItem)[];
-  view: (Channel|ChannelItem)[];
+  contents: (Channel|IChannelItem)[];
+  view: (Channel|IChannelItem)[];
 
   constructor(public activeModal: NgbActiveModal, private pith: PithClientService) {
     this.refresh();
   }
 
-  go(target: (Channel | ChannelItem)) {
+  go(target: (Channel | IChannelItem)) {
     let state;
     this.history.push(this.state);
     if (target instanceof Channel) {
@@ -61,7 +62,7 @@ export class ContainerChooserComponent {
     this.refresh();
   }
 
-  select(channel: Channel, container: ChannelItem) {
+  select(channel: Channel, container: IChannelItem) {
     this.activeModal.close({channel, container});
   }
 }

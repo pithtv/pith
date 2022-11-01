@@ -60,5 +60,8 @@
     "web-animations-js": "^2.3.2",
     "webpack": "^4.41.5",
     "zone.js": "~0.10.2"
+  },
+  "dependencies": {
+    "@pithmediaserver/api": "workspace:^"
   }
 }

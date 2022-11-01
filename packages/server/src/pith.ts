@@ -1,13 +1,13 @@
 import {Express, Router} from "express";
-import {IChannel, IChannelInitialiser, IMediaChannelItem} from "./channel";
+import {IChannel, IChannelInitialiser} from "./channel";
 import {IPlayer} from "./player";
 import {container} from 'tsyringe';
 import {PluginSymbol} from './plugins/plugins';
 import {getLogger} from 'log4js';
-import {Ribbon, RibbonItem, RibbonOrder} from "./ribbon";
-import {Channel} from "./lib/channel";
+import {RibbonOrder} from "./ribbon";
 import {flatMap} from "./lib/util";
 import {EventEmitter} from "events";
+import {Ribbon, RibbonItem} from "@pithmediaserver/api";
 
 const route = Router();
 const logger = getLogger("pith");

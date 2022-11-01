@@ -1,13 +1,13 @@
 import {Component, Input} from '@angular/core';
 import {NgbActiveModal} from '@ng-bootstrap/ng-bootstrap';
-import {ChannelItem} from './pith-client.service';
+import {IChannelItem} from "@pithmediaserver/api";
 
 @Component({
   templateUrl: './playback-modal.html',
   selector: 'app-playback-modal'
 })
 export class PlaybackModalComponent {
-  @Input() item: ChannelItem;
+  @Input() item: IChannelItem;
 
   constructor(private modal: NgbActiveModal) {
   }

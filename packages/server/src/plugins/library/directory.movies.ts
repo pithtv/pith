@@ -1,6 +1,6 @@
 import {Directory} from "./types";
 import {SharedRibbons} from "../../ribbon";
-import {IMediaChannelItem} from "../../channel";
+import {IMediaChannelItem} from "@pithmediaserver/api";
 
 function mapMovie(e) {
     return {

@@ -1,7 +1,7 @@
-import {IPlayState} from '../../channel';
 import {inject, injectable, singleton} from 'tsyringe';
 import {Collection, DBDriver, DBDriverSymbol} from '../../persistence/DBDriver';
 import {initialiser} from '../../lib/AsyncInitialisation';
+import {IPlayState} from "@pithmediaserver/api";
 
 interface PersistedPlayState extends IPlayState {
     _id?;

@@ -1,26 +1,27 @@
 import {Component, Input} from '@angular/core';
-import {Channel, ChannelItem, Episode, Season, Show} from '../core/pith-client.service';
+import {Channel} from '../core/pith-client.service';
 import {PlayerService} from '../core/player.service';
 import {Path} from "./details.component";
+import {IChannelItem, ITvShow, ITvShowEpisode, ITvShowSeason} from "@pithmediaserver/api";
 
 @Component({
   selector: 'channel-tv-details',
   templateUrl: './tv-details.component.html'
 })
 export class TvDetailsComponent {
-  _selectedSeason: Season;
-  _item: Show;
+  _selectedSeason: ITvShowSeason;
+  _item: ITvShow;
   channel: Channel;
-  episodes: Episode[];
-  seasons: Season[];
+  episodes: ITvShowEpisode[];
+  seasons: ITvShowSeason[];
   path: Path;
 
   constructor(private playerService: PlayerService) {
   }
 
   @Input()
-  set channelAndItem({channel, item, path}: {channel: Channel, item: ChannelItem, path: Path}) {
-    this._item = item as Show;
+  set channelAndItem({channel, item, path}: {channel: Channel, item: IChannelItem, path: Path}) {
+    this._item = item as ITvShow;
     this.channel = channel;
     this.path = [...path];
     this.fetchDetails();
@@ -60,7 +61,7 @@ export class TvDetailsComponent {
     this.selectedSeason = season;
   }
 
-  set selectedSeason(season: Season) {
+  set selectedSeason(season: ITvShowSeason) {
     this._selectedSeason = season;
     this.episodes = season.episodes.sort((a, b) => a.episode - b.episode);
   }

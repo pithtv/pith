@@ -1,4 +1,4 @@
-import {IPlayState} from '../channel';
+import {IPlayState} from "@pithmediaserver/api";
 
 export function aggregatePlayState(items) : IPlayState {
     const aggr = items.reduce(function (state, ep) {

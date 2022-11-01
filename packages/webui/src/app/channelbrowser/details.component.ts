@@ -1,8 +1,9 @@
 import {Component, OnInit} from "@angular/core";
 import {switchMap} from "rxjs/operators";
 import {ActivatedRoute} from "@angular/router";
-import {Channel, ChannelItem, PithClientService} from "../core/pith-client.service";
+import {Channel, PithClientService} from "../core/pith-client.service";
 import {forkJoin, Observable, of} from "rxjs";
+import {IChannelItem} from "@pithmediaserver/api";
 
 export type Path = { id: string, title: string }[];
 
@@ -10,8 +11,8 @@ export type Path = { id: string, title: string }[];
   templateUrl: './details.component.html'
 })
 export class DetailsComponent implements OnInit {
-  channelAndItem: {channel: Channel, item: ChannelItem};
-  item: ChannelItem;
+  channelAndItem: {channel: Channel, item: IChannelItem};
+  item: IChannelItem;
 
   constructor(private route: ActivatedRoute, private pithClient: PithClientService) {
   }

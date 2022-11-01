@@ -1,14 +1,4 @@
-import {IMediaChannelItem} from "./channel";
-
-export interface Ribbon {
-    id: string;
-    name: string;
-}
-
-export interface RibbonItem {
-    channelId: string;
-    item: IMediaChannelItem;
-}
+import { Ribbon, RibbonItem } from "@pithmediaserver/api"
 
 export var SharedRibbons = {
     continueWatching: {

@@ -1,12 +1,12 @@
 import {Component, Input} from "@angular/core";
-import {PithSettings} from "../core/pith-client.service";
+import {Settings} from "@pithmediaserver/api";
 
 @Component({
   selector: 'integration-settings',
   templateUrl: 'integration-settings.component.html'
 })
 export class IntegrationSettingsComponent {
-  @Input('settings') settings: PithSettings;
+  @Input('settings') settings: Settings;
 
   getSonarSettingsUrl() {
     var url = this.settings.sonarr.url;

@@ -1,7 +1,6 @@
-import {IChannelItem, IMediaChannelItem} from '../../channel';
-import {PithPlugin} from "../plugins";
 import {Channel} from "../../lib/channel";
-import {Ribbon} from "../../ribbon";
+import {IChannelItem, IMediaChannelItem} from "@pithmediaserver/api";
+import {Ribbon} from "@pithmediaserver/api";
 
 export namespace MovieLibrary {
     export interface Movie extends IChannelItem {

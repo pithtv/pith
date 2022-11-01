@@ -1,8 +1,9 @@
-import {Channel, ChannelItem, PithClientService, RemotePlayer, Player} from './pith-client.service';
-import {Subject, BehaviorSubject} from 'rxjs';
+import {Channel, PithClientService, Player, RemotePlayer} from './pith-client.service';
+import {BehaviorSubject, Subject} from 'rxjs';
 import {Injectable} from '@angular/core';
 import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {PlaybackModalComponent} from './playback-modal';
+import {IChannelItem} from "@pithmediaserver/api";
 
 const SELECTED_PLAYER_STORAGE_ITEM = 'selectedPlayer';
 
@@ -91,7 +92,7 @@ export class PlayerService {
     this._activePlayer.stop();
   }
 
-  async load(channel: Channel, item: ChannelItem) {
+  async load(channel: Channel, item: IChannelItem) {
     let seekTime = null;
     if (item.playState && item.playState.status === 'inprogress') {
       const modal = this.ngbModalService.open(PlaybackModalComponent);

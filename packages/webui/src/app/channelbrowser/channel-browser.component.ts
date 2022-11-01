@@ -1,19 +1,20 @@
 import {Component, Input, OnDestroy} from '@angular/core';
-import {Channel, ChannelItem} from '../core/pith-client.service';
+import {Channel} from '../core/pith-client.service';
 import 'rxjs/Rx';
 import {Subscription} from "rxjs";
 import {Path} from "./details.component";
+import {IChannelItem} from "@pithmediaserver/api";
 
 @Component({
   templateUrl: './channel-browser.component.html',
   selector: 'channel-container-browser'
 })
 export class ChannelBrowserComponent implements OnDestroy {
-  item: ChannelItem;
+  item: IChannelItem;
   channel: Channel;
   path: Path;
-  private contents: ChannelItem[];
-  filteredContents: ChannelItem[];
+  private contents: IChannelItem[];
+  filteredContents: IChannelItem[];
 
   private currentSearch: string;
 
@@ -33,7 +34,7 @@ export class ChannelBrowserComponent implements OnDestroy {
   }
 
   @Input()
-  set channelAndItem({channel, item, path}: {channel: Channel, item: ChannelItem, path: Path}) {
+  set channelAndItem({channel, item, path}: {channel: Channel, item: IChannelItem, path: Path}) {
     this.channel = channel;
     this.item = item;
     this.path = [...path];

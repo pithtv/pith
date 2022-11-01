@@ -1,7 +1,8 @@
 import {Component, Input} from "@angular/core";
-import {Channel, ChannelItem, Stream} from "../core/pith-client.service";
+import {Channel} from "../core/pith-client.service";
 import {PlayerService} from "../core/player.service";
 import {Path} from "./details.component";
+import {IChannelItem} from "@pithmediaserver/api";
 
 const resolutionMap  : [number, number, string][]= [
   [1920, 1920, '1080'],
@@ -17,7 +18,7 @@ const resolutionMap  : [number, number, string][]= [
   templateUrl: './generic-details.component.html'
 })
 export class GenericDetailsComponent {
-  item: ChannelItem;
+  item: IChannelItem;
   channel: Channel;
   path: Path;
   flags: { domain: string, subdomain: string, value: string }[];
@@ -26,7 +27,7 @@ export class GenericDetailsComponent {
   }
 
   @Input()
-  set channelAndItem({channel, item, path}: { channel: Channel, item: ChannelItem, path: Path }) {
+  set channelAndItem({channel, item, path}: { channel: Channel, item: IChannelItem, path: Path }) {
     this.channel = channel;
     this.item = item;
     this.path = [...path];

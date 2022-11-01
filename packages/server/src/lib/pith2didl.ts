@@ -5,8 +5,9 @@ import {getLogger} from 'log4js';
 import {sprintf} from 'sprintf-js';
 import {didl} from './didl';
 import {XmlObject} from './util';
-import {IChannel, IChannelItem} from '../channel';
+import {IChannel} from '../channel';
 import {container} from 'tsyringe';
+import {IChannelItem} from "@pithmediaserver/api";
 
 const global = container.resolve(Global);
 const logger = getLogger("pith.pith2didl");

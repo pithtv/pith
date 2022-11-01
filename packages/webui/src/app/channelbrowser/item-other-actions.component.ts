@@ -1,5 +1,6 @@
 import {Component, Input} from "@angular/core";
-import {Channel, ChannelItem} from "../core/pith-client.service";
+import {Channel} from "../core/pith-client.service";
+import {IChannelItem} from "@pithmediaserver/api";
 
 @Component({
   selector: 'item-other-actions',
@@ -7,9 +8,9 @@ import {Channel, ChannelItem} from "../core/pith-client.service";
 })
 export class ItemOtherActionsComponent {
   @Input() channel: Channel;
-  @Input() item: ChannelItem;
+  @Input() item: IChannelItem;
   showVlc: boolean = false;
-  
+
   constructor() {
     if (/android/i.test(navigator.userAgent) || (/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream)) {
       this.showVlc = true;

@@ -1,18 +1,17 @@
 import {Channel} from '../../lib/channel';
 import {Pith} from '../../pith';
-import {IChannelItem, IMediaChannelItem, IPlayState} from '../../channel';
 import {SettingsStoreSymbol} from '../../settings/SettingsStore';
 import {container} from 'tsyringe';
 import {PithPlugin, plugin} from '../plugins';
 import {getLogger} from "log4js";
-import {IStream} from "../../stream";
 import {MediaCover, MediaCoverTypes, MovieResource, MovieService, OpenAPI} from "./client";
 import {FilesChannel} from "../files/FilesChannel";
-import {PathMappings} from "../../settings/Settings";
 import {mapPath} from "../../lib/PathMapper";
 import mimetypes from "../../lib/mimetypes";
-import {Ribbon, SharedRibbons} from "../../ribbon";
+import {SharedRibbons} from "../../ribbon";
 import {Accessor, compare, reverse} from "../../lib/Arrays";
+import {IChannelItem, IMediaChannelItem, IPlayState, PathMappings, Ribbon} from "@pithmediaserver/api";
+import {StreamDescriptor} from "@pithmediaserver/api/types/stream";
 
 const logger = getLogger('pith.plugin.radarr');
 const settingsStore = container.resolve(SettingsStoreSymbol);
@@ -46,7 +45,7 @@ class RadarrChannel extends Channel {
     return this.getDelegateChannelInstance().getLastPlayState(this.resolveDelegateFileId(item));
   }
 
-  async getStream(item: IChannelItem, opts?: any): Promise<IStream> {
+  async getStream(item: IChannelItem, opts?: any): Promise<StreamDescriptor> {
     let fileId = this.resolveDelegateFileId(item);
     return this.getDelegateChannelInstance().getStream(await this.getDelegateChannelInstance().getItem(fileId), opts);
   }

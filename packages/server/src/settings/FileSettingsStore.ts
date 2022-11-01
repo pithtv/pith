@@ -1,10 +1,10 @@
 import {SettingsStore} from './SettingsStore';
-import {Settings} from './Settings';
 import path = require('path');
 import {promises as fs} from "fs";
 import defaults from './defaults';
 import {initialiser} from '../lib/AsyncInitialisation';
 import {directoryExists, fileExists} from "../lib/util";
+import {Settings} from "@pithmediaserver/api/types/settings";
 
 export class FileSettingsStore implements SettingsStore {
 

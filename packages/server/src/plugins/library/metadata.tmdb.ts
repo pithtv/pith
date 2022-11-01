@@ -10,7 +10,7 @@ import {
     PersonMovieCreditsResponse,
     Poster
 } from "moviedb-promise/dist/request-types";
-import {Image} from "../../channel";
+import {Image} from "@pithmediaserver/api";
 
 const tmdb = new MovieDb('a08cfd3b50689d40b46a078ecc7390bb');
 const dateParser = /(\d{4})-(\d{2})-(\d{2})/;

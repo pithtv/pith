@@ -1,6 +1,6 @@
 import {Pipe, PipeTransform} from "@angular/core";
 import {PrescalePipe} from "./prescale.pipe";
-import {Image} from "../core/pith-client.service";
+import {Image} from "@pithmediaserver/api";
 
 @Pipe({name: 'image'})
 export class ImagePipe implements PipeTransform {

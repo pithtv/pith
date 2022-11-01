@@ -2,10 +2,9 @@ import {expect, test, jest} from '@jest/globals';
 import 'reflect-metadata';
 import mockFs from 'mock-fs';
 import {Pith} from '../src/pith';
-import {StateStore} from '../src/plugins/files/playstate';
 import {SettingsStore} from '../src/settings/SettingsStore';
-import {IPlayState} from "../src/channel";
 import {FilesChannel} from "../src/plugins/files/FilesChannel";
+import {IPlayState} from "@pithmediaserver/api";
 
 function mockStateStore() {
   return {

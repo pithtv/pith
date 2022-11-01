@@ -1,14 +1,14 @@
 import {Component, Input, ViewChild} from "@angular/core";
-import {PithSettings} from "../core/pith-client.service";
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import {ContainerChooserComponent} from "./container-chooser.component";
+import {Settings} from "@pithmediaserver/api";
 
 @Component({
   selector: 'library-category-settings',
   templateUrl: 'library-category-settings.component.html'
 })
 export class LibraryCategorySettingsComponent {
-  @Input() settings: PithSettings;
+  @Input() settings: Settings;
 
   @ViewChild("confirmDelete", { static: true }) confirmDelete;
 

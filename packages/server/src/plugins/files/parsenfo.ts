@@ -1,6 +1,6 @@
 import {promises as fs} from 'fs';
 import {parseString as xml2js} from 'xml2js';
-import {IChannelItem} from '../../channel';
+import {IChannelItem} from "@pithmediaserver/api";
 import {wrap} from '../../lib/async';
 
 async function parseXml(data) {

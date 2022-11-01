@@ -1,7 +1,7 @@
-import {IChannel, IChannelItem, IMediaChannelItem, IPlayState} from "../channel";
-import {IStream} from "../stream";
+import {IChannel} from "../channel";
 import {RestComponent} from "./restcomponent";
-import {Ribbon} from "../ribbon";
+import {IChannelItem, IPlayState} from "@pithmediaserver/api";
+import {StreamDescriptor} from "@pithmediaserver/api/types/stream";
 
 export abstract class Channel extends RestComponent implements IChannel {
     public id: string;
@@ -50,5 +50,5 @@ export abstract class Channel extends RestComponent implements IChannel {
 
     public abstract getLastPlayStateFromItem(item: IChannelItem): Promise<IPlayState>;
 
-    public abstract getStream(item: IChannelItem, opts?: any): Promise<IStream>;
+    public abstract getStream(item: IChannelItem, opts?: any): Promise<StreamDescriptor>;
 }

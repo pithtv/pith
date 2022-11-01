@@ -1,5 +1,6 @@
-import {IChannel, IChannelItem} from "./channel";
+import {IChannel} from "./channel";
 import {EventEmitter} from "events";
+import {IChannelItem} from "@pithmediaserver/api";
 
 export interface Icon {
     type: string,
@@ -22,4 +23,7 @@ export interface IPlayer extends EventEmitter {
 
     load(channel: IChannel, item: IChannelItem): Promise<void>;
     play(seekTime?: number): Promise<void>;
+    stop?(): Promise<void>
+    pause?(): Promise<void>
+    seek?({time: number}): Promise<void>
 }

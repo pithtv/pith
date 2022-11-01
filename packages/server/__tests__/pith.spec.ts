@@ -1,9 +1,10 @@
 import {expect, test} from '@jest/globals';
 import "reflect-metadata";
-import {IChannel, IChannelInitialiser, IChannelItem, IMediaChannelItem, IPlayState} from "../src/channel";
+import {IChannel, IChannelInitialiser} from "../src/channel";
 import {Pith} from "../src/pith";
-import {Ribbon, SharedRibbons} from "../src/ribbon";
-import {IStream} from "../src/stream";
+import {SharedRibbons} from "../src/ribbon";
+import {StreamDescriptor} from "@pithmediaserver/api/types/stream";
+import {IChannelItem, IMediaChannelItem, IPlayState, Ribbon} from "@pithmediaserver/api";
 
 export class DummyChannelInitializer implements IChannelInitialiser {
     constructor(readonly id: string, readonly title: string, readonly channel: IChannel) {
@@ -31,7 +32,7 @@ export class DummyChannel implements IChannel {
         throw "Not Implemented";
     }
 
-    getStream(item: IChannelItem, opts?: any): Promise<IStream> {
+    getStream(item: IChannelItem, opts?: any): Promise<StreamDescriptor> {
         throw "Not Implemented";
     }
 
@@ -60,7 +61,8 @@ test('listRibbons', async () => {
                     playState: {
                         status: "inprogress",
                         time: 3000
-                    }
+                    },
+                    mediatype: 'movie'
                 }, {
                     type: 'file',
                     id: 'dummy_item_2',
@@ -68,7 +70,8 @@ test('listRibbons', async () => {
                     playState: {
                         status: "inprogress",
                         time: 8000
-                    }
+                    },
+                    mediatype: 'movie'
                 }];
             }
             return [];
@@ -88,13 +91,15 @@ test('listRibbons', async () => {
                         playState: {
                             status: "inprogress",
                             time: 6000
-                        }
+                        },
+                        mediatype: 'movie'
                     }];
                 case 'recentlyReleased':
                     return [{
                         type: 'file',
                         id: 'dummy_item_4',
-                        title: 'Dummy Item 4'
+                        title: 'Dummy Item 4',
+                        mediatype: 'movie'
                     }];
             }
         }
@@ -115,7 +120,8 @@ test('listRibbons', async () => {
                 playState: {
                     status: "inprogress",
                     time: 8000
-                }
+                },
+                mediatype: 'movie'
             }
         }, {
             channelId: 'dummy_2', item: {
@@ -125,7 +131,8 @@ test('listRibbons', async () => {
                 playState: {
                     status: "inprogress",
                     time: 6000
-                }
+                },
+                mediatype: 'movie'
             }
         }, {
             channelId: 'dummy_1', item: {
@@ -135,7 +142,8 @@ test('listRibbons', async () => {
                 playState: {
                     status: "inprogress",
                     time: 3000
-                }
+                },
+                mediatype: 'movie'
             }
         }
     ]);

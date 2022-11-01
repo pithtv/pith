@@ -1,5 +1,5 @@
-import {PathMappings} from "../settings/Settings";
 import * as Path from "path";
+import {PathMappings} from "@pithmediaserver/api";
 
 export function mapPath(remotePath: string, mappings: PathMappings) : string {
   if(!mappings) {

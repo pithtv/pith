@@ -11,8 +11,8 @@ import {SettingsStore, SettingsStoreSymbol} from '../../settings/SettingsStore';
 import {DBDriver, DBDriverSymbol} from '../../persistence/DBDriver';
 import {PithPlugin, plugin} from '../plugins';
 import {Directory, DirectoryFactory} from "./types";
-import {IChannel, IChannelItem, IMediaChannelItem, IPlayState} from "../../channel";
-import {Ribbon} from "../../ribbon";
+import {IChannel} from "../../channel";
+import {IChannelItem, IMediaChannelItem, IPlayState, Ribbon} from "@pithmediaserver/api";
 
 const logger = getLogger("pith.plugin.library");
 

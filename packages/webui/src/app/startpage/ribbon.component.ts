@@ -1,8 +1,9 @@
 import {Component, Input} from "@angular/core";
-import {Channel, PithClientService, Ribbon, RibbonItem} from "../core/pith-client.service";
+import {Channel, PithClientService, Ribbon} from "../core/pith-client.service";
 import {Subscription} from "rxjs";
 import {PlayerService} from "../core/player.service";
 import {Router} from "@angular/router";
+import {RibbonItem} from "@pithmediaserver/api";
 
 @Component({
   templateUrl: './ribbon.component.html',

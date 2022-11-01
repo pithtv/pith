@@ -1,5 +1,6 @@
 import {MetaDataProvider} from "./MetaDataProvider";
-import {IChannel, IChannelItem} from "../../channel";
+import {IChannel} from "../../channel";
+import {IChannelItem} from "@pithmediaserver/api";
 import path from "path";
 import {promises as fs} from "fs";
 import {FilesChannel} from "./FilesChannel";
