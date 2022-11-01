@@ -1,4 +1,4 @@
-import * as mdns from "mdns";
+import bonjour from "bonjour";
 import fetch from 'node-fetch';
 import {EventEmitter} from "events";
 import {VlcClient} from "./VlcClient";
@@ -9,11 +9,12 @@ const logger = getLogger('pith.plugin.VlcClient');
 export class VlcDiscovery extends EventEmitter {
   private clients: VlcClient[] = [];
   start() {
-    const browser = mdns.createBrowser(mdns.tcp("http"));
-    browser.on("serviceUp", (evt) => {
+    const bj = new bonjour();
+    const browser = bj.find({type: "http"})
+    browser.on("up", (evt) => {
       this.probe(evt.addresses, evt.port, evt.name);
     });
-    browser.on("serviceDown", (evt) => {
+    browser.on("down", (evt) => {
       this.collect(evt.addresses, evt.port);
     })
     browser.start();
@@ -22,13 +23,17 @@ export class VlcDiscovery extends EventEmitter {
   private async probe(addresses: Array<string>, port: number, name: string) {
     for(let addr of addresses) {
       try {
+        logger.debug(`Probing ${addr}:${port} to see if it's a controllable VLC instance`);
         let response = await fetch(`http://${addr}:${port}/playerControl.js`);
         if(response.status === 200) {
           logger.debug(`Found VLC at ${addr}:${port}`);
           this.notify(addr, port, name);
           return;
+        } else {
+          logger.debug(`${addr}:${port} not recognized as a VLC instance: ${response.statusText}`)
         }
       } catch(e) {
+        logger.warn(`Got an error trying to resolve ${addr}:${port} as a VLC client`, e);
       }
     }
   }
