@@ -61,7 +61,7 @@ class RadarrChannel extends Channel {
     return this.pith.getChannelInstance('files') as FilesChannel;
   }
 
-  async listContents(containerId: string): Promise<IChannelItem[]> {
+  async listContents(containerId?: string): Promise<IMediaChannelItem[]> {
     const movies = await MovieService.getApiV3Movie();
     return movies.map(movie => this.convertMovie(movie));
   }
@@ -80,6 +80,7 @@ class RadarrChannel extends Channel {
       posters: this.resolveImages(movie, MediaCoverTypes.POSTER),
       backdrops: this.resolveImages(movie, MediaCoverTypes.FANART),
       dateScanned: new Date(movie.movieFile?.dateAdded),
+      releaseDate: new Date(movie.inCinemas),
       overview: movie.overview,
       rating: movie.ratings.imdb?.value,
       imdbId: movie.imdbId,
@@ -122,7 +123,7 @@ class RadarrChannel extends Channel {
   }
 
   async getRibbons(): Promise<Ribbon[]> {
-    return [SharedRibbons.recentlyAdded];
+    return [SharedRibbons.recentlyAdded, SharedRibbons.recentlyReleased];
   }
 
   async listContentsOrderedAndPartial(orderBy: Accessor<MovieResource>, maximum: number) {
@@ -135,6 +136,10 @@ class RadarrChannel extends Channel {
     switch (ribbonId) {
       case SharedRibbons.recentlyAdded.id:
         return this.listContentsOrderedAndPartial(m => m.movieFile?.dateAdded ?? 0, maximum);
+      case SharedRibbons.recentlyReleased.id:
+        return this.listContentsOrderedAndPartial(m => m.inCinemas, maximum);
+      case SharedRibbons.continueWatching.id:
+        return (await this.listContents()).filter(m => m.playState?.status === "inprogress").sort(reverse(compare(i => i.playState.updated)));
     }
   }
 }
