@@ -6,11 +6,13 @@ import {container} from 'tsyringe';
 import {PithPlugin, plugin} from '../plugins';
 import {getLogger} from "log4js";
 import {IStream} from "../../stream";
-import {MediaCoverTypes, MovieResource, MovieService, OpenAPI} from "./client";
+import {MediaCover, MediaCoverTypes, MovieResource, MovieService, OpenAPI} from "./client";
 import {FilesChannel} from "../files/FilesChannel";
 import {PathMappings} from "../../settings/Settings";
 import {mapPath} from "../../lib/PathMapper";
 import mimetypes from "../../lib/mimetypes";
+import {Ribbon, SharedRibbons} from "../../ribbon";
+import {Accessor, compare, reverse} from "../../lib/Arrays";
 
 const logger = getLogger('pith.plugin.radarr');
 const settingsStore = container.resolve(SettingsStoreSymbol);
@@ -23,13 +25,15 @@ class RadarrChannel extends Channel {
   }
 
   async getItem(itemId: string, detailed?: boolean): Promise<IChannelItem> {
-    if(!itemId) {
+    if (!itemId) {
       return {} as IChannelItem;
     }
-    const [type,id] = itemId.split('.');
-    switch(type) {
+    const [type, id] = itemId.split('.');
+    switch (type) {
       case "movie":
-        if(!id) return {} as IChannelItem;
+        if (!id) {
+          return {} as IChannelItem;
+        }
         return this.getMovie(id);
     }
   }
@@ -72,6 +76,9 @@ class RadarrChannel extends Channel {
       banner: this.resolveImage(movie, MediaCoverTypes.BANNER),
       poster: this.resolveImage(movie, MediaCoverTypes.POSTER),
       backdrop: this.resolveImage(movie, MediaCoverTypes.FANART),
+      banners: this.resolveImages(movie, MediaCoverTypes.BANNER),
+      posters: this.resolveImages(movie, MediaCoverTypes.POSTER),
+      backdrops: this.resolveImages(movie, MediaCoverTypes.FANART),
       dateScanned: new Date(movie.movieFile?.dateAdded),
       overview: movie.overview,
       rating: movie.ratings.imdb?.value,
@@ -88,12 +95,21 @@ class RadarrChannel extends Channel {
     if (!image) {
       return undefined;
     }
-    const [,movieId,fileName] = image.url.match(/.*MediaCover\/([0-9]*)\/([^?]*)/) ?? [];
-    if(movieId && fileName) {
+    return this.resolveImageUrl(image);
+  }
+
+  private resolveImageUrl(image: MediaCover) {
+    const [, movieId, fileName] = image.url.match(/.*MediaCover\/([0-9]*)\/([^?]*)/) ?? [];
+    if (movieId && fileName) {
       return new URL(`api/v3/mediacover/${movieId}/${fileName}?apikey=${this.apikey}`, this.url).toString();
     }
     // fallback if local image resolution isn't working
     return image.remoteUrl;
+  }
+
+  private resolveImages(movie: MovieResource, type: MediaCoverTypes) {
+    let images = movie.images.filter(i => i.coverType === type);
+    return images.map(mc => ({ url: this.resolveImageUrl(mc) }))
   }
 
   async putPlayState(itemId: string, state: IPlayState): Promise<void> {
@@ -103,6 +119,23 @@ class RadarrChannel extends Channel {
   private async getMovie(id: string): Promise<IMediaChannelItem> {
     const radarrMovie = await MovieService.getApiV3Movie1(parseInt(id));
     return this.convertMovie(radarrMovie);
+  }
+
+  async getRibbons(): Promise<Ribbon[]> {
+    return [SharedRibbons.recentlyAdded];
+  }
+
+  async listContentsOrderedAndPartial(orderBy: Accessor<MovieResource>, maximum: number) {
+    const movies = (await MovieService.getApiV3Movie()).filter(m => m.hasFile);
+    movies.sort(reverse(compare(orderBy)));
+    return movies.slice(0, maximum).map(movie => this.convertMovie(movie));
+  }
+
+  async listRibbonContents(ribbonId: string, maximum: number): Promise<IMediaChannelItem[]> {
+    switch (ribbonId) {
+      case SharedRibbons.recentlyAdded.id:
+        return this.listContentsOrderedAndPartial(m => m.movieFile?.dateAdded ?? 0, maximum);
+    }
   }
 }
 
