@@ -8,6 +8,7 @@ COPY package.json .yarnrc.yml yarn.lock ./
 COPY .yarn ./.yarn
 COPY packages/server/package.json ./packages/server/package.json
 COPY packages/webui/package.json ./packages/webui/package.json
+COPY packages/api/package.json ./packages/api/package.json
 
 RUN yarn install --immutable
 
