@@ -11,6 +11,7 @@ export interface Stream {
   pixelFormat: string
   channels: string
   layout: string
+  url: String
 }
 
 export interface StreamDescriptor {
