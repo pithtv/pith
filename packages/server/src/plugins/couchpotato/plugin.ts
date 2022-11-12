@@ -7,7 +7,7 @@ import path from 'path';
 import mimetypes from '../../lib/mimetypes';
 import {getLogger} from 'log4js';
 import {Pith} from '../../pith';
-import {IChannelItem} from "@pithmediaserver/api";
+import {IChannelItem, IMovieChannelItem} from "@pithmediaserver/api";
 import {SettingsStore, SettingsStoreSymbol} from '../../settings/SettingsStore';
 import {inject, injectable} from 'tsyringe';
 import {PithPlugin, plugin} from '../plugins';
@@ -15,7 +15,7 @@ import {FilesChannel} from "../files/FilesChannel";
 
 const logger = getLogger('pith.plugin.couchpotato');
 
-function parseItemId(itemId) : Partial<IChannelItem> {
+function parseItemId(itemId) : { type: 'file'|'container', id: string, mediatype: string } {
     if (itemId) {
         const i = itemId.indexOf('/');
         if (i === -1) {
@@ -33,6 +33,10 @@ function parseItemId(itemId) : Partial<IChannelItem> {
             mediatype: 'root'
         };
     }
+}
+
+interface CouchPotatoChannelMovieItem extends IMovieChannelItem {
+    filePath: string
 }
 
 class CouchPotatoChannel extends Channel {
@@ -105,7 +109,7 @@ class CouchPotatoChannel extends Channel {
         }
     }
 
-    async mapMovie(movie) : Promise<IChannelItem> {
+    async mapMovie(movie) : Promise<CouchPotatoChannelMovieItem> {
         const release = movie.releases.find(r => r.status === 'done');
         const movieFile = release && release.files.movie && release.files.movie[0];
         let stat;
@@ -124,7 +128,7 @@ class CouchPotatoChannel extends Channel {
             title: movie.title,
             type: 'file',
             playable: release && true,
-            year: movie.info.year,
+            releaseDate: new Date(movie.info.year, 0, 1, 1),
             rating: movie.info.rating && movie.info.rating.imdb[0],
             plot: movie.info.plot,
             tagline: movie.info.tagline,

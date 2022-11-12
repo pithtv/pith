@@ -21,27 +21,27 @@ export class DummyChannel implements IChannel {
     }
 
     getItem(itemId: string): Promise<IChannelItem> {
-        throw "Not Implemented";
+        throw Error("Not Implemented");
     }
 
     getLastPlayState(itemId: string): Promise<IPlayState> {
-        throw "Not Implemented";
+        throw Error("Not Implemented");
     }
 
     getLastPlayStateFromItem(item: IChannelItem): Promise<IPlayState> {
-        throw "Not Implemented";
+        throw Error("Not Implemented");
     }
 
     getStream(item: IChannelItem, opts?: any): Promise<StreamDescriptor> {
-        throw "Not Implemented";
+        throw Error("Not Implemented");
     }
 
     listContents(containerId: string): IChannelItem[] | Promise<IChannelItem[]> {
-        throw "Not Implemented";
+        throw Error("Not Implemented");
     }
 
     putPlayState(itemId: string, state: IPlayState): Promise<void> {
-        throw "Not Implemented";
+        throw Error("Not Implemented");
     }
 
 }

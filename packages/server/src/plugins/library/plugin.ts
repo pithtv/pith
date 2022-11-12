@@ -12,9 +12,12 @@ import {DBDriver, DBDriverSymbol} from '../../persistence/DBDriver';
 import {PithPlugin, plugin} from '../plugins';
 import {Directory, DirectoryFactory} from "./types";
 import {IChannel} from "../../channel";
-import {IChannelItem, IMediaChannelItem, IPlayState, Ribbon} from "@pithmediaserver/api";
+import {IChannelItem, IContainerChannelItem, IMediaChannelItem, IPlayState, Ribbon} from "@pithmediaserver/api";
+import {type} from "os";
 
 const logger = getLogger("pith.plugin.library");
+
+type LibraryEnhanced<T extends IChannelItem> = IChannelItem & { channelId: string, originalId: string }
 
 class LibraryChannel extends Channel implements IChannel {
     private db: Repository;
@@ -29,7 +32,7 @@ class LibraryChannel extends Channel implements IChannel {
         this.directory = directoryFactory(this);
     }
 
-    private listContentsWithoutPlayStates(containerId): Promise<IChannelItem[]> {
+    private listContentsWithoutPlayStates(containerId): Promise<(LibraryEnhanced<IChannelItem>|IChannelItem)[]> {
         if (!containerId) {
             return Promise.resolve(this.directory.directories.filter(d => d.visible !== false));
         } else {
@@ -44,7 +47,7 @@ class LibraryChannel extends Channel implements IChannel {
     }
 
     async listContents(path) {
-        const contents = await this.listContentsWithoutPlayStates(path);
+        const contents = await this.listContentsWithoutPlayStates(path) as LibraryEnhanced<IChannelItem>[];
         return Promise.all(contents.map(item => {
             if (item.playState) {
                 return item;
@@ -57,7 +60,7 @@ class LibraryChannel extends Channel implements IChannel {
         }));
     }
 
-    async getItem(itemId): Promise<IChannelItem> {
+    async getItem(itemId): Promise<LibraryEnhanced<IChannelItem> | IChannelItem> {
         if (!itemId) {
             return {title: "Movies", id: null, type: "container"};
         } else {
@@ -80,19 +83,19 @@ class LibraryChannel extends Channel implements IChannel {
                     type: directory.type,
                     title: directory.title,
                     description: directory.description
-                };
+                } as IContainerChannelItem;
             }
         }
     }
 
-    async getStream(item, options) {
+    async getStream(item: LibraryEnhanced<IChannelItem>, options) {
         const channel = this;
         const targetChannel = channel.pithApp.getChannelInstance(item.channelId);
         const targetItem = await targetChannel.getItem(item.originalId);
         return targetChannel.getStream(targetItem, options);
     }
 
-    getLastPlayStateFromItem(item) {
+    getLastPlayStateFromItem(item: LibraryEnhanced<IChannelItem>) {
         if (item && item.originalId) {
             const targetChannel = this.pithApp.getChannelInstance(item.channelId);
             return targetChannel.getLastPlayState(item.originalId);
@@ -102,12 +105,12 @@ class LibraryChannel extends Channel implements IChannel {
     }
 
     async getLastPlayState(itemId): Promise<IPlayState> {
-        const item = await this.getItem(itemId);
+        const item = await this.getItem(itemId) as LibraryEnhanced<IChannelItem>;
         return this.getLastPlayStateFromItem(item);
     }
 
     async putPlayState(itemId, state) {
-        const item = await this.getItem(itemId);
+        const item = await this.getItem(itemId) as LibraryEnhanced<IChannelItem>;
         const targetChannel = this.pithApp.getChannelInstance(item.channelId);
         return targetChannel.putPlayState(item.originalId, state);
     }
@@ -150,14 +153,14 @@ export default class LibraryPlugin implements PithPlugin {
             movies: moviesScanner(scannerOpts),
             tvshows: showsScanner(scannerOpts)
         };
-        setTimeout(function () {
+        setTimeout(() => {
             self.scan(false);
         }, 10000);
 
         opts.pith.registerChannel({
             id: 'movies',
             title: 'Movies',
-            init: function (opts) {
+            init() {
                 return moviesChannel;
             },
             sequence: 2
@@ -166,7 +169,7 @@ export default class LibraryPlugin implements PithPlugin {
         opts.pith.registerChannel({
             id: 'shows',
             title: 'Shows',
-            init: function (opts) {
+            init() {
                 return showsChannel;
             }
         });
@@ -179,8 +182,8 @@ export default class LibraryPlugin implements PithPlugin {
         const scanStartTime = new Date().getTime();
 
         try {
-            let scanningCandidates = this.settingsStore.settings.library.folders.filter(c => plug.scanners[c.contains] !== undefined && (c.scanAutomatically || manual === true));
-            for (let dir of scanningCandidates) {
+            const scanningCandidates = this.settingsStore.settings.library.folders.filter(c => plug.scanners[c.contains] !== undefined && (c.scanAutomatically || manual === true));
+            for (const dir of scanningCandidates) {
                 const channelInstance = plug.pith.getChannelInstance(dir.channelId);
                 if (channelInstance !== undefined) {
                     await plug.scanners[dir.contains].scan(channelInstance, dir);

@@ -14,12 +14,12 @@ export type XmlObject = {
     }
 }
 
-export type XmlValue = string | number | XmlObject | XmlObject[];
+export type XmlValue = string | string[] | number | XmlObject | XmlObject[];
 
 export function toXml(args : XmlValue) {
     if (typeof args === 'object') {
         return Object.entries(args).filter(([, value]) => value !== undefined && value !== null).map(([key, value]) => {
-            function t(v) {
+            function t(v: XmlValue) {
                 if (v === undefined || v === null) {
                     return '';
                 }
@@ -37,7 +37,7 @@ export function toXml(args : XmlValue) {
             }
 
             if (Array.isArray(value)) {
-                return value.map(t).join('');
+                return (value as XmlValue[]).map(t).join('');
             }
             return t(value);
         }).join('');
@@ -65,13 +65,12 @@ export async function parseXmlProperties(input: string) : Promise<{[key: string]
  * @param sources
  */
 export function assign(target, ...sources) {
-    for (let x = 0; x < sources.length; x++) {
-        const source = sources[x];
+    for (const source of sources) {
         const keys = Object.getOwnPropertyNames(source);
         for (let y = 0, l = keys.length; y < l; y++) {
             const key = keys[y];
             const sourceValue = source[key];
-            if (sourceValue !== null && sourceValue !== undefined && typeof sourceValue == 'object' && !Array.isArray(sourceValue)) {
+            if (sourceValue !== null && sourceValue !== undefined && typeof sourceValue === 'object' && !Array.isArray(sourceValue)) {
                 target[key] = this.assign(target[key] || {}, sourceValue);
             } else {
                 target[key] = sourceValue;
@@ -81,11 +80,11 @@ export function assign(target, ...sources) {
     return target;
 }
 
-export function parseDate(string) {
-    if (!string) {
-        return string;
+export function parseDate(v: string) : Date | undefined {
+    if (!v) {
+        return undefined;
     }
-    return new Date(Date.parse(string));
+    return new Date(Date.parse(v));
 }
 
 export async function fileExists(path) {

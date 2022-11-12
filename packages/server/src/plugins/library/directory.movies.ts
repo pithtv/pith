@@ -21,7 +21,7 @@ export default function (plugin): Directory {
                 type: 'container',
                 async _getContents(containerId) {
                     if (containerId == null) {
-                        let result = await db.findMovies({});
+                        const result = await db.findMovies({});
                         return result.map(mapMovie);
                     } else {
                         return [];
@@ -31,7 +31,7 @@ export default function (plugin): Directory {
                     if (itemId === null) {
                         return {id: 'movies', title: 'All Movies', sortableFields: ['title', 'year', 'rating', 'runtime', 'creationTime']};
                     } else {
-                        let result = await db.findMovies({id: itemId});
+                        const result = await db.findMovies({id: itemId});
                         if (result[0]) {
                             return mapMovie(result[0]);
                         } else {
@@ -46,10 +46,10 @@ export default function (plugin): Directory {
                 type: 'container',
                 async _getContents(containerId) {
                     if (containerId) {
-                        let result = await db.findMovies({actorIds: containerId});
+                        const result = await db.findMovies({actorIds: containerId});
                         return result.map(mapMovie);
                     } else {
-                        let result = await db.getActors();
+                        const result = await db.getActors();
                         return result.map(e => ({
                             id: 'actors/' + e._id,
                             title: e.name,
@@ -64,10 +64,10 @@ export default function (plugin): Directory {
                 type: 'container',
                 async _getContents(containerId) {
                     if (containerId) {
-                        let result = await db.findMovies({directorIds: containerId});
+                        const result = await db.findMovies({directorIds: containerId});
                         return result.map(mapMovie);
                     } else {
-                        let result = await db.getDirectors();
+                        const result = await db.getDirectors();
                         return result.map(e => ({
                             id: 'directors/' + e._id,
                             title: e.name,
@@ -82,10 +82,10 @@ export default function (plugin): Directory {
                 type: 'container',
                 async _getContents(containerId) {
                     if (containerId) {
-                        let result = await db.findMovies({writerIds: containerId});
+                        const result = await db.findMovies({writerIds: containerId});
                         return result.map(mapMovie);
                     } else {
-                        let result = await db.getWriters();
+                        const result = await db.getWriters();
                         return result.map(e => ({
                             id: 'writers/' + e._id,
                             title: e.name,
@@ -100,10 +100,10 @@ export default function (plugin): Directory {
                 type: 'container',
                 async _getContents(containerId) {
                     if (containerId) {
-                        let result = await db.findMovies({keywordIds: containerId});
+                        const result = await db.findMovies({keywordIds: containerId});
                         return result.map(mapMovie);
                     } else {
-                        let result = await db.getKeywords();
+                        const result = await db.getKeywords();
                         return result.map(e => ({
                             id: 'keywords/' + e._id,
                             title: e.name,
@@ -118,10 +118,10 @@ export default function (plugin): Directory {
                 type: 'container',
                 async _getContents(containerId) {
                     if (containerId) {
-                        let result = await db.findMovies({genreIds: containerId});
+                        const result = await db.findMovies({genreIds: containerId});
                         return result.map(mapMovie);
                     } else {
-                        let result = await db.getGenres();
+                        const result = await db.getGenres();
                         return result.map(e => ({
                             id: 'genres/' + e._id,
                             title: e.name,
@@ -136,9 +136,9 @@ export default function (plugin): Directory {
                 description: 'Movies added in the past 14 days',
                 visible: true,
                 type: 'container',
-                sortableFields: ['title', 'year', 'rating', 'runtime', 'creationTime'],
+                sortableFields: ['title', 'releaseDate', 'rating', 'runtime', 'creationTime'],
                 async _getContents() {
-                    let result = await db.findMovies({dateScanned: {$gt: new Date(new Date().getTime() - 14 * 24 * 60 * 60 * 1000)}}, {order: {dateScanned: -1}});
+                    const result = await db.findMovies({dateScanned: {$gt: new Date(new Date().getTime() - 14 * 24 * 60 * 60 * 1000)}}, {order: {dateScanned: -1}});
                     return result.map(mapMovie);
                 }
             },
@@ -148,9 +148,9 @@ export default function (plugin): Directory {
                 description: 'Most recently released movies',
                 visible: true,
                 type: 'container',
-                sortableFields: ['title', 'year', 'rating', 'runtime', 'creationTime'],
+                sortableFields: ['title', 'releaseDate', 'rating', 'runtime', 'creationTime'],
                 async _getContents() {
-                    let result = await db.findMovies({}, {order: {releaseDate: -1}, limit: 50});
+                    const result = await db.findMovies({}, {order: {releaseDate: -1}, limit: 50});
                     return result.map(mapMovie);
                 }
             }
@@ -158,13 +158,13 @@ export default function (plugin): Directory {
         ribbons: [{
             ribbon: SharedRibbons.recentlyAdded,
             async getContents(maximum: number): Promise<IMediaChannelItem[]> {
-                let result = await db.findMovies({dateScanned: {$gt: new Date(new Date().getTime() - 14 * 24 * 60 * 60 * 1000)}}, {order: {dateScanned: -1}, limit: maximum});
+                const result = await db.findMovies({dateScanned: {$gt: new Date(new Date().getTime() - 14 * 24 * 60 * 60 * 1000)}}, {order: {dateScanned: -1}, limit: maximum});
                 return result.map(mapMovie);
             }
         }, {
             ribbon: SharedRibbons.recentlyReleased,
             async getContents(maximum: number): Promise<IMediaChannelItem[]> {
-                let result = await db.findMovies({}, {order: {releaseDate: -1}, limit: maximum});
+                const result = await db.findMovies({}, {order: {releaseDate: -1}, limit: maximum});
                 return result.map(mapMovie);
             }
         }],

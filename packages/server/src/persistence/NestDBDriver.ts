@@ -17,7 +17,7 @@ function enhanceCursor<T = any>(cursor): Cursor<T> {
         limit(...args) {
             return enhanceCursor(cursor.limit(...args));
         },
-        forEach<T>(consumer: (document: T) => void) {
+        forEach<TT>(consumer: (document: TT) => void) {
             return new Promise((resolve, reject) => {
                 cursor.exec((err, docs) => {
                     if (err) {
@@ -29,7 +29,7 @@ function enhanceCursor<T = any>(cursor): Cursor<T> {
                 });
             });
         },
-        toArray<T>(): Promise<T[]> {
+        toArray<TT>(): Promise<TT[]> {
             return new Promise((resolve, reject) => {
                 cursor.exec((err, docs) => {
                     if (err) {
@@ -43,11 +43,11 @@ function enhanceCursor<T = any>(cursor): Cursor<T> {
     };
 }
 
-function fieldPath(path) {
-    if (!path.match(/^\$[a-zA-Z][a-zA-Z]*$/)) {
+function fieldPath(p) {
+    if (!p.match(/^\$[a-zA-Z][a-zA-Z]*$/)) {
         throw new Error("Path should start with $");
     }
-    return path.substr(1);
+    return p.substr(1);
 }
 
 @injectable()
@@ -78,7 +78,7 @@ export class NestDBDriver implements DBDriver {
         const datastore: Datastore = this.collections.get(name);
         return {
             find<T>(...args) {
-                let cursor = datastore.find(...args);
+                const cursor = datastore.find(...args);
                 return enhanceCursor(cursor);
             },
             async findOne<T>(...args) {
@@ -110,18 +110,18 @@ export class NestDBDriver implements DBDriver {
                 });
             },
             aggregate(pipeline: AggregationOp[]): AggregationCursor {
-                const result = this.find().toArray().then((result) => pipeline.reduce((data, operation) => {
+                const result = this.find().toArray().then((r) => pipeline.reduce((data, operation) => {
                     if (isUnwind(operation)) {
-                        const path = fieldPath(operation.$unwind);
-                        return data.map(r => (r[path] ?? []).map(v => ({
-                            ...r,
-                            [path]: v
+                        const p = fieldPath(operation.$unwind);
+                        return data.map(rr => (rr[p] ?? []).map(v => ({
+                            ...rr,
+                            [p]: v
                         }))).reduce((a,b) => a.concat(b), []);
                     } else if(isMatch(operation)) {
-                        return data.filter(r => model.match(r, operation.$match));
+                        return data.filter(rr => model.match(rr, operation.$match));
                     } else if(isReplaceRootOp(operation)) {
-                        const path = fieldPath(operation.$replaceRoot.newRoot);
-                        return data.map(r => r[path]);
+                        const p = fieldPath(operation.$replaceRoot.newRoot);
+                        return data.map(rr => rr[p]);
                     } else if(isSortOp(operation)) {
                         const e = Object.entries(operation.$sort) as [string, number][];
                         return data.sort((a,b) => {
@@ -134,7 +134,7 @@ export class NestDBDriver implements DBDriver {
                             }, 0);
                         });
                     }
-                }, result));
+                }, r));
                 return {
                     toArray(): Promise<object[]> {
                         return result;

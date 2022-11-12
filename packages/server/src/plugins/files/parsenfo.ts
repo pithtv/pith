@@ -4,10 +4,10 @@ import {IChannelItem} from "@pithmediaserver/api";
 import {wrap} from '../../lib/async';
 
 async function parseXml(data) {
-    let result = {} as Partial<IChannelItem>;
+    const result = {} as Partial<IChannelItem>;
     const metadata = await wrap<any>(cb => xml2js(data, cb));
     const movie = metadata.movie;
-    for (let x of Object.keys(movie)) {
+    for (const x of Object.keys(movie)) {
         const valueArr = movie[x];
         const value = (valueArr && valueArr.length === 1) ? valueArr[0] : undefined;
 
@@ -20,10 +20,10 @@ async function parseXml(data) {
                 result[x] = value;
                 break;
             case 'genre':
-                result.genre = value && value.split(/ ?\/ ?/g);
+                result.genres = value && value.split(/ ?\/ ?/g);
                 break;
             case 'year':
-                result.year = parseInt(value);
+                result.releaseDate = new Date(parseInt(value, 10), 0, 1, 1);
                 break;
         }
     }

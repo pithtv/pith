@@ -1,11 +1,15 @@
 export interface IChannelItem {
+  readonly id: string;
+
   creationTime?: Date;
   modificationTime?: Date;
+
   type: 'container' | 'file';
-  readonly id: string;
+
   title: string;
   overview?: string;
-  genre?: string;
+  tagline?: string;
+  genres?: string[];
   mimetype?: string;
   playable?: boolean;
   fileSize?: number;
@@ -17,8 +21,20 @@ export interface IChannelItem {
   banners?: Image[];
   posters?: Image[];
   backdrops?: Image[];
+  rating?: number;
+  runtime?: number;
 
-  [key: string]: any;
+  writers?: string[];
+  director?: string;
+  actors?: string[];
+  plot?: string;
+
+  hasNew?: boolean;
+
+  tmdbRating?: number;
+  tmdbVoteCount?: number;
+
+  imdbId?: string;
 
   subtitles?: Subtitle[];
   playState?: IPlayState;
@@ -43,19 +59,33 @@ export interface IMediaChannelItem extends IChannelItem {
   mediatype: 'episode' | 'movie';
 }
 
+export interface IMovieChannelItem extends IMediaChannelItem {
+  mediatype: 'movie'
+}
+
 export interface IContainerChannelItem extends IChannelItem {
   type: 'container';
+  mediatype?: 'season' | 'show';
+  sortableFields?: (keyof IChannelItem)[]
 }
 
 export interface ITvShow extends IContainerChannelItem {
+  noEpisodes?: number;
+  noSeasons?: number;
   seasons?: ITvShowSeason[];
+  mediatype: 'show'
 }
 
 export interface ITvShowSeason extends IContainerChannelItem {
+  season: number;
+  noEpisodes?: number;
+  showname?: string;
   episodes?: ITvShowEpisode[];
+  mediatype: 'season'
 }
 
 export interface ITvShowEpisode extends IMediaChannelItem {
+  showname?: string;
   season: number;
   episode: number;
   mediatype: 'episode',

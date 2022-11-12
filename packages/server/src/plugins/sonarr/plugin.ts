@@ -38,6 +38,7 @@ export interface SonarrEpisodeItem extends ITvShowEpisode {
     _episodeFile: {
         path: string;
     }
+    sonarrEpisodeFileId: number
 }
 
 function parseItemId(itemId) {
@@ -218,7 +219,7 @@ class SonarrChannel extends Channel {
             } else if (showId !== undefined && seasonId !== undefined) {
                 const allEpisodes = await this.queryEpisodes(showId);
                 const series = await this.querySeries(showId);
-                const seasonNumber = parseInt(seasonId);
+                const seasonNumber = parseInt(seasonId, 10);
                 const seasonEpisodes = allEpisodes.filter(e => e.seasonNumber === seasonNumber);
                 return Promise.all(seasonEpisodes.map(e => this.convertEpisode(e, series)));
             }
@@ -367,7 +368,7 @@ class SonarrChannel extends Channel {
 
     private findNextEpisode(series: ITvShow): ITvShowEpisode {
         const episodes = series.seasons.map(season => season.episodes).reduce(flatMap).filter(ep => ep.playState?.status === 'watched' || ep.playState?.status === 'inprogress');
-        const {value: episode} = Arrays.max(episodes, Arrays.compare(ep => ep.time));
+        const {value: episode} = Arrays.max(episodes, Arrays.compare(ep => ep.playState.time));
         if(episode.playState.status === 'watched') {
             const laterEpisodes = episodes.filter(ep => ep.season === episode.season && ep.episode > episode.episode || ep.season > episode.season);
             return Arrays.max(laterEpisodes,

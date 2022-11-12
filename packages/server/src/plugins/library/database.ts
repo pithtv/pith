@@ -2,7 +2,7 @@ import {getLogger} from 'log4js';
 import {v1 as uuid} from 'node-uuid';
 import {mapSeries} from '../../lib/async';
 import {Collection, DBDriver} from "../../persistence/DBDriver";
-import {Episode, Season} from "../../persistence/Schema";
+import {Episode, Season, Show} from "../../persistence/Schema";
 
 const logger = getLogger('pith.plugins.library.database');
 
@@ -69,9 +69,9 @@ export class Repository {
     }
 
     async getCreateOrUpdatePersonWithJob(name, job) {
-        let result: PersonDocument = await this.people.findOne({name: name});
+        let result: PersonDocument = await this.people.findOne({name});
         if (!result) {
-            result = {name: name};
+            result = {name};
             result[job] = true;
             await this.people.insertOne(result);
             return result;
@@ -87,11 +87,11 @@ export class Repository {
     }
 
     getKeyword(name) {
-        return this.findOrCreate(this.keywords, {name: name});
+        return this.findOrCreate(this.keywords, {name});
     }
 
     getGenre(name) {
-        return this.findOrCreate(this.genres, {name: name});
+        return this.findOrCreate(this.genres, {name});
     }
 
     private _id(result) {
@@ -144,21 +144,6 @@ export class Repository {
         }).then(e => e[0].seasons);
     }
 
-    async storeSeason(item) {
-        const show = await this.series.findOne({id: item.showId});
-        if (!show) {
-            throw new Error("Can't store season because show can not be found");
-        }
-        const seasons = show.seasons ?? [];
-        const season = seasons.find(s => s.season = item.season);
-        if (season) {
-            Object.assign(season, item);
-        } else {
-            seasons.push(season);
-        }
-        return await this.series.updateOne({id: item.showId}, {$set: {seasons: seasons}});
-    }
-
     async findEpisode(item) {
         const episode = await this.series.aggregate(
             [
@@ -173,7 +158,7 @@ export class Repository {
         return episode[0];
     }
 
-    findEpisodes(item, sort) : Promise<Episode[]> {
+    findEpisodes(item, sort) : Promise<{show: Show, episode: Episode}[]> {
         return this.series.aggregate([
                 {$match: {seasons: {$elemMatch: {episodes: {$elemMatch: item}}}}},
                 {$unwind: '$seasons'},
@@ -184,25 +169,6 @@ export class Repository {
                 {$sort: sort}
             ]
         ).toArray();
-    }
-
-    async storeEpisode(item): Promise<void> {
-        const show = await this.series.findOne({
-            id: item.showId
-        });
-        if (!show) {
-            throw new Error(`Can't store episode because show ${item.showId} can't be found`);
-        }
-        const episodes = show.episodes ?? [];
-        const episode = episodes.find(e => e.season === item.season && e.episode === item.episode);
-        if (episode) {
-            Object.assign(episode, item);
-        } else {
-            episodes.push(item);
-        }
-        await this.series.updateOne({
-            id: item.showId
-        }, {set: {episodes: episodes}});
     }
 
     findShow(query) {
@@ -234,7 +200,7 @@ export class Repository {
     }
 
     findMovieByOriginalId(channelId, itemId) {
-        return this.movies.findOne({channelId: channelId, originalId: itemId});
+        return this.movies.findOne({channelId, originalId: itemId});
     }
 
     findMovies(query, opts?: { order: any, limit: number }) {

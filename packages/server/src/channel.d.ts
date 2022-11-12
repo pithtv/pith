@@ -13,8 +13,6 @@ export interface IChannel {
     readonly id: string;
     listContents(containerId: string): IChannelItem[] | Promise<IChannelItem[]>;
 
-    getLastPlayState(itemId: string): Promise<IPlayState>;
-
     putPlayState(itemId: string, state: IPlayState): Promise<void>;
 
     getItem(itemId: string): Promise<IChannelItem>;

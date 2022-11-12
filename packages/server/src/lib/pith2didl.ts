@@ -7,7 +7,13 @@ import {didl} from './didl';
 import {XmlObject} from './util';
 import {IChannel} from '../channel';
 import {container} from 'tsyringe';
-import {IChannelItem} from "@pithmediaserver/api";
+import {
+    IChannelItem,
+    IContainerChannelItem,
+    IMediaChannelItem, ITvShow,
+    ITvShowEpisode,
+    ITvShowSeason
+} from "@pithmediaserver/api";
 
 const global = container.resolve(Global);
 const logger = getLogger("pith.pith2didl");
@@ -45,7 +51,7 @@ function upnpClassFromItem(item) {
                 return 'object.item';
         }
     } else {
-        throw `Item type ${item.type} missing or not implemented`;
+        throw new Error(`Item type ${item.type} missing or not implemented`);
     }
 }
 
@@ -90,13 +96,13 @@ export function convertToDidl(channel, item, parentId, channelId): didl.Item {
     });
 }
 
-function toDidlProperties(item : IChannelItem, channel : IChannel) : XmlObject {
-    let coverArt = item.thumb || item.poster;
+function toDidlProperties(item : IMediaChannelItem | IContainerChannelItem, channel : IChannel) : XmlObject {
+    const coverArt = item.poster;
 
-    let didlProperties = {
+    const didlProperties = {
         'dc:title': item.title,
         'upnp:class': upnpClassFromItem(item),
-        'dc:date': upnp.formatDate(item.airDate) || upnp.formatDate(item.releaseDate) || (item.year && `${item.year}-01-01`) || undefined,
+        'dc:date': upnp.formatDate(item.releaseDate) || undefined,
         'upnp:genre': item.genres,
         'upnp:author': item.writers,
         'upnp:director': item.director,
@@ -131,28 +137,31 @@ function toDidlProperties(item : IChannelItem, channel : IChannel) : XmlObject {
 
     switch (item.mediatype) {
         case 'episode':
+            const episode = item as ITvShowEpisode;
             return {
                 ...didlProperties,
                 // "dc:publisher": "",
-                'dc:title': `S${item.season}E${item.episode} : ${item.title}`,
-                'upnp:programTitle': `S${item.season}E${item.episode} : ${item.title}`,
-                'upnp:seriesTitle': item.showname,
-                'upnp:episodeNumber': sprintf('%02d%02d', item.season, item.episode),
+                'dc:title': `S${episode.season}E${episode.episode} : ${episode.title}`,
+                'upnp:programTitle': `S${episode.season}E${episode.episode} : ${episode.title}`,
+                'upnp:seriesTitle': episode.showname,
+                'upnp:episodeNumber': sprintf('%02d%02d', episode.season, episode.episode),
                 'upnp:episodeSeason': 0
             };
         case 'season':
+            const season = item as ITvShowSeason;
             return {
                 ...didlProperties,
                 // "dc:publisher": "",
-                'upnp:seriesTitle': item.showname,
-                'upnp:episodeNumber': item.noEpisodes,
+                'upnp:seriesTitle': season.showname,
+                'upnp:episodeNumber': season.noEpisodes,
                 'upnp:episodeSeason': 0
             };
         case 'show':
+            const show = item as ITvShow;
             return {
                 ...didlProperties,
                 // "dc:publisher": "",
-                'upnp:episodeNumber': item.noEpisodes
+                'upnp:episodeNumber': show.noEpisodes
             };
         default:
             return didlProperties;

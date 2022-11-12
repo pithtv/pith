@@ -16,6 +16,10 @@ import {StreamDescriptor} from "@pithmediaserver/api/types/stream";
 const logger = getLogger('pith.plugin.radarr');
 const settingsStore = container.resolve(SettingsStoreSymbol);
 
+interface IFilesChannelItem extends IMediaChannelItem {
+  file: string
+}
+
 class RadarrChannel extends Channel {
   constructor(private pith: Pith, private url: string, private apikey: string, private pathMapping: PathMappings) {
     super();
@@ -23,15 +27,15 @@ class RadarrChannel extends Channel {
     OpenAPI.HEADERS = {"X-Api-Key": apikey};
   }
 
-  async getItem(itemId: string, detailed?: boolean): Promise<IChannelItem> {
+  async getItem(itemId: string, detailed?: boolean): Promise<IFilesChannelItem> {
     if (!itemId) {
-      return {} as IChannelItem;
+      return {} as IFilesChannelItem;
     }
     const [type, id] = itemId.split('.');
     switch (type) {
       case "movie":
         if (!id) {
-          return {} as IChannelItem;
+          return {} as IFilesChannelItem;
         }
         return this.getMovie(id);
     }
@@ -41,18 +45,18 @@ class RadarrChannel extends Channel {
     return this.getDelegateChannelInstance().getLastPlayState(this.resolveDelegateFileId(await this.getItem(itemId)));
   }
 
-  async getLastPlayStateFromItem(item: IChannelItem): Promise<IPlayState> {
+  async getLastPlayStateFromItem(item: IFilesChannelItem): Promise<IPlayState> {
     return this.getDelegateChannelInstance().getLastPlayState(this.resolveDelegateFileId(item));
   }
 
-  async getStream(item: IChannelItem, opts?: any): Promise<StreamDescriptor> {
-    let fileId = this.resolveDelegateFileId(item);
+  async getStream(item: IFilesChannelItem, opts?: any): Promise<StreamDescriptor> {
+    const fileId = this.resolveDelegateFileId(item);
     return this.getDelegateChannelInstance().getStream(await this.getDelegateChannelInstance().getItem(fileId), opts);
   }
 
-  private resolveDelegateFileId(item: IChannelItem) {
-    let filesChannel = this.getDelegateChannelInstance();
-    let fileId = filesChannel.resolveFileId(mapPath(item.file, this.pathMapping));
+  private resolveDelegateFileId(item: IFilesChannelItem) {
+    const filesChannel = this.getDelegateChannelInstance();
+    const fileId = filesChannel.resolveFileId(mapPath(item.file, this.pathMapping));
     return fileId;
   }
 
@@ -66,7 +70,7 @@ class RadarrChannel extends Channel {
   }
 
   private convertMovie(movie: MovieResource) {
-    return <IMediaChannelItem>{
+    return {
       id: `movie.${movie.id}`,
       title: movie.title,
       type: "file",
@@ -87,11 +91,11 @@ class RadarrChannel extends Channel {
       playable: movie.movieFile !== undefined,
       file: movie.movieFile?.path,
       mimetype: movie.movieFile && mimetypes.fromFilePath(movie.movieFile.path)
-    };
+    } as IMediaChannelItem & IFilesChannelItem;
   }
 
   private resolveImage(movie: MovieResource, type: MediaCoverTypes) {
-    let image = movie.images.find(i => i.coverType === type);
+    const image = movie.images.find(i => i.coverType === type);
     if (!image) {
       return undefined;
     }
@@ -108,7 +112,7 @@ class RadarrChannel extends Channel {
   }
 
   private resolveImages(movie: MovieResource, type: MediaCoverTypes) {
-    let images = movie.images.filter(i => i.coverType === type);
+    const images = movie.images.filter(i => i.coverType === type);
     return images.map(mc => ({ url: this.resolveImageUrl(mc) }))
   }
 
@@ -116,8 +120,8 @@ class RadarrChannel extends Channel {
     return this.getDelegateChannelInstance().putPlayState(this.resolveDelegateFileId(await this.getItem(itemId)), state);
   }
 
-  private async getMovie(id: string): Promise<IMediaChannelItem> {
-    const radarrMovie = await MovieService.getApiV3Movie1(parseInt(id));
+  private async getMovie(id: string): Promise<IMediaChannelItem & IFilesChannelItem> {
+    const radarrMovie = await MovieService.getApiV3Movie1(parseInt(id, 10));
     return this.convertMovie(radarrMovie);
   }
 
@@ -151,8 +155,8 @@ export default class SonarrPlugin implements PithPlugin {
       opts.pith.registerChannel({
         id: 'radarr',
         title: 'radarr',
-        init(opts) {
-          return new RadarrChannel(opts.pith, pluginSettings.url, pluginSettings.apikey, pluginSettings.pathMapping);
+        init(pluginOpts) {
+          return new RadarrChannel(pluginOpts.pith, pluginSettings.url, pluginSettings.apikey, pluginSettings.pathMapping);
         }
       });
     }
