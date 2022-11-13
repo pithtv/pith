@@ -10,7 +10,7 @@ import {mapPath} from "../../lib/PathMapper";
 import mimetypes from "../../lib/mimetypes";
 import {SharedRibbons} from "../../ribbon";
 import {Accessor, compare, reverse} from "../../lib/Arrays";
-import {IChannelItem, IMediaChannelItem, IPlayState, PathMappings, Ribbon} from "@pithmediaserver/api";
+import {IMediaChannelItem, IPlayState, PathMappings, Ribbon} from "@pithmediaserver/api";
 import {StreamDescriptor} from "@pithmediaserver/api/types/stream";
 
 const logger = getLogger('pith.plugin.radarr');
@@ -56,8 +56,7 @@ class RadarrChannel extends Channel {
 
   private resolveDelegateFileId(item: IFilesChannelItem) {
     const filesChannel = this.getDelegateChannelInstance();
-    const fileId = filesChannel.resolveFileId(mapPath(item.file, this.pathMapping));
-    return fileId;
+    return filesChannel.resolveFileId(mapPath(item.file, this.pathMapping));
   }
 
   private getDelegateChannelInstance() {
@@ -76,9 +75,6 @@ class RadarrChannel extends Channel {
       type: "file",
       year: movie.year,
       mediatype: 'movie',
-      banner: this.resolveImage(movie, MediaCoverTypes.BANNER),
-      poster: this.resolveImage(movie, MediaCoverTypes.POSTER),
-      backdrop: this.resolveImage(movie, MediaCoverTypes.FANART),
       banners: this.resolveImages(movie, MediaCoverTypes.BANNER),
       posters: this.resolveImages(movie, MediaCoverTypes.POSTER),
       backdrops: this.resolveImages(movie, MediaCoverTypes.FANART),

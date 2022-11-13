@@ -185,7 +185,7 @@ export class FilesChannel extends Channel {
       }
       return relative;
     } else {
-      throw new Error('File not contained within media root');
+      throw new Error(`File ${file} not contained within media root`);
     }
   }
 

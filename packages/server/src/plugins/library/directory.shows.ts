@@ -35,6 +35,8 @@ export default function (plugin): Directory {
             title: m.title,
             seasons,
             playState,
+            ...(m.poster ? { posters: [{url: m.poster}] }: {}),
+            ...(m.backdrop ? { backdrops: [{url: m.backdrop}] }: {}),
             hasNew: lastPlayable && (!lastPlayable.playState || lastPlayable.playState.status !== 'watched') && lastPlayable.dateScanned > (new Date(new Date().getTime() - 1000 * 60 * 60 * 24 * settingsStore.settings.maxAgeForNew))
         };
     }

@@ -7,7 +7,7 @@ import path from 'path';
 import mimetypes from '../../lib/mimetypes';
 import {getLogger} from 'log4js';
 import {Pith} from '../../pith';
-import {IChannelItem, IMovieChannelItem} from "@pithmediaserver/api";
+import {IChannelItem, Image, IMovieChannelItem} from "@pithmediaserver/api";
 import {SettingsStore, SettingsStoreSymbol} from '../../settings/SettingsStore';
 import {inject, injectable} from 'tsyringe';
 import {PithPlugin, plugin} from '../plugins';
@@ -101,11 +101,14 @@ class CouchPotatoChannel extends Channel {
         });
     }
 
-    extractPosterFromCache(movie) {
-        const posterPath = movie.files && movie.files.image_poster[0];
-        if (posterPath) {
-            const uuid = posterPath.substr(posterPath.lastIndexOf('/'));
-            return this.url.resolve(`api/${this.apikey}/file.cache/${uuid}`);
+    extractPosterFromCache(movie) : Image[] {
+        if(movie.files) {
+            return movie.filed.image_poster.map(posterPath => {
+                const uuid = posterPath.substr(posterPath.lastIndexOf('/'));
+                return {url: this.url.resolve(`api/${this.apikey}/file.cache/${uuid}`) };
+            })
+        } else {
+            return [];
         }
     }
 
@@ -134,8 +137,11 @@ class CouchPotatoChannel extends Channel {
             tagline: movie.info.tagline,
             genres: movie.info.genres,
             imdbId: movie.identifiers.imdb,
-            poster: movie.info.images.poster_original && movie.info.images.poster_original[0] || movie.info.images.poster[0] || this.extractPosterFromCache(movie),
-            backdrop: movie.info.images.backdrop_original && movie.info.images.backdrop_original[0] || movie.info.images.backdrop[0],
+            posters: [
+                ... movie.info.images.poster_original?.map(url => ({url})) ?? [],
+                ... movie.info.images.poster?.map(url => ({url})) ?? [],
+                ... this.extractPosterFromCache(movie) ],
+            backdrops: movie.info.images.backdrop_original?.[0] ?? movie.info.images.backdrop[0],
             runtime: movie.info.runtime,
             actors: movie.info.actors,
             writers: movie.info.writers,

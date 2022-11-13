@@ -2,9 +2,9 @@ import {Component, Input} from "@angular/core";
 import {Channel} from "../core/pith-client.service";
 import {PlayerService} from "../core/player.service";
 import {Path} from "./details.component";
-import {IChannelItem} from "@pithmediaserver/api";
+import {IChannelItem, IMovieChannelItem, ITvShowEpisode} from "@pithmediaserver/api";
 
-const resolutionMap  : [number, number, string][]= [
+const resolutionMap: [number, number, string][] = [
   [1920, 1920, '1080'],
   [1280, 1280, '720'],
   [720, 720, '480'],
@@ -18,7 +18,7 @@ const resolutionMap  : [number, number, string][]= [
   templateUrl: './generic-details.component.html'
 })
 export class GenericDetailsComponent {
-  item: IChannelItem;
+  item: IChannelItem | ITvShowEpisode | IMovieChannelItem;
   channel: Channel;
   path: Path;
   flags: { domain: string, subdomain: string, value: string }[];
@@ -47,9 +47,10 @@ export class GenericDetailsComponent {
             break;
           case 'video':
             tag('video', 'codec', s.codec);
-            if(s.resolution?.width) {
-              const m = resolutionMap.find(([lowerBound, upperBound]) => s.resolution.width >= lowerBound && s.resolution.width <= upperBound);
-              tag('video','resolution', m[2] || `${s.resolution.width}x${s.resolution.height}`);
+            if (s.resolution?.width) {
+              const m = resolutionMap.find(([lowerBound, upperBound]) =>
+                s.resolution.width >= lowerBound && s.resolution.width <= upperBound);
+              tag('video', 'resolution', m[2] || `${s.resolution.width}x${s.resolution.height}`);
             }
             break;
           case "subtitle":

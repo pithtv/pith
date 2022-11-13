@@ -4,7 +4,7 @@ import {getLogger} from 'log4js';
 import {Global} from '../../lib/global';
 import {formatTime} from '../../lib/upnp';
 import Device from 'upnp-client-minimal';
-import entities from 'entities';
+import * as entities from 'entities';
 import {EventEmitter} from 'events';
 import {parseString as xml2js} from 'xml2js';
 import {Icon, IPlayer, IPlayerStatus} from '../../player';

@@ -7,11 +7,11 @@
 </div>
 
 <img class="c-itemDetails__banner"
-     *ngIf="item.banner"
-     [src]="item.banner | prescale:'original'" class="c-itemDetails__banner"/>
+     *ngIf="item.banners?.length > 0"
+     [src]="item.banners[0].url | prescale:'original'" class="c-itemDetails__banner"/>
 <img class="c-itemDetails__thumbnail"
-     *ngIf="item.poster || item.still"
-     [src]="((item.poster || item.still) | prescale:'680x1000')" class="c-itemDetails__thumbnail"/>
+     *ngIf="item.posters?.length > 0"
+     [src]="((item.posters[0].url) | prescale:'680x1000')" class="c-itemDetails__thumbnail"/>
 
 <div class="c-itemDetails__episodeGuide">
   <ul class="detailtabs seasons">
@@ -39,7 +39,7 @@
         <span class="episode-title">{{ episode.title }}</span>
       </span>
       <span class="seasondetails__info">
-        <span class="episode-airdate">{{ episode.airDate | date }}</span>
+        <span class="episode-airdate">{{ episode.releaseDate | date }}</span>
       </span>
       <span class="seasondetails__plot">
         <span class="episode-synopsis">{{ episode.overview }}</span>

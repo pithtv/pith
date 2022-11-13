@@ -21,8 +21,7 @@
 <ul class="c-contentBrowser" [class.c-contentBrowser--poster]="item?.preferredView !== 'details'" [class.c-contentBrowser--details]="item?.preferredView === 'details'" #container infiniteScroll [infiniteScrollDistance]="2" [infiniteScrollThrottle]="50" (scrolled)="loadMore()">
   <li class="c-contentBrowser__item"
       *ngFor="let item of filteredContents | slice:0:limit; index as idx"
-      [class.withposter]="item.poster"
-      [class.withstill]="item.still"
+      [class.withposter]="item.posters?.length > 0"
       [class.withinfo]="item.tagline || item.rating || (item.genres?.length) || item.plot || item.overview"
       [class.watched]="item.playState?.status == 'watched'"
       [class.inprogress]="item.playState?.status == 'inprogress'"
@@ -31,16 +30,14 @@
       [id]="item.id"
   >
     <a class="c-contentBrowser__itemPresentation" [routerLink]="['/channel', channel.id, item.id]">
-      <div *ngIf="item.poster" class="c-contentBrowser__poster"
-           [style.background-image]="'url(' + (item.poster | prescale:'130x195') + ')'">
+      <div *ngIf="item.posters?.length > 0" class="c-contentBrowser__poster"
+           [style.background-image]="'url(' + (item.posters[0].url | prescale:'130x195') + ')'">
       </div>
-      <img *ngIf="item.still && !item.poster" class="c-contentBrowser__still"
-           [src]="item.still | prescale:'266x150'" />
       <span class="c-contentBrowser__itemInfo">
         <span class="r-title" *ngIf="item.title">{{item.title}}</span>
-        <span class="r-year" *ngIf="item.year">{{item.year}}</span>
+        <span class="r-year" *ngIf="item.releaseDate">{{item.releaseDate?.getFullYear()}}</span>
         <span class="r-rating"><span class="stars" [attr.data-starrating]="item.rating" *ngIf="item.rating"></span></span>
-        <span class="r-duration" *ngIf="item.duration">{{item.duration | time}}</span>
+        <span class="r-duration" *ngIf="item.runtime">{{item.runtime | time}}</span>
       </span>
     </a>
   </li>

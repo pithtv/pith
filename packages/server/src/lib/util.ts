@@ -1,4 +1,4 @@
-import entities from 'entities';
+import * as entities from 'entities';
 import {promises as fs} from 'fs';
 import {parseString as xml2js} from 'xml2js';
 import {wrap} from './async';

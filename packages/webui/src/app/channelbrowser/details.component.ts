@@ -11,7 +11,7 @@ export type Path = { id: string, title: string }[];
   templateUrl: './details.component.html'
 })
 export class DetailsComponent implements OnInit {
-  channelAndItem: {channel: Channel, item: IChannelItem};
+  channelAndItem: {channel: Channel, item: IChannelItem, path: Path};
   item: IChannelItem;
 
   constructor(private route: ActivatedRoute, private pithClient: PithClientService) {
@@ -35,11 +35,11 @@ export class DetailsComponent implements OnInit {
   }
 
   buildPath(channel: Channel, id: string): Observable<Path> {
-    if(!id) {
+    if (!id) {
       return of([]);
     }
     const path = id.split('/').map((a, i, r) => r.slice(0, i + 1).join('/'));
-    if(!path.length) {
+    if (!path.length) {
       return of([]);
     }
     return forkJoin(path.map(p => channel.getDetails(p, {noRefresh: true})));

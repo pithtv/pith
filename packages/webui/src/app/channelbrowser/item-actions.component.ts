@@ -11,7 +11,7 @@ export class ItemActionsComponent {
   @Input() item: IChannelItem;
   @Input() channel: Channel;
 
-  constructor(private playerService: PlayerService) {
+  constructor(public playerService: PlayerService) {
 
   }
 

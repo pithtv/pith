@@ -17,10 +17,6 @@ const identifierService = container.resolve(IdentifierService);
 
 const logger = getLogger('pith.plugin.upnp-mediaserver');
 
-function cache(sourceUrl) {
-    return `${global.rootUrl}/scale/${encodeURIComponent(sourceUrl)}?size=original`;
-}
-
 class MediaServerDelegate implements DeviceDelegate {
     private pith: Pith;
     constructor(pith) {
@@ -29,8 +25,8 @@ class MediaServerDelegate implements DeviceDelegate {
 
     async fetchChildren(id, {max, start, sort}) {
         if (id === 0 || id === '0') {
-            let channels = await this.pith.listChannels();
-            let items = channels.map(channel => ({
+            const channels = await this.pith.listChannels();
+            const items = channels.map(channel => ({
                 id: `channel:${channel.id}`,
                 parentId: 0,
                 updateId: 0,
@@ -42,14 +38,14 @@ class MediaServerDelegate implements DeviceDelegate {
             }));
             return {
                 updateId: 0,
-                items: items,
+                items,
                 totalItems: items.length
             };
         } else {
-            let [, channelId, , itemId] = id.match(/^channel:(\w+)(:(.*))?$/);
-            let channel = this.pith.getChannelInstance(channelId);
-            let contents = await channel.listContents(itemId);
-            let items = contents.filter(item => !item.unavailable).map(item => convertToDidl(channel, item, id, channelId));
+            const [, channelId, , itemId] = id.match(/^channel:(\w+)(:(.*))?$/);
+            const channel = this.pith.getChannelInstance(channelId);
+            const contents = await channel.listContents(itemId);
+            const items = contents.filter(item => !item.unavailable).map(item => convertToDidl(channel, item, id, channelId));
             return {
                 updateId: 0,
                 items: max === 0 ? items : items.slice(start, start + max),
@@ -59,14 +55,14 @@ class MediaServerDelegate implements DeviceDelegate {
     }
 
     async fetchObject(id) {
-        let [, channelId, , itemId] = id.match(/^channel:(\w+)(:(.*))?$/) || [,,,,];
+        const [, channelId, , itemId] = id.match(/^channel:(\w+)(:(.*))?$/) || [,,,,];
         if (itemId) {
-            let channel = this.pith.getChannelInstance(channelId);
-            let contents = await channel.getItem(itemId);
-            let item = convertToDidl(channel, contents, id, channelId);
+            const channel = this.pith.getChannelInstance(channelId);
+            const contents = await channel.getItem(itemId);
+            const item = convertToDidl(channel, contents, id, channelId);
             return {
                 updateId: 0,
-                item: item
+                item
             };
         }
     }
@@ -75,10 +71,10 @@ class MediaServerDelegate implements DeviceDelegate {
         if(!newTagValue) {
             return; // we don't support deleting tags yet.
         }
-        let [, channelId, , itemId] = id.match(/^channel:(\w+)(:(.*))?$/) || [,,,,];
+        const [, channelId, , itemId] = id.match(/^channel:(\w+)(:(.*))?$/) || [,,,,];
         logger.info(`UpdateObject`, id, currentTagValue, newTagValue);
         if (itemId) {
-            let channel = this.pith.getChannelInstance(channelId);
+            const channel = this.pith.getChannelInstance(channelId);
             let playstate = null as IPlayState;
             for(const [key, value] of Object.entries(newTagValue)) {
                 switch (key) {
@@ -90,7 +86,7 @@ class MediaServerDelegate implements DeviceDelegate {
                         }
                         break;
                     case "upnp:lastPlaybackPosition":
-                        playstate = {...playstate, time: parseInt(value as string)};
+                        playstate = {...playstate, time: parseInt(value as string, 10)};
                         break;
                 }
             }
@@ -108,7 +104,7 @@ class MediaServerDelegate implements DeviceDelegate {
 export default class UPnPMediaServerPlugin implements PithPlugin {
     async init(opts) {
         if(settingsStore.settings.upnpsharing && settingsStore.settings.upnpsharing.enabled) {
-            let mediaserver = new MediaServer({
+            const mediaserver = new MediaServer({
                 name: 'Pith',
                 manufacturer: 'Pith',
                 address: global.bindAddress,

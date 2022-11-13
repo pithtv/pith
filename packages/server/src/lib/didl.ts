@@ -1,5 +1,5 @@
 import {getLogger} from 'log4js';
-import entities from 'entities';
+import * as entities from 'entities';
 import {toXml, XmlObject} from './util';
 
 const logger = getLogger('pith.didl');
@@ -39,7 +39,7 @@ export function buildDidlXml(arr: didl.Item[]) {
                 if (r.size) {
                     x+= ` size="${r.size}"`;
                 }
-                x += `>${r.uri}</res>`;
+                x += `>${entities.encodeXML(r.uri)}</res>`;
                 return x;
             }).join('');
         } else {

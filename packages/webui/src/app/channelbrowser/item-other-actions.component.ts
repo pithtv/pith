@@ -9,7 +9,7 @@ import {IChannelItem} from "@pithmediaserver/api";
 export class ItemOtherActionsComponent {
   @Input() channel: Channel;
   @Input() item: IChannelItem;
-  showVlc: boolean = false;
+  showVlc = false;
 
   constructor() {
     if (/android/i.test(navigator.userAgent) || (/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream)) {
@@ -22,7 +22,7 @@ export class ItemOtherActionsComponent {
   }
 
   async vlc(action: 'stream'|'download') {
-    let stream = await this.channel.stream(this.item.id).toPromise();
+    const stream = await this.channel.stream(this.item.id).toPromise();
     window.location.href = `vlc-x-callback://x-callback-url/${action}?url=${encodeURIComponent(stream.stream.url)}&x-success=${encodeURIComponent(document.location.href)}`;
   }
 }

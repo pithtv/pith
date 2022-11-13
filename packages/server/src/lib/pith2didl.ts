@@ -1,6 +1,6 @@
 import * as upnp from './upnp';
 import {Global} from './global';
-import entities from 'entities';
+import * as entities from 'entities';
 import {getLogger} from 'log4js';
 import {sprintf} from 'sprintf-js';
 import {didl} from './didl';
@@ -9,7 +9,7 @@ import {IChannel} from '../channel';
 import {container} from 'tsyringe';
 import {
     IChannelItem,
-    IContainerChannelItem,
+    IContainerChannelItem, Image,
     IMediaChannelItem, ITvShow,
     ITvShowEpisode,
     ITvShowSeason
@@ -59,11 +59,18 @@ function cacheAndResize(sourceUrl, width, height, format) {
     return `${global.rootUrl}/scale/${encodeURIComponent(sourceUrl)}?size=${width}x${height}&format=${format}`;
 }
 
-function cache(sourceUrl) {
+function cache(sourceUrl: string) : string {
     return `${global.rootUrl}/scale/${encodeURIComponent(sourceUrl)}?size=original`;
 }
 
-export function convertToDidl(channel, item, parentId, channelId): didl.Item {
+export function convertToDidl(channel, item: IChannelItem, parentId, channelId): didl.Item {
+    function imagesToResources(images: Image[], protocolInfo: string) {
+        return images ? images.map(poster => ({
+            uri: entities.encodeXML(cache(poster.url)),
+            protocolInfo
+        })) : [];
+    }
+
     return ({
         id: `channel:${channel.id}:${item.id}`,
         parentId: item.parentId ? `channel:${channel.id}:${item.parentId}` : parentId,
@@ -76,14 +83,8 @@ export function convertToDidl(channel, item, parentId, channelId): didl.Item {
                 protocolInfo: `http-get:*:${item.mimetype}:DLNA.ORG_OP=01;DLNA.ORG_CI=0`,
                 size: item.fileSize
             }] : []),
-            ...(item.poster ? [{
-                uri: entities.encodeXML(cache(item.poster)),
-                protocolInfo: 'xbmc.org:*:poster:*'
-            }] : []),
-            ...(item.backdrop ? [{
-                uri: entities.encodeXML(cache(item.backdrop)),
-                protocolInfo: 'xbmc.org:*:fanart:*'
-            }] : []),
+            ...(imagesToResources(item.posters, 'xbmc.org:*:poster:*')),
+            ...(imagesToResources(item.backdrops, 'xbmc.org:*:fanart:*')),
             ...(item.subtitles ? item.subtitles.map(subtitle => ({
                 uri: subtitle.uri,
                 protocolInfo: `http-get:*:${subtitle.mimetype}:*`
@@ -96,8 +97,15 @@ export function convertToDidl(channel, item, parentId, channelId): didl.Item {
     });
 }
 
-function toDidlProperties(item : IMediaChannelItem | IContainerChannelItem, channel : IChannel) : XmlObject {
-    const coverArt = item.poster;
+function toDidlProperties(item : IChannelItem, channel : IChannel) : XmlObject {
+    const coverArt = item.posters?.[0];
+
+    function unwrap(images: Image[], type: string) {
+        return images ? images.map(backdrop => ({
+            _attribs: {type},
+            _value: cache(backdrop.url)
+        })) : [];
+    }
 
     const didlProperties = {
         'dc:title': item.title,
@@ -117,9 +125,9 @@ function toDidlProperties(item : IMediaChannelItem | IContainerChannelItem, chan
         'pith:itemId': item.id,
         'pith:channelId': channel.id,
         'xbmc:artwork': [
-            item.backdrop ? {_attribs: {type: 'fanart'}, _value: cache(item.backdrop)} : undefined,
-            item.poster ? {_attribs: {type: 'poster'}, _value: cache(item.poster)} : undefined,
-            item.banner ? {_attribs: {type: 'banner'}, _value: cache(item.banner)} : undefined
+            ...unwrap(item.backdrops, 'fanart'),
+            ...unwrap(item.posters, 'poster'),
+            ...unwrap(item.banners, 'banner')
         ],
         'upnp:albumArtURI': coverArt && [
             {

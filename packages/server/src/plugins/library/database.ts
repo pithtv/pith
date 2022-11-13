@@ -203,7 +203,7 @@ export class Repository {
         return this.movies.findOne({channelId, originalId: itemId});
     }
 
-    findMovies(query, opts?: { order: any, limit: number }) {
+    findMovies(query, opts?: { order: any, limit: number }) : Promise<MovieDocument[]> {
         const cursor = this.movies.find(query);
         if (opts && opts.order) {
             cursor.sort(opts.order);

@@ -89,16 +89,16 @@ export class ContentDirectory extends Service {
     }
 
     async browseChildren(options) {
-        let id = (options.ObjectID[0] || 0);
-        let start = parseInt(options.StartingIndex || 0);
-        let max = parseInt(options.RequestedCount || 0);
-        let sort = options.SortCriteria;
+        const id = (options.ObjectID[0] || 0);
+        const start = parseInt(options.StartingIndex || 0, 10);
+        const max = parseInt(options.RequestedCount || 0, 10);
+        const sort = options.SortCriteria;
 
-        let result = await this.device.delegate.fetchChildren(id, {
+        const result = await this.device.delegate.fetchChildren(id, {
             sort, start, max
         });
 
-        let didl = buildDidlXml(result.items);
+        const didl = buildDidlXml(result.items);
         return this.buildSoapResponse('Browse', {
             Result: didl,
             NumberReturned: result.items.length,
@@ -108,15 +108,15 @@ export class ContentDirectory extends Service {
     }
 
     async browseMetaData(options) {
-        let id = (options.ObjectID[0] || 0);
-        let result = await this.device.delegate.fetchObject(id);
+        const id = (options.ObjectID[0] || 0);
+        const result = await this.device.delegate.fetchObject(id);
 
         if(!result) {
             logger.warn(`browseMetaData requested for ObjectId '${id}', but no object found`);
             return this.buildSoapError(new SoapError(404));
         }
 
-        let didl = buildDidlXml([result.item]);
+        const didl = buildDidlXml([result.item]);
         return this.buildSoapResponse('Browse', {
             Result: didl,
             NumberReturned: 1,
@@ -126,9 +126,9 @@ export class ContentDirectory extends Service {
     }
 
     async updateObject(options) {
-        let id = decodeURIComponent(options.ObjectID[0] || 0);
-        let currentTagValue = await parseXmlProperties(options['CurrentTagValue']);
-        let newTagValue = await parseXmlProperties(options['NewTagValue']);
+        const id = decodeURIComponent(options.ObjectID[0] || 0);
+        const currentTagValue = await parseXmlProperties(options.CurrentTagValue);
+        const newTagValue = await parseXmlProperties(options.NewTagValue);
         return await this.device.delegate.updateObject(id, currentTagValue, newTagValue);
     }
 }

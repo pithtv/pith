@@ -1,5 +1,8 @@
 export interface IChannelItem {
   readonly id: string;
+  readonly parentId?: string;
+
+  mediatype?: 'movie' | 'show' | 'episode' | 'season';
 
   creationTime?: Date;
   modificationTime?: Date;
@@ -15,9 +18,6 @@ export interface IChannelItem {
   fileSize?: number;
   dateScanned?: Date;
   unavailable?: boolean;
-  backdrop?: string;
-  poster?: string;
-  banner?: string;
   banners?: Image[];
   posters?: Image[];
   backdrops?: Image[];
@@ -39,6 +39,8 @@ export interface IChannelItem {
   subtitles?: Subtitle[];
   playState?: IPlayState;
   releaseDate?: Date;
+
+  preferredView?: string
 }
 
 export interface Image {

@@ -6,7 +6,7 @@
   </ul>
 </div>
 
-<img *ngIf="item.poster || item.still" [src]="((item.poster || item.still) | prescale:'680x1000')"
+<img *ngIf="item.posters?.length > 0" [src]="((item.posters[0].url) | prescale:'680x1000')"
      class="c-itemDetails__thumbnail"/>
 
 <div class="details">
@@ -21,7 +21,7 @@
         [attr.xlink:href]="'#' + (item.playState?.status || 'none')"
         transform="scale(0.17)"></use></svg>
     </a>
-    {{item.title}} <span *ngIf="item.year" class="c-itemDetails__year">{{item.year}}</span>
+    {{item.title}} <span *ngIf="item.releaseDate" class="c-itemDetails__year">{{item.releaseDate?.getFullYear()}}</span>
   </span>
   <span class="c-itemDetails__tagline" *ngIf="item.tagline">{{item.tagline}}</span>
   <span class="c-itemDetails__rating"><span class="stars" [attr.data-starrating]="item.rating"

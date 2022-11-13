@@ -42,7 +42,7 @@ export class ChannelBrowserComponent implements OnDestroy {
   }
 
   fetchContents() {
-    if(this.subscription) {
+    if (this.subscription) {
       this.subscription.unsubscribe();
       this.subscription = null;
     }
@@ -53,7 +53,7 @@ export class ChannelBrowserComponent implements OnDestroy {
   }
 
   ngOnDestroy(): void {
-    if(this.subscription) {
+    if (this.subscription) {
       this.subscription.unsubscribe();
       this.subscription = null;
     }
@@ -68,8 +68,8 @@ export class ChannelBrowserComponent implements OnDestroy {
     if (!value) {
       this.filteredContents = this.contents;
     } else {
-      const filter = ((i) => i.title.toLocaleLowerCase().indexOf(value.toLocaleLowerCase()) != -1);
-      if (!forceFull && this.currentSearch && value.indexOf(this.currentSearch) != -1) {
+      const filter = ((i) => i.title.toLocaleLowerCase().indexOf(value.toLocaleLowerCase()) !== -1);
+      if (!forceFull && this.currentSearch && value.indexOf(this.currentSearch) !== -1) {
         this.filteredContents = this.filteredContents.filter(filter);
       } else {
         this.filteredContents = this.contents.filter(filter);
@@ -90,11 +90,14 @@ export class ChannelBrowserComponent implements OnDestroy {
         break;
       case 'title':
         transform = (x) => x.toUpperCase();
+      // tslint:disable-next-line:no-switch-case-fall-through
       default:
         direction = 1;
     }
     const compareFn = function(a, b) {
-      return direction * (transform(a[sortField]) < transform(b[sortField]) ? -1 : transform(a[sortField]) > transform(b[sortField]) ? 1 : 0);
+      const tA = transform(a[sortField]);
+      const tB = b[sortField];
+      return direction * (tA < transform(tB) ? -1 : tA > transform(tB) ? 1 : 0);
     };
     this.contents.sort(compareFn);
     this.filteredContents.sort(compareFn);

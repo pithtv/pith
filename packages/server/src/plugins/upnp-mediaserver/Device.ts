@@ -77,10 +77,10 @@ export class Device extends DeviceControlProtocol {
         this.broadcastSocket = dgram.createSocket({type: 'udp4', reuseAddr: true}, this.ssdpListener.bind(this));
 
         this.ssdpMessages = queue(async ({messages, address, port}) => {
-            let socket = dgram.createSocket('udp4');
+            const socket = dgram.createSocket('udp4');
             try {
                 socket.bind();
-                for (let msg of messages) {
+                for (const msg of messages) {
                     await wrap(cb => socket.send(msg, 0, msg.length, port, address, cb));
                 }
             } finally {
@@ -95,7 +95,7 @@ export class Device extends DeviceControlProtocol {
         try {
             this.address = this.address || '0.0.0.0';
 
-            let httpServer = http.createServer(this.httpListener.bind(this));
+            const httpServer = http.createServer(this.httpListener.bind(this));
             await wrap((cb: () => void) => httpServer.listen(0, this.address, cb));
             this.httpPort = (httpServer.address() as AddressInfo).port;
 
@@ -115,7 +115,7 @@ export class Device extends DeviceControlProtocol {
 
     addServices() {
         this.services = {};
-        for (let serviceType of this.serviceTypes) {
+        for (const serviceType of this.serviceTypes) {
             this.services[serviceType] = new this.serviceReferences[serviceType](this);
         }
     }
@@ -128,7 +128,7 @@ export class Device extends DeviceControlProtocol {
             "location": null
         });
 
-        let headers = this.makeHeaders(customHeaders);
+        const headers = this.makeHeaders(customHeaders);
         let message = [
             reqType === 'ok' ? 'HTTP/1.1 200 OK' : `${reqType.toUpperCase()} * HTTP/1.1`
         ];
@@ -139,7 +139,7 @@ export class Device extends DeviceControlProtocol {
     }
 
     makeHeaders(customHeaders) {
-        let defaultHeaders = {
+        const defaultHeaders = {
             'cache-control': `max-age=${this.ssdp.timeout}`,
             'content-type': 'text/xml; charset="utf-8"',
             ext: '',
@@ -149,8 +149,8 @@ export class Device extends DeviceControlProtocol {
             usn: 'uuid:' + this.uuid + ((this.uuid === customHeaders.nt || this.uuid === customHeaders.st) ? '' : '::' + (customHeaders.nt || customHeaders.st))
         };
 
-        let headers = {};
-        for (let header of Object.keys(customHeaders)) {
+        const headers = {};
+        for (const header of Object.keys(customHeaders)) {
             headers[header.toUpperCase()] = customHeaders[header] || defaultHeaders[header.toLowerCase()];
         }
         return headers;
@@ -161,9 +161,9 @@ export class Device extends DeviceControlProtocol {
     }
 
     parseRequest(msg, rinfo) {
-        let {method, headers} = parser.parseRequest(msg);
+        const {method, headers} = parser.parseRequest(msg);
         let mx = null, st = null;
-        for (let header of Object.keys(headers)) {
+        for (const header of Object.keys(headers)) {
             switch (header.toLowerCase()) {
                 case 'mx':
                     mx = headers[header];
@@ -204,7 +204,7 @@ export class Device extends DeviceControlProtocol {
     }
 
     async handler(req) {
-        let [, category, serviceType, action, id] = req.url.split('/');
+        const [, category, serviceType, action, id] = req.url.split('/');
         switch (category) {
             case 'device':
                 return {
@@ -214,7 +214,7 @@ export class Device extends DeviceControlProtocol {
                 return await this.services[serviceType].requestHandler({action, req, id});
             case 'icons':
                 try {
-                    let data = await wrap(cb => fs.readFile(`icons/${serviceType}`, cb));
+                    const data = await wrap(cb => fs.readFile(`${__dirname}/../../../icons/${serviceType}`, cb));
                     return {data, headers: {'Content-Type': 'image/png'}};
                 } catch (err) {
                     throw new HttpError(404);
@@ -227,7 +227,7 @@ export class Device extends DeviceControlProtocol {
     async httpListener(req, res) {
         try {
             const {data, headers} = await this.handler(req);
-            let h = Object.assign({}, {
+            const h = Object.assign({}, {
                 server: null
             }, data && {
                 'Content-Type': 'text/xml; charset="utf-8"',
@@ -239,6 +239,7 @@ export class Device extends DeviceControlProtocol {
                 return;
             }
         } catch (err) {
+            logger.error(err);
             logger.log(`Responding with ${err.code}: ${err.message} for ${req.url}`);
             res.writeHead(err.code, {'Content-Type': 'text/plain'});
             res.write(`${err.code} - ${err.message}`);
@@ -248,11 +249,11 @@ export class Device extends DeviceControlProtocol {
     }
 
     async ssdpBroadcast(type) {
-        let messages = this.makeNotificationTypes().map(nt => this.makeSsdpMessage('notify', {
+        const messages = this.makeNotificationTypes().map(nt => this.makeSsdpMessage('notify', {
             nt, nts: `ssdp:${type}`, host: null
         }));
 
-        for (let msg of messages) {
+        for (const msg of messages) {
             await (wrap(cb =>
                 this.broadcastSocket.send(msg, 0, msg.length, this.ssdp.port, this.ssdp.address, cb)));
         }
@@ -263,20 +264,20 @@ export class Device extends DeviceControlProtocol {
     }
 
     ssdpListener(msg, rinfo) {
-        let answer = (address, port) => {
+        const answer = (address, port) => {
             this.ssdpSend(
-                this.makeNotificationTypes().map(st => this.makeSsdpMessage('ok', {st: st, ext: null})),
+                this.makeNotificationTypes().map(st => this.makeSsdpMessage('ok', {st, ext: null})),
                 address,
                 port
             );
         };
 
-        let answerAfter = (maxWait, address, port) => {
-            let wait = Math.floor(Math.random() * parseInt(maxWait)) * 1000;
+        const answerAfter = (maxWait, address, port) => {
+            const wait = Math.floor(Math.random() * parseInt(maxWait)) * 1000;
             setTimeout(answer, wait, address, port);
         };
 
-        let respondTo = ['ssdp:all', 'upnp:rootdevice', this.makeType(), this.uuid];
+        const respondTo = ['ssdp:all', 'upnp:rootdevice', this.makeType(), this.uuid];
         const req = this.parseRequest(msg.toString(), rinfo)
         if (req.method === 'M-SEARCH' && respondTo.indexOf(req.st) >= 0) {
             answerAfter(req.mx, req.address, req.port);
@@ -287,8 +288,8 @@ export class Device extends DeviceControlProtocol {
         this.ssdpBroadcast("byebye");
         this.ssdpBroadcast("alive");
 
-        let makeTimeout = () => Math.floor(Math.random() * (this.ssdp.timeout / 2) * 1000);
-        let announce = () => setTimeout(() => {
+        const makeTimeout = () => Math.floor(Math.random() * (this.ssdp.timeout / 2) * 1000);
+        const announce = () => setTimeout(() => {
             this.ssdpBroadcast("alive");
             announce();
         }, makeTimeout());

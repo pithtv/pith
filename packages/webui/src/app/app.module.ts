@@ -8,7 +8,7 @@ import {AppComponent} from './app.component';
 import {PithLogoComponent} from './pith-logo.component';
 
 import {NgbModule} from '@ng-bootstrap/ng-bootstrap';
-import {HttpClientModule} from '@angular/common/http';
+import {HTTP_INTERCEPTORS, HttpClientModule} from '@angular/common/http';
 import {PithClientService} from './core/pith-client.service';
 import {PrescalePipe} from './util/prescale.pipe';
 import {ChannelBrowserComponent} from './channelbrowser/channel-browser.component';
@@ -36,6 +36,7 @@ import {StartPageComponent} from "./startpage/start-page.component";
 import {RibbonComponent} from "./startpage/ribbon.component";
 import {SyntheticScrollDirective} from "./util/synthetic-scroll.directive";
 import {ImagePipe} from "./util/image.pipe";
+import {JsonParserInterceptor} from "./core/json-parser";
 
 @NgModule({
   declarations: [
@@ -78,8 +79,9 @@ import {ImagePipe} from "./util/image.pipe";
     PithClientService,
     PithEventsService,
     PlayerService,
-    WebPlayer
-  ],
+    WebPlayer,
+    { provide: HTTP_INTERCEPTORS, useClass: JsonParserInterceptor, multi: true },
+],
   bootstrap: [AppComponent],
   entryComponents: [
     PlaybackModalComponent

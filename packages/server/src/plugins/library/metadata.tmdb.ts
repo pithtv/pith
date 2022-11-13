@@ -58,8 +58,6 @@ async function parseMovie(movie) {
         genres: result.genres.map(e => e['name']),
         title: result.title,
         imdbId: result.imdb_id,
-        poster: createUrl(result.poster_path),
-        backdrop: createUrl(result.backdrop_path),
         releaseDate: releaseDate,
         runtime: result.runtime,
         tagline: result.tagline,

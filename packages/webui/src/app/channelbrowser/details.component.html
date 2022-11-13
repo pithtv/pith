@@ -1,5 +1,5 @@
 <ng-template [ngIf]="channelAndItem">
-  <div [style.background-image]="'url(' + ( item.backdrop | prescale: 'original') + ')'" *ngIf="item.backdrop" class="c-backdrop"></div>
+  <div [style.background-image]="'url(' + ( item.backdrops[0].url | prescale: 'original') + ')'" *ngIf="item.backdrops?.length > 0" class="c-backdrop"></div>
   <channel-details *ngIf="item?.type == 'file'"
                    [channelAndItem]="channelAndItem">
   </channel-details>

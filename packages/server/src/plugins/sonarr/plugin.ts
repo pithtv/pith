@@ -96,9 +96,6 @@ class SonarrChannel extends Channel {
     }
 
     private imgs(show: SonarrSeries): {
-        poster?: string,
-        backdrop?: string,
-        banner?: string,
         posters: Image[],
         backdrops: Image[],
         banners: Image[]
@@ -109,9 +106,6 @@ class SonarrChannel extends Channel {
         }), {});
 
         return {
-            poster: (perType.poster ?? [])[0]?.url,
-            backdrop: (perType.fanArt ?? [])[0]?.url,
-            banner: (perType.banner ?? [])[0]?.url,
             posters: perType.poster,
             backdrops: perType.fanart,
             banners: perType.banner
