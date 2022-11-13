@@ -55,19 +55,19 @@ async function parseMovie(movie) {
 
     const releaseDate = parseDate(result.release_date);
     return {
-        genres: result.genres.map(e => e['name']),
+        genres: result.genres.map(e => e.name),
         title: result.title,
         imdbId: result.imdb_id,
-        releaseDate: releaseDate,
+        releaseDate,
         runtime: result.runtime,
         tagline: result.tagline,
         plot: result.overview,
         tmdbRating: result.vote_average,
         tmdbVoteCount: result.vote_count,
-        keywords: result.keywords.keywords.map(e => e['name']),
-        actors: result.credits.cast.map(e => e['name']),
-        directors: result.credits.crew.filter(e => e.job === 'Director').map(e => e['name']),
-        writers: result.credits.crew.filter(e => e.job === 'Screenplay').map(e => e['name']),
+        keywords: result.keywords.keywords.map(e => e.name),
+        actors: result.credits.cast.map(e => (e as any).name),
+        directors: result.credits.crew.filter(e => e.job === 'Director').map(e => (e as any).name),
+        writers: result.credits.crew.filter(e => e.job === 'Screenplay').map(e => (e as any).name),
         backdrops: extractImages(result.images.backdrops),
         posters: extractImages(result.images.posters),
         year: releaseDate.getFullYear()
@@ -128,7 +128,7 @@ async function queryMovieByImdbId(imdbId) {
 async function queryMovieByTitleAndYear(title, year) {
     return await tmdb.searchMovie({
         query: title,
-        year: year
+        year
     });
 }
 

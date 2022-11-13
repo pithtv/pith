@@ -105,13 +105,13 @@ export class FilesChannel extends Channel {
 
     const baseUrl = `${channel.pith.rootUrl}stream/${encodeURIComponent(options && options.fingerprint) || '0'}/${itemPath}`;
 
-    const desc = <StreamDescriptor>{
+    const desc = {
       url: baseUrl,
       mimetype: item.mimetype || 'application/octet-stream',
       seekable: true,
       format: {
         container: metadata.format.tags ? (metadata.format.tags as any).major_brand : 'unknown',
-        streams: metadata.streams.filter(stream => stream.disposition.attached_pic === 0 && stream.disposition.timed_thumbnails === 0).map(stream => (<Stream>{
+        streams: metadata.streams.filter(stream => stream.disposition.attached_pic === 0 && stream.disposition.timed_thumbnails === 0).map(stream => ({
           index: stream.index,
           type: stream.codec_type,
           codec: stream.codec_name,
@@ -121,7 +121,7 @@ export class FilesChannel extends Channel {
           layout: stream.channel_layout,
           language: stream.tags?.language,
           resolution: stream.codec_type === 'video' ? {width: stream.width, height: stream.height} : undefined
-        }))
+        } as Stream))
       },
       duration,
       streams: options?.target?.split(',').map((profileName) => {
@@ -139,7 +139,7 @@ export class FilesChannel extends Channel {
         };
       }),
       keyframes: []
-    };
+    } as StreamDescriptor;
 
     if (options && options.includeKeyFrames) {
       try {

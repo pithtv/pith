@@ -28,8 +28,8 @@ export default {
         // flags: "-f mp4 -vcodec copy -acodec copy -strict experimental -preset ultrafast -movflags frag_keyframe+empty_moov+faststart",
         mimetype: "video/mp4",
         setup(ff, metadata) {
-            let videoCopy = (video(metadata).codec_name === 'h264');
-            let audioCopy = false; //(audio(metadata).codec_name == 'aac')
+            const videoCopy = (video(metadata).codec_name === 'h264');
+            const audioCopy = false; // (audio(metadata).codec_name == 'aac')
 
             return ff
                 .inputOptions(["-noaccurate_seek"])

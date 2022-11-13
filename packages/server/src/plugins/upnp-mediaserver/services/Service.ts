@@ -55,17 +55,17 @@ export abstract class Service extends DeviceControlProtocol {
     }
 
     async action(action, data) {
-        let parsedData = await async.wrap(cb => new Parser({tagNameProcessors: [processors.stripPrefix]}).parseString(data, cb));
-        return await this.actionHandler(action, parsedData['Envelope']['Body'][0][action][0]);
+        const parsedData : any = await async.wrap(cb => new Parser({tagNameProcessors: [processors.stripPrefix]}).parseString(data, cb));
+        return await this.actionHandler(action, parsedData.Envelope.Body[0][action][0]);
     }
 
     subscribe(urls, reqTimeout) {
-        let sid = `uuid:${gen_uuid()}`;
+        const sid = `uuid:${gen_uuid()}`;
         if(this.subs == null) {
             this.subs = {};
         }
         this.subs[sid] = new Subscription(sid, urls, this);
-        let timeout = this.subs[sid].selfDestruct(reqTimeout);
+        const timeout = this.subs[sid].selfDestruct(reqTimeout);
         return {
             sid, timeout: `Second-${timeout}`
         };
@@ -77,7 +77,7 @@ export abstract class Service extends DeviceControlProtocol {
             return null;
         }
 
-        let timeout = this.subs[sid].selfDestruct(reqTimeout);
+        const timeout = this.subs[sid].selfDestruct(reqTimeout);
         return {
             sid, timeout: `Second-${timeout}`
         };
@@ -92,9 +92,9 @@ export abstract class Service extends DeviceControlProtocol {
     }
 
     async getStateVar(action, elName) {
-        let varName = /^(Get)?(\w+)$/.exec(action)[2];
+        const varName = /^(Get)?(\w+)$/.exec(action)[2];
         if(varName in this._stateVars) {
-            let el = {};
+            const el = {};
             el[elName] = this._stateVars[varName].value;
             return this.buildSoapResponse(action, el, this.ns ? `xmlns:u="${this.ns}"` : '');
         } else {
@@ -143,17 +143,17 @@ export abstract class Service extends DeviceControlProtocol {
     }
 
     postEvent(urls, sid, eventKey, data) {
-        for(let eventUrl of urls) {
-            let u = url.parse(eventUrl);
-            let headers = {
+        for(const eventUrl of urls) {
+            const u = url.parse(eventUrl);
+            const headers = {
                 nt: 'upnp:event',
                 nts: 'upnp:propchange',
-                sid: sid,
+                sid,
                 seq: eventKey.toString(),
                 'content-length': Buffer.byteLength(data),
                 'content-type': null
             };
-            let options = {
+            const options = {
                 host: u.hostname,
                 port: u.port,
                 method: 'NOTIFY',
@@ -161,7 +161,7 @@ export abstract class Service extends DeviceControlProtocol {
                 headers: this.device.makeHeaders(headers),
                 agent: false
             };
-            let req = http.request(options);
+            const req = http.request(options);
             req.on('error', err => logger.error(`${eventUrl} - ${err.message}`));
             req.write(data);
             req.end();
@@ -183,7 +183,7 @@ export abstract class Service extends DeviceControlProtocol {
             case 'description':
                 return {data: await async.wrap(cb => fs.readFile(this.serviceDescription, 'utf-8', cb))};
             case 'control':
-                let [,serviceAction] = /:\d#(\w+)"$/.exec(req.headers.soapaction);
+                const [,serviceAction] = /:\d#(\w+)"$/.exec(req.headers.soapaction);
                 if(req.method !== 'POST' || !serviceAction) {
                     throw new HttpError(405);
                 }
@@ -197,7 +197,7 @@ export abstract class Service extends DeviceControlProtocol {
                     });
                 });
             case 'event':
-                let {sid, timeout, callback} = req.headers;
+                const {sid, timeout, callback} = req.headers;
                 let resp;
                 if(req.method === 'SUBSCRIBE') {
                     if(callback) {
@@ -256,14 +256,14 @@ class Subscription {
             clearTimeout(this.destructionTimer)
         }
 
-        let time = this.parseTimeout(timeout);
+        const time = this.parseTimeout(timeout);
 
         this.destructionTimer = setTimeout(() => this.service.unsubscribe(this.uuid, time * 1000));
         return time;
     }
 
     private parseTimeout(timeout) : number {
-        let time = /Second-(infinite|\d+)/.exec(timeout)[1];
+        const time = /Second-(infinite|\d+)/.exec(timeout)[1];
         if (time === 'infinite' || parseInt(time) > this.minTimeout) {
             return this.minTimeout;
         } else {
@@ -272,13 +272,13 @@ class Subscription {
     }
 
     notify() {
-        let eventedVars = {};
-        for(let [key, val] of Object.entries(this.service._stateVars)) {
+        const eventedVars = {};
+        for(const [key, val] of Object.entries(this.service._stateVars)) {
             if(val.evented) {
                 eventedVars[key] = this.service.stateVars[key];
             }
         }
-        let eventXml = this.service.buildEvent(eventedVars);
+        const eventXml = this.service.buildEvent(eventedVars);
         this.service.postEvent(this.urls, this.uuid, this.eventKey, eventXml);
         this.eventKey++;
     }

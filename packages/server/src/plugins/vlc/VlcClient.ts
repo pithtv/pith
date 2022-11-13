@@ -87,7 +87,7 @@ export class VlcClient extends EventEmitter implements IPlayer {
   friendlyName: string;
 
   async load(channel: IChannel, item: IChannelItem): Promise<void> {
-    let stream = await channel.getStream(item);
+    const stream = await channel.getStream(item);
     this.send({
       type: "openURL",
       url: stream.url

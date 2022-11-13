@@ -5,8 +5,8 @@ export function getDefaultServerAddress() {
     const addresses : {IPv4?: string, IPv6?: string} = {};
     let defaultNi;
 
-    for (let name in ni) {
-        let iface = ni[name];
+    for (const name in ni) {
+        const iface = ni[name];
         if (iface[0].internal === false && iface.find(i => i.family==="IPv4")) {
             defaultNi = iface;
             break;

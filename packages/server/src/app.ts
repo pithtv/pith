@@ -107,7 +107,7 @@ class Bootstrap {
         server.listen(port);
         // server.listen(port);
 
-        const wss = new ws.Server({server: server});
+        const wss = new ws.Server({server});
 
         wss.on('connection', connection => {
             const listeners = [];
@@ -126,7 +126,7 @@ class Bootstrap {
                                     logger.error(e);
                                 }
                             };
-                            listeners.push({event: message.event, listener: listener});
+                            listeners.push({event: message.event, listener});
                             pithApp.on(message.event, listener);
                             break;
                     }

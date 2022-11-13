@@ -76,7 +76,7 @@ const vidStreamer = function (req, res) {
                     if (err) {
                         handler.emit('badFile', res, err);
                     } else {
-                        let chunkSize = 10;
+                        const chunkSize = 10;
                         let playlist = '#EXTM3U\n';
                         playlist += '#EXT-X-PLAYLIST-TYPE:VOD\n';
                         playlist += '#EXT-X-VERSION:3\n';
@@ -92,7 +92,7 @@ const vidStreamer = function (req, res) {
                             let x, lastFrame = frames[0];
 
                             for (x = 1; x < frames.length - 1; x++) {
-                                let fragmentDuration = (frames[x].timestamp - lastFrame.timestamp) / 1000;
+                                const fragmentDuration = (frames[x].timestamp - lastFrame.timestamp) / 1000;
                                 if (fragmentDuration > chunkSize) {
                                     playlist += frame(fragmentDuration, lastFrame.timestamp / 1000);
                                     lastFrame = frames[x];
@@ -111,7 +111,7 @@ const vidStreamer = function (req, res) {
             });
         } else if (transcode) {
             ff.ffprobe(filePath, (err, metadata) => {
-                let preset = profiles[transcode];
+                const preset = profiles[transcode];
                 let decoder = ff(filePath);
 
                 if (offset) {
@@ -200,7 +200,7 @@ function downloadHeader(res, info) {
         header = {
             Expires: 0,
             'Cache-Control': 'must-revalidate, post-check=0, pre-check=0',
-            //"Cache-Control": "private",
+            // "Cache-Control": "private",
             "Content-Type": info.mime || 'application/octet-stream',
             "Content-Disposition": `attachment; filename=${encodeURIComponent(info.file)};`
         };

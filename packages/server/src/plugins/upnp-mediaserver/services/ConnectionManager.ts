@@ -25,7 +25,7 @@ export class ConnectionManager extends Service {
                 SinkProtocolInfo: {value: '', evented: true},
                 CurrentConnectionIDs: {value: 0, evented: true}
             },
-            device: device,
+            device,
             type: 'ConnectionManager',
             serviceDescription: __dirname + '/../../../../resources/ConnectionManager.xml',
             optionalActions: ['PrepareForConnection', 'ConnectionComplete'],

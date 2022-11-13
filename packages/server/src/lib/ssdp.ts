@@ -71,12 +71,12 @@ export function SSDPClient(opts) {
         logger.debug(`Received message for ${usn}`);
 
         if('CACHE-CONTROL' in data) {
-            let m = data['CACHE-CONTROL'].match(/^(.*, *)?max-age\s*=\s*(\d*)\s*(,.*)?$/);
+            const m = data['CACHE-CONTROL'].match(/^(.*, *)?max-age\s*=\s*(\d*)\s*(,.*)?$/);
             if(m) {
                 timeout = parseInt(m[2]) * 1000;
             }
         } else if('EXPIRES' in data) {
-            let date = new Date(data.EXPIRES);
+            const date = new Date(data.EXPIRES);
             timeout = date.getTime() - new Date().getTime();
         }
 
@@ -136,6 +136,6 @@ export function SSDPClient(opts) {
     }
 
     return {
-        subscribe: subscribe
+        subscribe
     };
 }

@@ -64,7 +64,7 @@ export abstract class DeviceControlProtocol extends EventEmitter {
             protocol: 'http',
             hostname: this.address || this.device.address,
             port: this.httpPort || this.device.httpPort,
-            pathname: pathname
+            pathname
         });
     }
 

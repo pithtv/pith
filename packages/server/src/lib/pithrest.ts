@@ -33,10 +33,10 @@ export function handle(pith) {
     }).get("/player/:playerId/:command", function(req, res, next) {
         pith.controlPlayback(req.params.playerId, req.params.command, req.query).then(() => res.end()).catch(next);
     }).get("/settings", function(req, res) {
-        let settingsStore = container.resolve(SettingsStoreSymbol);
+        const settingsStore = container.resolve(SettingsStoreSymbol);
         res.json(settingsStore.settings);
     }).put("/settings", function(req, res, next) {
-        let settingsStore = container.resolve(SettingsStoreSymbol);
+        const settingsStore = container.resolve(SettingsStoreSymbol);
         settingsStore.storeSettings(req.body).then(() => res.end()).catch(next);
     }).get("/ribbons", (req, res, next) => {
         return pith.listRibbons().then(ribbons => res.json(ribbons)).catch(next);

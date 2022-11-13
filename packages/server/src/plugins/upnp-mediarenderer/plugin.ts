@@ -94,7 +94,7 @@ class MediaRenderer extends EventEmitter implements IPlayer {
     }
 
     async load(channel, item) {
-        let stream = await channel.getStream(item, {fingerprint: [await identifierService.get('instance'), channel.id, item.id].join(':')});
+        const stream = await channel.getStream(item, {fingerprint: [await identifierService.get('instance'), channel.id, item.id].join(':')});
         const mediaUrl = stream.url;
         logger.debug(`Loading ${mediaUrl}`);
 
@@ -159,7 +159,7 @@ class MediaRenderer extends EventEmitter implements IPlayer {
             if (time) {
                 await retry(async () => {
                     if (await this.waitForAction('seek', 3000)) {
-                        await this.seek({time: time});
+                        await this.seek({time});
                     }
                 }, 1000, 3000);
             }
@@ -212,7 +212,7 @@ class MediaRenderer extends EventEmitter implements IPlayer {
             const meta = await wrap(cb => xml2js(positionInfo.TrackMetaData, cb));
             const didlLite = meta['DIDL-Lite'].item[0];
             pos.fingerprint = decodeURIComponent(didlLite.$.id.match(await identifierService.get('instance') + '[^/]*'));
-            for (let x of Object.keys(didlLite)) {
+            for (const x of Object.keys(didlLite)) {
                 const val = didlLite[x][0];
                 switch (x) {
                     case 'dc:title':
@@ -276,7 +276,7 @@ class MediaRenderer extends EventEmitter implements IPlayer {
                         }
                     }
                     if (didl.TransportState) {
-                        let state = didl.TransportState[0];
+                        const state = didl.TransportState[0];
                         let statusFlags;
                         switch (state.$.val) {
                             case 'PAUSED_PLAYBACK':

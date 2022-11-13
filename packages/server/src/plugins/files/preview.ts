@@ -2,7 +2,7 @@ import {AVConv} from '../../lib/libav';
 import url from 'url';
 
 export function preview(getFile) {
-    let queue = [];
+    const queue = [];
     let currentlyRunning = false;
 
     function next() {
@@ -16,18 +16,18 @@ export function preview(getFile) {
 
     return function(req, res) {
         queue.push(() => {
-            let reqUrl = url.parse(req.url);
-            let fullpath = decodeURIComponent(reqUrl.pathname.substring(1));
-            let path = fullpath.substring(0, fullpath.lastIndexOf("/"));
+            const reqUrl = url.parse(req.url);
+            const fullpath = decodeURIComponent(reqUrl.pathname.substring(1));
+            const path = fullpath.substring(0, fullpath.lastIndexOf("/"));
             let seek = fullpath.substring(fullpath.lastIndexOf("/") + 1);
             seek = seek.substring(0, seek.length - 4);
-            let file = getFile(path);
+            const file = getFile(path);
 
-            let av = new AVConv(file);
+            const av = new AVConv(file);
             res.writeHead(200, {
                 'content-type': 'image/jpeg'
             });
-            let stream = av.seekInput(seek).inputOptions(["-noaccurate_seek"]).vframes(1).noAudio().format("mjpeg").videoCodec("mjpeg").stream();
+            const stream = av.seekInput(seek).inputOptions(["-noaccurate_seek"]).vframes(1).noAudio().format("mjpeg").videoCodec("mjpeg").stream();
             stream.pipe(res);
             stream.on('end', next);
         });

@@ -21,7 +21,7 @@ export default opts => {
             }
 
             async function scanToDatabase(item, container) {
-                let result = await db.findMovieByOriginalId(dir.channelId, item.id);
+                const result = await db.findMovieByOriginalId(dir.channelId, item.id);
                 if (result) {
                     // already in database
                     return;
@@ -49,11 +49,11 @@ export default opts => {
                 if (!container) {
                     return;
                 }
-                let contents = await channelInstance.listContents(container && container.id);
+                const contents = await channelInstance.listContents(container && container.id);
                 if (!(contents && contents.length)) {
                     return;
                 }
-                for (let item of contents) {
+                for (const item of contents) {
                     if (item.type === 'container') {
                         await listContents(item);
                     } else if (item.playable && item.mimetype?.match(/^video\//)) {

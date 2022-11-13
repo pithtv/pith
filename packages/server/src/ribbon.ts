@@ -1,6 +1,6 @@
 import { Ribbon, RibbonItem } from "@pithmediaserver/api"
 
-export var SharedRibbons = {
+export let SharedRibbons = {
     continueWatching: {
         id: 'continueWatching',
         name: 'Continue Watching'
@@ -15,7 +15,7 @@ export var SharedRibbons = {
     } as Ribbon
 };
 
-export var RibbonOrder : {[key: string]: (a: RibbonItem, b: RibbonItem) => number} = {
+export let RibbonOrder : {[key: string]: (a: RibbonItem, b: RibbonItem) => number} = {
     recentlyReleased: (a,b) => b.item.releaseDate.getTime() - a.item.releaseDate.getTime(),
     recentlyAdded: (a,b) => b.item.dateScanned.getTime() - a.item.dateScanned.getTime(),
     continueWatching: (a,b) => b.item.playState?.time - a.item.playState?.time

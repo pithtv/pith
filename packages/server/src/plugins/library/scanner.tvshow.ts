@@ -29,7 +29,7 @@ export default opts => {
                 return seasonMetaData;
             } else {
                 const newSeasonMetaData = {
-                    ...await querySeason({ showTmdbId: showMetaData.tmdbId, season: season }),
+                    ...await querySeason({ showTmdbId: showMetaData.tmdbId, season }),
                     showId: showMetaData.id
                 };
                 showMetaData.seasons = [

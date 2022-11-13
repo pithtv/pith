@@ -21,8 +21,8 @@ export default function(fn, kind?) {
 
                 if (title && year) {
                     return {
-                        title: title,
-                        year: year,
+                        title,
+                        year,
                         mediatype: 'movie'
                     };
                 }
@@ -39,10 +39,10 @@ export default function(fn, kind?) {
 
                 if (title && season && episode) {
                     return {
-                        title: title,
-                        showname: showname,
-                        season: season,
-                        episode: episode,
+                        title,
+                        showname,
+                        season,
+                        episode,
                         mediatype: 'episode'
                     };
                 }
