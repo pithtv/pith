@@ -7,6 +7,7 @@ function mapMovie(e) {
         ...e,
         movieId: e.id,
         id: 'movies/' + e.id,
+        rating: typeof e.rating === 'string' ? parseFloat(e.rating) : e.rating,
         duration: e.runtime * 60
     };
 }
