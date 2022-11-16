@@ -127,7 +127,7 @@ export abstract class Service extends DeviceControlProtocol {
                     <detail>
                         <UPnPError xmlns:e="${this.makeNS('control')}">
                             <errorCode>${error.code}</errorCode>
-                            <errorDescription>${error.message}</errorMessage>
+                            <errorDescription>${error.message}</errorDescription>
                         </UPnPError>
                     </detail>
                 </s:Fault>
