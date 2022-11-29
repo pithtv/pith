@@ -2332,18 +2332,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ng-bootstrap/ng-bootstrap@npm:^9":
-  version: 9.1.3
-  resolution: "@ng-bootstrap/ng-bootstrap@npm:9.1.3"
+"@ng-bootstrap/ng-bootstrap@npm:^10":
+  version: 10.0.0
+  resolution: "@ng-bootstrap/ng-bootstrap@npm:10.0.0"
   dependencies:
-    tslib: ^2.0.0
+    tslib: ^2.1.0
   peerDependencies:
-    "@angular/common": ^11.0.0
-    "@angular/core": ^11.0.0
-    "@angular/forms": ^11.0.0
-    "@angular/localize": ^11.0.0
+    "@angular/common": ^12.0.0
+    "@angular/core": ^12.0.0
+    "@angular/forms": ^12.0.0
+    "@angular/localize": ^12.0.0
     rxjs: ^6.5.5
-  checksum: bfb6f4296b462802105cd72d6afa6e97e91526c2e30c14ae833b7f20fc716aa67041b2dbb41c2afe23405d9c9bd6e88d89a644c5538747b42c3c2f71d4f03808
+  checksum: 687ddb94be0217720f9a14e9d62ac12fac50c6c4ee49315d62ace5deac95a97bac517d9803637e4dcc78b8d564c57b8cadaf4a44f729ab9b5d5c1afbd00f326b
   languageName: node
   linkType: hard
 
@@ -2506,7 +2506,7 @@ __metadata:
     "@angular/platform-browser-dynamic": ^12.2.17
     "@angular/router": ^12.2.17
     "@angular/service-worker": ^12.2.17
-    "@ng-bootstrap/ng-bootstrap": ^9
+    "@ng-bootstrap/ng-bootstrap": ^10
     "@pithmediaserver/api": 0.0.0
     "@rxts/rxjs-tslint": ^0.2.1
     "@types/jasmine": ~3.6.0
