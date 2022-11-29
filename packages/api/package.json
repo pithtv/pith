@@ -1,5 +1,6 @@
 {
   "name": "@pithmediaserver/api",
+  "version": "0.0.0",
   "packageManager": "yarn@3.2.2",
   "types": "index.d.ts",
   "main": ""
