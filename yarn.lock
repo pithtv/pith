@@ -2019,19 +2019,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ng-bootstrap/ng-bootstrap@npm:^13.1.1":
-  version: 13.1.1
-  resolution: "@ng-bootstrap/ng-bootstrap@npm:13.1.1"
+"@ng-bootstrap/ng-bootstrap@npm:^9":
+  version: 9.1.3
+  resolution: "@ng-bootstrap/ng-bootstrap@npm:9.1.3"
   dependencies:
-    tslib: ^2.3.0
+    tslib: ^2.0.0
   peerDependencies:
-    "@angular/common": ^14.1.0
-    "@angular/core": ^14.1.0
-    "@angular/forms": ^14.1.0
-    "@angular/localize": ^14.1.0
-    "@popperjs/core": ^2.10.2
-    rxjs: ^6.5.3 || ^7.4.0
-  checksum: bfa310f09db475c36824b67c769d6aa584d34eb27f92c51da946793d931908d919b48761fc445890c71f9ab01eda21cd3840a02da364924c1ff717c878739d11
+    "@angular/common": ^11.0.0
+    "@angular/core": ^11.0.0
+    "@angular/forms": ^11.0.0
+    "@angular/localize": ^11.0.0
+    rxjs: ^6.5.5
+  checksum: bfb6f4296b462802105cd72d6afa6e97e91526c2e30c14ae833b7f20fc716aa67041b2dbb41c2afe23405d9c9bd6e88d89a644c5538747b42c3c2f71d4f03808
   languageName: node
   linkType: hard
 
@@ -2117,7 +2116,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@pithmediaserver/api@workspace:^, @pithmediaserver/api@workspace:packages/api":
+"@pithmediaserver/api@0.0.0, @pithmediaserver/api@workspace:^, @pithmediaserver/api@workspace:packages/api":
   version: 0.0.0-use.local
   resolution: "@pithmediaserver/api@workspace:packages/api"
   languageName: unknown
@@ -2142,8 +2141,8 @@ __metadata:
     "@angular/platform-browser-dynamic": ^10.2.5
     "@angular/router": ^10.2.5
     "@angular/service-worker": ^10.2.5
-    "@ng-bootstrap/ng-bootstrap": ^13.1.1
-    "@pithmediaserver/api": "workspace:^"
+    "@ng-bootstrap/ng-bootstrap": ^9
+    "@pithmediaserver/api": 0.0.0
     "@rxts/rxjs-tslint": ^0.2.1
     "@types/jasmine": ^3.3.0
     "@types/jasminewd2": ^2.0.6
@@ -14599,7 +14598,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tslib@npm:^2.3.0, tslib@npm:^2.4.0":
+"tslib@npm:^2.4.0":
   version: 2.4.1
   resolution: "tslib@npm:2.4.1"
   checksum: 19480d6e0313292bd6505d4efe096a6b31c70e21cf08b5febf4da62e95c265c8f571f7b36fcc3d1a17e068032f59c269fab3459d6cd3ed6949eafecf64315fca
