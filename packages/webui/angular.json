@@ -112,7 +112,6 @@
       }
     }
   },
-  "defaultProject": "webui",
   "schematics": {
     "@schematics/angular:component": {
       "prefix": "app",
@@ -123,6 +122,7 @@
     }
   },
   "cli": {
-    "packageManager": "yarn"
+    "packageManager": "yarn",
+    "analytics": false
   }
 }
