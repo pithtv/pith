@@ -8,6 +8,7 @@ import {Settings} from "@pithmediaserver/api";
 })
 export class SettingsComponent {
   settings: Observable<Settings>;
+  active: number;
 
   constructor(private pithClientService: PithClientService) {
     this.settings = this.pithClientService.loadSettings();

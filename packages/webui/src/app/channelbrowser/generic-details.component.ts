@@ -2,7 +2,7 @@ import {Component, Input} from "@angular/core";
 import {Channel} from "../core/pith-client.service";
 import {PlayerService} from "../core/player.service";
 import {Path} from "./details.component";
-import {IChannelItem, IMovieChannelItem, ITvShowEpisode} from "@pithmediaserver/api";
+import {IChannelItem, IMovieChannelItem, ITvShowEpisode, ITvShowSeason} from "@pithmediaserver/api";
 
 const resolutionMap: [number, number, string][] = [
   [1920, 1920, '1080'],
@@ -18,7 +18,7 @@ const resolutionMap: [number, number, string][] = [
   templateUrl: './generic-details.component.html'
 })
 export class GenericDetailsComponent {
-  item: IChannelItem | ITvShowEpisode | IMovieChannelItem;
+  item: IChannelItem | ITvShowEpisode | ITvShowSeason | IMovieChannelItem;
   channel: Channel;
   path: Path;
   flags: { domain: string, subdomain: string, value: string }[];

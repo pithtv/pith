@@ -17,8 +17,5 @@
     ],
     "module": "es2020",
     "baseUrl": "./"
-  },
-  "angularCompilerOptions": {
-    "enableIvy": false
   }
 }

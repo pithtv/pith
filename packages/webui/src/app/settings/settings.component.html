@@ -1,20 +1,26 @@
 <div class="container" *ngIf="(settings | async) as settings">
   <button class="btn btn-primary float-right" (click)="save(settings)">Save</button>
-  <ngb-tabset type="tabs">
-    <ngb-tab title="Media">
-      <ng-template ngbTabContent>
+  <ul ngbNav #nav="ngbNav" [(activeId)]="active" class="nav-tabs">
+    <li [ngbNavItem]="1">
+      <a ngbNavLink>Media</a>
+      <ng-template ngbNavContent>
         <media-settings [settings]="settings"></media-settings>
       </ng-template>
-    </ngb-tab>
-    <ngb-tab title="Advanced">
-      <ng-template ngbTabContent>
+    </li>
+    <li [ngbNavItem]="2">
+      <a ngbNavLink>Advanced</a>
+      <ng-template ngbNavContent>
         <advanced-settings [settings]="settings"></advanced-settings>
       </ng-template>
-    </ngb-tab>
-    <ngb-tab title="Integrations">
-      <ng-template ngbTabContent>
+    </li>
+    <li [ngbNavItem]="3">
+      <a ngbNavLink>Integrations</a>
+      <ng-template ngbNavContent>
         <integration-settings [settings]="settings"></integration-settings>
       </ng-template>
-    </ngb-tab>
-  </ngb-tabset>
+    </li>
+  </ul>
+
+  <div [ngbNavOutlet]="nav" class="mt-2"></div>
+
 </div>

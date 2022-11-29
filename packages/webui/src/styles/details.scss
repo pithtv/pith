@@ -2,13 +2,13 @@
   @media(min-width: #{$i * 350px}) and (max-width: #{($i + 1) * 350px}) {
     .c-contentBrowser.c-contentBrowser--details .c-contentBrowser__item {
       width: calc(100% / #{$i});
-      height: 30vw / $i;
+      height: calc(30vw / $i);
       box-sizing: content-box;
-      font-size: 4vw / $i;
+      font-size: calc(4vw / $i);
 
       .c-contentBrowser__poster {
-        width: 20vw / $i;
-        height: 30vw / $i;
+        width: calc(20vw / $i);
+        height: calc(30vw / $i);
       }
 
       @for $j from 1 to $i + 2 {
