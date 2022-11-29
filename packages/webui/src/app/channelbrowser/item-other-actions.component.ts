@@ -12,7 +12,7 @@ export class ItemOtherActionsComponent {
   showVlc = false;
 
   constructor() {
-    if (/android/i.test(navigator.userAgent) || (/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream)) {
+    if (/android/i.test(navigator.userAgent) || (/iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream)) {
       this.showVlc = true;
     }
   }

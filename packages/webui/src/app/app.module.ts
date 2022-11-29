@@ -39,53 +39,50 @@ import {ImagePipe} from "./util/image.pipe";
 import {JsonParserInterceptor} from "./core/json-parser";
 
 @NgModule({
-  declarations: [
-    AppComponent,
-    PithLogoComponent,
-    ChannelBrowserComponent,
-    DetailsComponent,
-    GenericDetailsComponent,
-    TvDetailsComponent,
-    PlaybackModalComponent,
-    PrescalePipe,
-    TimePipe,
-    ScrubberComponent,
-    VideoPlayerComponent,
-    SwipeFromLeftDirective,
-    SwipeOutDirective,
-    ItemActionsComponent,
-    ItemOtherActionsComponent,
-    StartPageComponent,
-    RibbonComponent,
-    SyntheticScrollDirective,
-    ImagePipe
-  ],
-  exports: [
-    TimePipe
-  ],
-  imports: [
-    InfiniteScrollModule,
-    CommonModule,
-    BrowserModule,
-    BrowserAnimationsModule,
-    HttpClientModule,
-    AppRoutingModule,
-    NgbModule,
-    FormsModule,
-    SettingsModule,
-    ServiceWorkerModule.register('ngsw-worker.js', { enabled: environment.production })
-  ],
-  providers: [
-    PithClientService,
-    PithEventsService,
-    PlayerService,
-    WebPlayer,
-    { provide: HTTP_INTERCEPTORS, useClass: JsonParserInterceptor, multi: true },
-],
-  bootstrap: [AppComponent],
-  entryComponents: [
-    PlaybackModalComponent
-  ]
+    declarations: [
+        AppComponent,
+        PithLogoComponent,
+        ChannelBrowserComponent,
+        DetailsComponent,
+        GenericDetailsComponent,
+        TvDetailsComponent,
+        PlaybackModalComponent,
+        PrescalePipe,
+        TimePipe,
+        ScrubberComponent,
+        VideoPlayerComponent,
+        SwipeFromLeftDirective,
+        SwipeOutDirective,
+        ItemActionsComponent,
+        ItemOtherActionsComponent,
+        StartPageComponent,
+        RibbonComponent,
+        SyntheticScrollDirective,
+        ImagePipe
+    ],
+    exports: [
+        TimePipe
+    ],
+    imports: [
+        InfiniteScrollModule,
+        CommonModule,
+        BrowserModule,
+        BrowserAnimationsModule,
+        HttpClientModule,
+        AppRoutingModule,
+        NgbModule,
+        FormsModule,
+        SettingsModule,
+        ServiceWorkerModule.register('ngsw-worker.js', { enabled: environment.production })
+    ],
+    providers: [
+        PithClientService,
+        PithEventsService,
+        PlayerService,
+        WebPlayer,
+        { provide: HTTP_INTERCEPTORS, useClass: JsonParserInterceptor, multi: true },
+    ],
+    bootstrap: [AppComponent]
 })
 export class AppModule {
 }

@@ -10,21 +10,18 @@ import {AdvancedSettingsComponent} from './advanced-settings.component';
 import {IntegrationSettingsComponent} from './integration-settings.component';
 
 @NgModule({
-  declarations: [
-    SettingsComponent,
-    MediaSettingsComponent,
-    LibraryCategorySettingsComponent,
-    ContainerChooserComponent,
-    AdvancedSettingsComponent,
-    IntegrationSettingsComponent
-  ],
-  entryComponents: [
-    ContainerChooserComponent
-  ],
-  imports: [
-    BrowserModule,
-    NgbModule,
-    FormsModule
-  ]
+    declarations: [
+        SettingsComponent,
+        MediaSettingsComponent,
+        LibraryCategorySettingsComponent,
+        ContainerChooserComponent,
+        AdvancedSettingsComponent,
+        IntegrationSettingsComponent
+    ],
+    imports: [
+        BrowserModule,
+        NgbModule,
+        FormsModule
+    ]
 })
 export class SettingsModule {}
