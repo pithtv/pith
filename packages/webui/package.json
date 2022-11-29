@@ -32,7 +32,7 @@
     "@angular/platform-browser-dynamic": "^13.3.12",
     "@angular/router": "^13.3.12",
     "@angular/service-worker": "^13.3.12",
-    "@ng-bootstrap/ng-bootstrap": "^10",
+    "@ng-bootstrap/ng-bootstrap": "^11",
     "@pithmediaserver/api": "workspace:^",
     "@rxts/rxjs-tslint": "^0.2.1",
     "@types/jasmine": "~3.6.0",
