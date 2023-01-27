@@ -1,10 +1,11 @@
 import {wrap} from "../../lib/async";
 import WebSocket from 'ws';
 import {EventEmitter} from "events";
-import {Icon, IPlayer, IPlayerStatus} from "../../player";
+import {Icon, IPlayer} from "../../player";
 import {IChannel} from "../../channel";
 import {getLogger} from "log4js";
 import {IChannelItem} from "@pithmediaserver/api";
+import {PlayerStatus} from "@pithmediaserver/api/types/player";
 
 const logger = getLogger('pith.plugin.VlcClient');
 
@@ -81,7 +82,7 @@ export class VlcClient extends EventEmitter implements IPlayer {
     this.emit('statechange', this.status);
   }
 
-  status: IPlayerStatus = {position: {time: 0}, actions: {}};
+  status: PlayerStatus = {position: {time: 0}, actions: {}};
   id: string;
   icons: {[size: string]: Icon};
   friendlyName: string;

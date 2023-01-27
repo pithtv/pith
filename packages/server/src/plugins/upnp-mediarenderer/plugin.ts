@@ -7,13 +7,16 @@ import Device from 'upnp-client-minimal';
 import * as entities from 'entities';
 import {EventEmitter} from 'events';
 import {parseString as xml2js} from 'xml2js';
-import {Icon, IPlayer, IPlayerStatus} from '../../player';
+import {Icon, IPlayer} from '../../player';
 import {AVTransport, PositionInfo} from './upnp';
 import {IdentifierService} from '../../settings/IdentifierService';
 import {container} from 'tsyringe';
 import {PithPlugin, plugin} from '../plugins';
 import {buildDidlXml} from '../../lib/didl';
 import {convertToDidl} from '../../lib/pith2didl';
+import {PlayerStatus} from "@pithmediaserver/api/types/player";
+import {IChannel} from "../../channel";
+import {IChannelItem} from "@pithmediaserver/api";
 
 const global = container.resolve(Global);
 const client = SSDPClient({unicastHost: global.bindAddress});
@@ -53,11 +56,11 @@ function _(t) {
 
 class MediaRenderer extends EventEmitter implements IPlayer {
     public readonly id: string;
-    private friendlyName: string;
+    public friendlyName: string;
     public icons: { [size: string]: Icon };
     private _avTransport: AVTransport;
     private _opts: any;
-    public status: IPlayerStatus;
+    public status: PlayerStatus;
     private positionTimer: NodeJS.Timeout;
 
     constructor(device, opts) {
@@ -93,7 +96,7 @@ class MediaRenderer extends EventEmitter implements IPlayer {
         this.startWatching();
     }
 
-    async load(channel, item) {
+    async load(channel: IChannel, item: IChannelItem) {
         const stream = await channel.getStream(item, {fingerprint: [await identifierService.get('instance'), channel.id, item.id].join(':')});
         const mediaUrl = stream.url;
         logger.debug(`Loading ${mediaUrl}`);
