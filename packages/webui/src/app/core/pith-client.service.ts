@@ -73,7 +73,7 @@ export interface Player {
   seek(time: number);
 }
 
-export class RemotePlayer extends RestModule {
+export class RemotePlayer extends RestModule implements Player {
   readonly id: string;
   readonly icons: object[];
   readonly friendlyName: string;

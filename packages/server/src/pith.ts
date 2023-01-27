@@ -1,4 +1,4 @@
-import {Express, Router} from "express";
+// import {Express, Router} from "express";
 import {IChannel, IChannelInitialiser} from "./channel";
 import {IPlayer} from "./player";
 import {container} from 'tsyringe';
@@ -8,8 +8,9 @@ import {RibbonOrder} from "./ribbon";
 import {flatMap} from "./lib/util";
 import {EventEmitter} from "events";
 import {Ribbon, RibbonItem} from "@pithmediaserver/api";
+import {FastifyInstance} from "fastify";
+import {Player} from "@pithmediaserver/api/types/player";
 
-const route = Router();
 const logger = getLogger("pith");
 
 let sequence = 0;
@@ -19,21 +20,17 @@ function newId() {
 }
 
 export class Pith extends EventEmitter {
-    private route: Router;
-    public readonly handle: Router;
     private channels: IChannelInitialiser[];
     private channelMap: {[key: string]: IChannelInitialiser};
     private channelInstances: {};
     private players: IPlayer[];
     private playerMap: {[key: string]: IPlayer};
-    readonly express: Express;
+    readonly fastify: FastifyInstance;
     public readonly rootUrl: string;
 
     constructor(opts = {}) {
         super();
 
-        this.route = route;
-        this.handle = route;
         this.channels = [];
         this.channelMap = {};
         this.channelInstances = {};
@@ -81,7 +78,12 @@ export class Pith extends EventEmitter {
 
         player.on("statechange", (status) => {
             status.serverTimestamp = new Date().getTime();
-            this.emit("playerstatechange", {player, status});
+            this.emit("playerstatechange", {
+                player: {
+                    id: player.id
+                },
+                status
+            });
         });
     }
 
@@ -102,9 +104,14 @@ export class Pith extends EventEmitter {
         });
     }
 
-    public listPlayers() {
+    public listPlayers() : Promise<Player[]> {
         this.updatePlayerStates();
-        return Promise.resolve(this.players);
+        return Promise.resolve(this.players.map(player => ({
+            id: player.id,
+            friendlyName: player.friendlyName,
+            status: player.status,
+            icons: player.icons
+        })));
     }
 
     public listChannels() : Promise<IChannelInitialiser[]> {
@@ -135,29 +142,21 @@ export class Pith extends EventEmitter {
         }
     }
 
-    public loadMedia(channelId, itemId, playerId, cb, opts) {
+    public async loadMedia(channelId, itemId, playerId, opts?: {time: number}) {
         const player = this.playerMap[playerId];
         if (!player) {
-            cb(new Error(`Unknown player ${playerId}`));
-            return;
+            throw new Error(`Unknown player ${playerId}`);
         }
         const channel = this.getChannelInstance(channelId);
-        return channel.getItem(itemId).then(
-            (item) => player.load(channel, item),
-        ).then(
-            () => player.play(opts && opts.time),
-        ).then(
-            () => cb(false),
-        ).catch((err) => {
-            logger.error(err);
-            cb(err)
-        });
+        const item = await channel.getItem(itemId)
+        await player.load(channel, item)
+        await player.play(opts?.time)
     }
 
-    public controlPlayback(playerId, command, query) {
-        const player = this.playerMap[playerId];
-        return player[command](query);
+    public getPlayerInstance(playerId: string) : IPlayer {
+        return this.playerMap[playerId]
     }
+
 
     public load() {
         require("./plugins/files/plugin");

@@ -33,10 +33,10 @@ export class FilesChannel extends Channel {
       }
     });
 
-    if (pith.handle) {
-      pith.handle.use('/stream/:fingerprint', vidstreamer);
-      pith.handle.use('/preview', preview(p => this.getFile(p)));
-    }
+    // if (pith.handle) {
+    //   pith.handle.use('/stream/:fingerprint', vidstreamer);
+    //   pith.handle.use('/preview', preview(p => this.getFile(p)));
+    // }
   }
 
   async listContents(containerId?) {

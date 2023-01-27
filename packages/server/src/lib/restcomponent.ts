@@ -1,10 +1,10 @@
-import {Router} from 'express';
+// import {Router} from 'express';
 
-const express = require('express');
+// const express = require('express');
 
 export abstract class RestComponent {
-    protected route: Router;
+    // protected route: Router;
     constructor() {
-        this.route = express.Router();
+        // this.route = express.Router();
     }
 }
