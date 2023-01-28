@@ -9,6 +9,7 @@ const logger = getLogger('pith.plugin.VlcClient');
 export class VlcDiscovery extends EventEmitter {
   private clients: VlcClient[] = [];
   start() {
+    // @ts-ignore
     const bj = new bonjour();
     const browser = bj.find({type: "http"})
     browser.on("up", (evt) => {
