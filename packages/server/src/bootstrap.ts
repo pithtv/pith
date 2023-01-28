@@ -106,7 +106,6 @@ export class Bootstrap {
       })
     })
 
-    return fastify.listen({port: port})
-
+    return fastify.listen({port, host: serverAddress})
   }
 }
