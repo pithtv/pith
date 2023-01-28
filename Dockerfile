@@ -25,7 +25,7 @@ COPY bin ./bin
 
 RUN --mount=type=bind,target=/build,from=build,source=/usr/src/app \
     --mount=type=bind,target=/usr/src/app/.yarn,source=/usr/src/app/.yarn,rw=true,from=build \
-    apk add vips ffmpeg dbus;\
+    apk add vips vips-cpp ffmpeg dbus;\
     apk add --virtual .builddeps vips-dev make g++; \
     cd /build; \
     find . -name 'package.tgz' -mindepth 0 -maxdepth 4 -exec sh -c 'mkdir -p /usr/src/app/`dirname {}` && tar -xzf {} --strip 1 -C /usr/src/app/`dirname {}`' \; ;\
