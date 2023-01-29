@@ -158,7 +158,7 @@ export class VideoStreamer {
             info.mime = mimeTypes.fromFilePath(filePath);
 
             // tslint:disable-next-line:no-conditional-assignment
-            const range = rangeHeader?.match(/bytes=(.+)-(.+)?/).map(parseInt)
+            const range = rangeHeader?.match(/bytes=(.+)-(.+)?/).map(x => parseInt(x, 10))
             if (range) {
                 // Check range contains numbers, and they fit in the file.
                 // Make sure info.start & info.end are numbers (not strings) or stream.pipe errors out if start > 0.
