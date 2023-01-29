@@ -57,10 +57,10 @@ export function pithRest(pith: Pith) : FastifyPluginAsync {
                 time: number
             }}>("/player/:playerId/load/:channelId/*", (req => pith.loadMedia(req.params.channelId, req.params["*"], req.params.playerId, {time: req.params.time})))
 
-        app.get<{Params: {playerId: string}}>("/players/:playerId/stop", (req => pith.getPlayerInstance(req.params.playerId).stop()))
-        app.get<{Params: {playerId: string}}>("/players/:playerId/play", (req => pith.getPlayerInstance(req.params.playerId).play()))
-        app.get<{Params: {playerId: string}}>("/players/:playerId/pause", (req => pith.getPlayerInstance(req.params.playerId).pause()))
-        app.get<{Params: {playerId: string, time: number}}>("/players/:playerId/seek", (req => pith.getPlayerInstance(req.params.playerId).seek({time: req.params.time})))
+        app.get<{Params: {playerId: string}}>("/player/:playerId/stop", (req => pith.getPlayerInstance(req.params.playerId).stop()))
+        app.get<{Params: {playerId: string}}>("/player/:playerId/play", (req => pith.getPlayerInstance(req.params.playerId).play()))
+        app.get<{Params: {playerId: string}}>("/player/:playerId/pause", (req => pith.getPlayerInstance(req.params.playerId).pause()))
+        app.get<{Params: {playerId: string, time: string}}>("/player/:playerId/seek", (req => pith.getPlayerInstance(req.params.playerId).seek({time: req.params.time})))
 
         app.get("/ribbons", () => pith.listRibbons())
         app.get<{ Params: {ribbonId: string}}>("/ribbons/:ribbonId", (req) => pith.listRibbonContents(req.params.ribbonId))
