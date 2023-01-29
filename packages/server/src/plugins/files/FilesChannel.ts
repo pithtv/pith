@@ -2,7 +2,7 @@ import {Channel} from "../../lib/channel";
 import {Pith} from "../../pith";
 import {IStateStore} from "./playstate";
 import {SettingsStore} from "../../settings/SettingsStore";
-import vidstreamer from "../../lib/vidstreamer";
+import {VideoStreamer} from "../../lib/vidstreamer";
 import $path from "path";
 import path from "path";
 import {promises as fs} from "fs";
@@ -19,6 +19,7 @@ import {preview} from "./preview";
 
 export class FilesChannel extends Channel {
   private rootDir: string
+  private videoStreamer: VideoStreamer;
 
   constructor(private pith: Pith, private statestore: IStateStore, private settingsStore: SettingsStore) {
     super();
@@ -26,19 +27,17 @@ export class FilesChannel extends Channel {
     this.rootDir = settingsStore.settings.files.rootDir;
     this.pith = pith;
 
-    const channel = this;
-
-    vidstreamer.settings({
-      getFile(p, cb) {
-        cb(channel.getFile(p));
-      }
-    });
+    this.videoStreamer = new VideoStreamer({
+      resolver: (p) => this.getFile(p)
+    })
   }
 
   fastify() : FastifyPluginAsync {
     return async (app, _) => {
-      app.get('/stream/:fingerprint/*', vidstreamer);
-      app.get('/preview', preview(p => this.getFile(p)));
+      app.register(this.videoStreamer.plugin, {
+        prefix: "/stream"
+      })
+      app.get('/preview/*', preview(p => this.getFile(p)));
     }
   }
 
