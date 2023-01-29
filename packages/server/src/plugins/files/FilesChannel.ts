@@ -3,7 +3,6 @@ import {Pith} from "../../pith";
 import {IStateStore} from "./playstate";
 import {SettingsStore} from "../../settings/SettingsStore";
 import vidstreamer from "../../lib/vidstreamer";
-import {preview} from "./preview";
 import $path from "path";
 import path from "path";
 import {promises as fs} from "fs";
@@ -15,9 +14,11 @@ import {keyframes} from "../../lib/keyframes";
 import ff, {FfprobeData} from 'fluent-ffmpeg';
 import {metaDataProviders} from "./metaDataProviders";
 import {StreamDescriptor} from "@pithmediaserver/api/types/stream";
+import {FastifyPluginAsync} from "fastify";
+import {preview} from "./preview";
 
 export class FilesChannel extends Channel {
-  private rootDir: string;
+  private rootDir: string
 
   constructor(private pith: Pith, private statestore: IStateStore, private settingsStore: SettingsStore) {
     super();
@@ -32,11 +33,13 @@ export class FilesChannel extends Channel {
         cb(channel.getFile(p));
       }
     });
+  }
 
-    // if (pith.handle) {
-    //   pith.handle.use('/stream/:fingerprint', vidstreamer);
-    //   pith.handle.use('/preview', preview(p => this.getFile(p)));
-    // }
+  fastify() : FastifyPluginAsync {
+    return async (app, _) => {
+      app.get('/stream/:fingerprint/*', vidstreamer);
+      app.get('/preview', preview(p => this.getFile(p)));
+    }
   }
 
   async listContents(containerId?) {
@@ -103,7 +106,7 @@ export class FilesChannel extends Channel {
     const metadata = await wrap<FfprobeData>(cb => ff.ffprobe(this.getFile(item.id), cb));
     const duration = metadata.format.duration * 1000;
 
-    const baseUrl = `${channel.pith.rootUrl}stream/${encodeURIComponent(options && options.fingerprint) || '0'}/${itemPath}`;
+    const baseUrl = `${channel.pith.rootUrl}/files/stream/${encodeURIComponent(options?.fingerprint ?? '0')}/${itemPath}`;
 
     const desc = {
       url: baseUrl,

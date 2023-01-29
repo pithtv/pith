@@ -23,7 +23,7 @@ export default class ThumbnailsProvider implements MetaDataProvider {
                 const itemPath = tbnFile.replace(matchRootDir, '').split($path.sep).map(encodeURIComponent).join('/');
                 item.thumbnail = channel.pith.rootPath + '/stream/' + itemPath;
             } else if (item.mimetype && item.mimetype.startsWith('video')) {
-                item.still = channel.pith.rootPath + '/preview/' + item.id.split($path.sep).map(encodeURIComponent).join('/') + '/0:10:00.jpg';
+                item.still = channel.pith.rootPath + '/files/preview/' + item.id.split($path.sep).map(encodeURIComponent).join('/') + '/0:10:00.jpg';
             }
         }
     }

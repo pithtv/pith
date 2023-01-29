@@ -1,3 +1,4 @@
+/* tslint:disable:no-bitwise */
 /*!
 * VidStreamer.js
 *
@@ -19,6 +20,7 @@ import {EventEmitter} from "events";
 
 const settings = {
     server: 'Pith', getFile(fileName, callback) {
+        return undefined
     },
     forceDownload: false,
     maxAge: 3600
@@ -41,7 +43,7 @@ interface StreamInfo {
     path?: string;
 }
 
-const vidStreamer = function (req, res) {
+const vidStreamer = (req, res) => {
     let stream;
     let stat;
     const info: StreamInfo = {};
@@ -52,7 +54,7 @@ const vidStreamer = function (req, res) {
     const duration = req.params.duration;
     const reqUrl = url.parse(req.url, true);
 
-    info.path = typeof reqUrl.pathname === 'string' ? reqUrl.pathname.substring(1) : undefined;
+    info.path = req.params["*"] // typeof reqUrl.pathname === 'string' ? reqUrl.pathname.substring(1) : undefined;
 
     if (info.path) {
         try {
@@ -64,13 +66,14 @@ const vidStreamer = function (req, res) {
         }
     }
 
-    settings.getFile(info.path, function (filePath) {
+    // tslint:disable-next-line:only-arrow-functions
+    settings.getFile(info.path, filePath => {
         if (generatePlaylist === 'm3u8') {
             ff.ffprobe(filePath, (err, metadata) => {
                 function writePlayList(frames?) {
-                    function frame(duration, offset) {
-                        return `#EXTINF:${duration.toFixed(6)},\n` +
-                            `${encodeURIComponent(path.basename(info.path))}?transcode=${transcode}&start=${offset}&duration=${duration}\n`;
+                    function frame(frameDuration, frameOffset) {
+                        return `#EXTINF:${frameDuration.toFixed(6)},\n` +
+                            `${encodeURIComponent(path.basename(info.path))}?transcode=${transcode}&start=${frameOffset}&duration=${frameDuration}\n`;
                     }
 
                     if (err) {
@@ -89,7 +92,8 @@ const vidStreamer = function (req, res) {
                                 playlist += frame(Math.min(chunkSize, metadata.format.duration - x), x);
                             }
                         } else {
-                            let x, lastFrame = frames[0];
+                            let x;
+                            let lastFrame = frames[0];
 
                             for (x = 1; x < frames.length - 1; x++) {
                                 const fragmentDuration = (frames[x].timestamp - lastFrame.timestamp) / 1000;
@@ -124,9 +128,8 @@ const vidStreamer = function (req, res) {
 
                 decoder = preset.setup(decoder, metadata);
 
-                res.writeHead(200, {
-                    'content-type': preset.mimetype
-                });
+                res.code(200)
+                res.header('content-type', preset.mimetype)
 
                 decoder.pipe(res);
             });
@@ -151,6 +154,7 @@ const vidStreamer = function (req, res) {
             info.file = path.basename(filePath);
             info.mime = mimeTypes.fromFilePath(filePath);
 
+            // tslint:disable-next-line:no-conditional-assignment
             if (range !== undefined && (range = range.match(/bytes=(.+)-(.+)?/)) !== null) {
                 // Check range contains numbers and they fit in the file.
                 // Make sure info.start & info.end are numbers (not strings) or stream.pipe errors out if start > 0.
@@ -175,15 +179,15 @@ const vidStreamer = function (req, res) {
                     res.write('FLV' + pack('CCNN', 1, 5, 9, 9));
                 }
                 stream = fs.createReadStream(filePath, {flags: 'r', start: info.start, end: info.end});
-                stream.pipe(res);
+                res.send(stream)
             } else {
-                res.end();
+                res.send("");
             }
         }
     });
 };
 
-vidStreamer.settings = function (s) {
+vidStreamer.settings = s => {
     Object.assign(settings, s);
     return vidStreamer;
 };
@@ -231,16 +235,18 @@ function downloadHeader(res, info) {
     header['transferMode.dlna.org'] = 'Streaming';
     header['realTimeInfo.dlna.org'] = 'DLNA.ORG_TLAG=*';
 
-    res.writeHead(code, header);
+    res.code(code)
+    res.headers(header)
 }
 
-const errorHeader = function (res, code) {
+const errorHeader = (res, code) => {
     const header = {
         'Content-Type': 'text/html',
         Server: settings.server
     };
 
-    res.writeHead(code, header);
+    res.code(code)
+    res.headers(header)
 };
 
 // http://stackoverflow.com/a/1830844/648802
@@ -268,7 +274,7 @@ function pack(format, ...args) {
     return result;
 }
 
-handler.on('badFile', function (res, e) {
+handler.on('badFile', (res, e) => {
     errorHeader(res, 404);
     res.end('<!DOCTYPE html><html lang="en">' +
         '<head><title>404 Not found</title></head>' +
@@ -279,7 +285,7 @@ handler.on('badFile', function (res, e) {
     logger.error('404 Bad File - ' + (e ? e.message : ''));
 });
 
-handler.on('badRange', function (res, e) {
+handler.on('badRange', (res, e) => {
     errorHeader(res, 416);
     res.end('<!DOCTYPE html><html lang="en">' +
         '<head><title>416 Range not satisifiable</title></head>' +
@@ -290,7 +296,7 @@ handler.on('badRange', function (res, e) {
     logger.error('416 Bad Range - ' + (e ? e.message : ''));
 });
 
-handler.on('security', function (res, e) {
+handler.on('security', (res, e) => {
     errorHeader(res, 403);
     res.end('<!DOCTYPE html><html lang="en">' +
         '<head><title>403 Forbidden</title></head>' +
@@ -301,7 +307,7 @@ handler.on('security', function (res, e) {
     logger.error('403 Security - ' + (e ? e.message : ''));
 });
 
-handler.on('badMime', function (res, e) {
+handler.on('badMime', (res, e) => {
     errorHeader(res, 403);
     res.end('<!DOCTYPE html><html lang="en">' +
         '<head><title>403 Forbidden</title></head>' +
@@ -312,7 +318,7 @@ handler.on('badMime', function (res, e) {
     logger.error('403 Bad MIME - ' + (e ? e.message : ''));
 });
 
-handler.on('badRequest', function (res, e) {
+handler.on('badRequest', (res, e) => {
     errorHeader(res, 400);
     res.end('<!DOCTYPE html><html lang="en">' +
         '<head><title>400 Bad request</title></head>' +
@@ -323,7 +329,7 @@ handler.on('badRequest', function (res, e) {
     logger.error('400 Bad Request - ' + (e ? e.message : ''));
 });
 
-handler.on('noRandomFiles', function (res, e) {
+handler.on('noRandomFiles', (res, e) => {
     errorHeader(res, 404);
     res.end('<!DOCTYPE html><html lang="en">' +
         '<head><title>404 Not found</title></head>' +

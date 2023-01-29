@@ -37,12 +37,12 @@ export class Bootstrap {
     logger.info('Listening on http://' + serverAddress + ':' + port)
 
     const pithApp = new Pith({
-      rootUrl: this.global.rootUrl + '/pith/',
+      rootUrl: this.global.rootUrl,
       rootPath,
       fastify
     })
 
-    pithApp.load()
+    await pithApp.load({fastify})
 
     fastify.register(fastifyStatic, {
       prefix: '/icons',
@@ -66,8 +66,8 @@ export class Bootstrap {
       }
     }
 
-    fastify.register(async function(fastify) {
-      fastify.get('/events', {websocket: true}, (connection, req) => {
+    fastify.register(async fastifyInstance => {
+      fastifyInstance.get('/events', {websocket: true}, (connection, req) => {
         const listeners = []
 
         try {

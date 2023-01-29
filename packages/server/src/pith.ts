@@ -157,8 +157,9 @@ export class Pith extends EventEmitter {
         return this.playerMap[playerId]
     }
 
-
-    public load() {
+    public async load(opts: {
+        fastify: FastifyInstance
+    }) {
         require("./plugins/files/plugin");
         require("./plugins/library/plugin");
         require("./plugins/upnp-mediarenderer/plugin");
@@ -170,13 +171,14 @@ export class Pith extends EventEmitter {
         require("./plugins/vlc/plugin");
         require("./plugins/bonjour/plugin");
 
-        container.resolveAll(PluginSymbol).forEach(plugin => {
+        return Promise.all(container.resolveAll(PluginSymbol).map(async plugin => {
             try {
-                plugin.init({pith: this})
+                await plugin.init({...opts, pith: this})
+                return plugin
             } catch(e) {
                 logger.error(`Error initializing plugin`, e);
             }
-        });
+        }));
     }
 
     private async getChannelInstances() : Promise<IChannel[]> {

@@ -13,7 +13,7 @@ export default class WebUIPlugin implements PithPlugin {
         })
 
         pith.fastify.setNotFoundHandler({
-        }, function (request, reply) {
+        }, (request, reply) => {
             reply.sendFile('index.html', webUiPath)
         });
 

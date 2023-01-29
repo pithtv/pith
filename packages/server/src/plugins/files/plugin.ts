@@ -4,6 +4,8 @@ import {inject, injectable} from 'tsyringe';
 import {DBDriver, DBDriverSymbol} from '../../persistence/DBDriver';
 import {PithPlugin, plugin} from '../plugins';
 import {FilesChannel} from "./FilesChannel";
+import {FastifyInstance} from "fastify";
+import {Pith} from "../../pith";
 
 @injectable()
 @plugin()
@@ -13,15 +15,20 @@ export default class FilesPlugin implements PithPlugin {
                 @inject(StateStore) private stateStore: StateStore) {
     }
 
-    async init(opts) {
+    async init({pith, fastify}: { pith: Pith, fastify: FastifyInstance}) {
         await this.stateStore.init();
-        opts.pith.registerChannel({
+
+        const channel = new FilesChannel(pith, this.stateStore, this.settingsStore)
+
+        pith.registerChannel({
             id: 'files',
             title: 'Files',
             init: () => {
-                return new FilesChannel(opts.pith, this.stateStore, this.settingsStore);
+                return channel;
             },
             sequence: 0
         });
+
+        fastify.register(channel.fastify(), {prefix: "/files"})
     }
 }
