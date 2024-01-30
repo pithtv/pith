@@ -1,0 +1,72 @@
+/* generated using openapi-typescript-codegen -- do no edit */
+/* istanbul ignore file */
+/* tslint:disable */
+/* eslint-disable */
+import type { AlternateTitleResource } from './AlternateTitleResource';
+import type { CustomFormatResource } from './CustomFormatResource';
+import type { DownloadProtocol } from './DownloadProtocol';
+import type { Language } from './Language';
+import type { QualityModel } from './QualityModel';
+import type { ReleaseEpisodeResource } from './ReleaseEpisodeResource';
+export type ReleaseResource = {
+    id?: number;
+    guid?: string | null;
+    quality?: QualityModel;
+    qualityWeight?: number;
+    age?: number;
+    ageHours?: number;
+    ageMinutes?: number;
+    size?: number;
+    indexerId?: number;
+    indexer?: string | null;
+    releaseGroup?: string | null;
+    subGroup?: string | null;
+    releaseHash?: string | null;
+    title?: string | null;
+    fullSeason?: boolean;
+    sceneSource?: boolean;
+    seasonNumber?: number;
+    languages?: Array<Language> | null;
+    languageWeight?: number;
+    airDate?: string | null;
+    seriesTitle?: string | null;
+    episodeNumbers?: Array<number> | null;
+    absoluteEpisodeNumbers?: Array<number> | null;
+    mappedSeasonNumber?: number | null;
+    mappedEpisodeNumbers?: Array<number> | null;
+    mappedAbsoluteEpisodeNumbers?: Array<number> | null;
+    mappedSeriesId?: number | null;
+    mappedEpisodeInfo?: Array<ReleaseEpisodeResource> | null;
+    approved?: boolean;
+    temporarilyRejected?: boolean;
+    rejected?: boolean;
+    tvdbId?: number;
+    tvRageId?: number;
+    rejections?: Array<string> | null;
+    publishDate?: string;
+    commentUrl?: string | null;
+    downloadUrl?: string | null;
+    infoUrl?: string | null;
+    episodeRequested?: boolean;
+    downloadAllowed?: boolean;
+    releaseWeight?: number;
+    customFormats?: Array<CustomFormatResource> | null;
+    customFormatScore?: number;
+    sceneMapping?: AlternateTitleResource;
+    magnetUrl?: string | null;
+    infoHash?: string | null;
+    seeders?: number | null;
+    leechers?: number | null;
+    protocol?: DownloadProtocol;
+    isDaily?: boolean;
+    isAbsoluteNumbering?: boolean;
+    isPossibleSpecialEpisode?: boolean;
+    special?: boolean;
+    seriesId?: number | null;
+    episodeId?: number | null;
+    episodeIds?: Array<number> | null;
+    downloadClientId?: number | null;
+    downloadClient?: string | null;
+    shouldOverride?: boolean | null;
+};
+

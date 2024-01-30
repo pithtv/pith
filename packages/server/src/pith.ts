@@ -188,8 +188,8 @@ export class Pith extends EventEmitter {
     public async listRibbons() : Promise<Ribbon[]> {
         const channels = await this.getChannelInstances();
         const allRibbons = await Promise.all(channels.map(channel => channel.getRibbons ? channel.getRibbons() : []));
-        const index = allRibbons.reduce((a,b) => a.concat(b), []).reduce<{[key: string]: Ribbon}>(
-            (idx, itm) => ({...idx, [itm.id]: itm}), {});
+        // @ts-ignore
+        const index: {[key: string]: Ribbon} = allRibbons.reduce((a,b) => a.concat(b), []).reduce((idx, itm) => ({...idx, [itm.id]: itm}), {});
         return Object.values(index);
     }
 
