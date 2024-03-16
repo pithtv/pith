@@ -29,6 +29,7 @@ import {
 } from "@pithmediaserver/api";
 import {StreamDescriptor} from "@pithmediaserver/api/types/stream";
 import {
+    EpisodeFileResource,
     EpisodeFileService,
     EpisodeResource,
     EpisodeService,
@@ -268,7 +269,15 @@ class SonarrChannel extends Channel {
         if (cacheKey !== undefined) {
             return this.episodeCache.resolve(seriesId, cacheKey, () => this.queryEpisodes(seriesId));
         }
-        return EpisodeService.getApiV3Episode(seriesId);
+        const episodes = await EpisodeService.getApiV3Episode(seriesId);
+        const files = await EpisodeFileService.getApiV3Episodefile(seriesId, episodes.map(e => e.episodeFileId));
+        const fileMap = new Map<number, EpisodeFileResource>();
+        files.forEach(ef => fileMap.set(ef.id, ef));
+
+        return episodes.map(e => ({
+            ...e,
+            episodeFile: fileMap.get(e.episodeFileId)
+        }));
     }
 
     private async getFile(item): Promise<IChannelItem> {
