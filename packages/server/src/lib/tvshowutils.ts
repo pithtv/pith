@@ -1,7 +1,7 @@
 import {IPlayState} from "@pithmediaserver/api";
 
 export function aggregatePlayState(items) : IPlayState {
-    const aggr = items.reduce(function (state, ep) {
+    const aggr = items.reduce((state, ep) => {
         if (!ep.playable && !ep.playState) {
             return state;
         } else {
@@ -37,6 +37,6 @@ export function aggregatePlayState(items) : IPlayState {
     }
     return {
         status: playstate,
-        time: items.map(ps => ps.time).reduce(Math.max)
+        time: items.map(ps => ps.time).reduce(Math.max, 0)
     };
 }
