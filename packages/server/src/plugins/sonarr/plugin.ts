@@ -39,6 +39,7 @@ import {
     SeriesResource,
     SeriesService
 } from "./client";
+import { batch } from '../../lib/batcher';
 
 const logger = getLogger('pith.plugin.sonarr');
 const settingsStore = container.resolve(SettingsStoreSymbol);
@@ -270,7 +271,11 @@ class SonarrChannel extends Channel {
             return this.episodeCache.resolve(seriesId, cacheKey, () => this.queryEpisodes(seriesId));
         }
         const episodes = await EpisodeService.getApiV3Episode(seriesId);
-        const files = await EpisodeFileService.getApiV3Episodefile(seriesId, episodes.map(e => e.episodeFileId));
+        // make batches of 50 episode files and request them from the API
+        const episodeIds = episodes.map(e => e.episodeFileId).filter(id => id !== undefined)
+        const files = await batch(episodeIds, 50, (batchIds) => {
+            return EpisodeFileService.getApiV3Episodefile(seriesId, batchIds);
+        });
         const fileMap = new Map<number, EpisodeFileResource>();
         files.forEach(ef => fileMap.set(ef.id, ef));
 
